@@ -1,0 +1,11 @@
+.dynamodb
+.serverless
+.vscode
+.webpack
+archive
+build
+coverage
+dist
+node_modules
+offline
+**/*.js

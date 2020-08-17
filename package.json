@@ -1,0 +1,46 @@
+{
+  "name": "gmv-backend",
+  "version": "1.0.0",
+  "description": "this repo builds the API Grace Medical Village",
+  "scripts": {
+    "deploy:dev": "serverless deploy -s dev",
+    "deploy:prod": "serverless deploy -s prod",
+    "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
+    "lint": "eslint . --ext .ts --ignore-path .gitignore",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "local": "serverless offline",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Grace-Medical-Village/gmv-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Grace-Medical-Village/gmv-backend/issues"
+  },
+  "homepage": "https://github.com/Grace-Medical-Village/gmv-backend#readme",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.61",
+    "@types/aws-sdk": "^2.7.0",
+    "@types/node": "^14.0.27",
+    "aws-sdk": "^2.734.0",
+    "babel-jest": "^26.3.0",
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.20.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.4.0",
+    "prettier": "^2.0.5",
+    "serverless-dynamodb-local": "^0.2.39",
+    "serverless-offline": "^6.5.0",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "serverless": "^1.76.1"
+  }
+}
