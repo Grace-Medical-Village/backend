@@ -1,6 +1,6 @@
 import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
-import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
+import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
 
 interface Options {
   region?: string;
@@ -24,21 +24,12 @@ if (process.env.IS_OFFLINE) {
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event: APIGatewayEvent, context: Context, callback: Callback): void => {
-  console.log(event);
+  let response;
   const id: string = event?.queryStringParameters?.id ?? '';
+  console.log(id);
 
-  if (id === null) {
-    callback(
-      JSON.stringify({
-        error: 'Error',
-        detail: 'Please provide an id',
-      })
-    );
-  }
-
-  const item: Item = {
+  const item = {
     id,
-    key: 'general',
   };
 
   const params = {
@@ -46,25 +37,21 @@ export const main: Handler = (event: APIGatewayEvent, context: Context, callback
     Key: item,
   };
 
-  dynamoDb.get(params, (error: AWSError, result: PutItemOutput) => {
-    let response;
+  dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
     if (error) {
       console.error(error);
-
       response = {
         statusCode: error.statusCode || 400,
         headers: { 'Content-Type': 'text/plain' },
         body: "Error: Couldn't get the new patient",
       };
-      callback(null, response);
-      return;
+      callback(error, response);
     }
 
     response = {
       statusCode: 200,
-      body: JSON.stringify(result),
+      body: JSON.stringify(result.Item),
     };
     callback(null, response);
   });
-  console.log(context.getRemainingTimeInMillis()); // TODO CLEAN
 };

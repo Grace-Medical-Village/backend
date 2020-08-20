@@ -9,8 +9,13 @@ interface Options {
 
 interface Patient {
   birthdate: string;
+  country: string;
   firstName: string;
+  gender: string;
+  hispanic: string;
+  language: string;
   lastName: string;
+  zipCode5: string;
 }
 
 interface Item extends Patient {
@@ -26,19 +31,24 @@ if (process.env.IS_OFFLINE) {
     endpoint: 'http://localhost:8000',
   };
 }
+console.log(options);
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event: APIGatewayEvent, context: Context, callback: Callback): void => {
+  let response;
   const patient: Patient = JSON.parse(event?.body ?? '{}');
+  console.log(context);
 
   if (Object.entries(patient).length === 0) {
-    callback(
-      JSON.stringify({
+    response = {
+      statusCode: 400,
+      body: {
         error: 'Error',
-        detail: 'Patient data is empty',
-      })
-    );
+        message: 'Patient data is empty',
+      },
+    };
+    throw new Error(JSON.stringify(response));
   }
 
   /**
@@ -58,9 +68,14 @@ export const main: Handler = (event: APIGatewayEvent, context: Context, callback
   const item: Item = {
     id,
     key: 'general',
-    lastName,
-    firstName,
     birthdate,
+    country,
+    firstName,
+    gender,
+    hispanic,
+    language,
+    lastName,
+    zipCode5,
     createdAt,
   };
 
@@ -70,7 +85,6 @@ export const main: Handler = (event: APIGatewayEvent, context: Context, callback
   };
 
   dynamoDb.put(params, (error: AWSError, result: PutItemOutput) => {
-    let response;
     if (error) {
       console.error(error);
 
@@ -79,7 +93,6 @@ export const main: Handler = (event: APIGatewayEvent, context: Context, callback
         headers: { 'Content-Type': 'text/plain' },
         body: `Error: Couldn't put the patient ${firstName} ${lastName} with ID: ${id}`,
       };
-      callback(null, response);
       return;
     }
 
@@ -89,5 +102,4 @@ export const main: Handler = (event: APIGatewayEvent, context: Context, callback
     };
     callback(null, response);
   });
-  console.log(context.getRemainingTimeInMillis()); // TODO CLEAN
 };

@@ -10,24 +10,17 @@ if (process.env.IS_OFFLINE) {
 }
 const dynamoDb = new aws_sdk_1.DynamoDB.DocumentClient(options);
 exports.main = (event, context, callback) => {
-    console.log(event);
+    let response;
     const id = event?.queryStringParameters?.id ?? '';
-    if (id === null) {
-        callback(JSON.stringify({
-            error: 'Error',
-            detail: 'Please provide an id',
-        }));
-    }
+    console.log(id);
     const item = {
         id,
-        key: 'general',
     };
     const params = {
         TableName: process.env.DYNAMODB_TABLE ?? 'patients',
         Key: item,
     };
     dynamoDb.get(params, (error, result) => {
-        let response;
         if (error) {
             console.error(error);
             response = {
@@ -35,14 +28,12 @@ exports.main = (event, context, callback) => {
                 headers: { 'Content-Type': 'text/plain' },
                 body: "Error: Couldn't get the new patient",
             };
-            callback(null, response);
-            return;
+            callback(error, response);
         }
         response = {
             statusCode: 200,
-            body: JSON.stringify(result),
+            body: JSON.stringify(result.Item),
         };
         callback(null, response);
     });
-    console.log(context.getRemainingTimeInMillis()); // TODO CLEAN
 };

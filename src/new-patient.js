@@ -8,14 +8,21 @@ if (process.env.IS_OFFLINE) {
         endpoint: 'http://localhost:8000',
     };
 }
+console.log(options);
 const dynamoDb = new aws_sdk_1.DynamoDB.DocumentClient(options);
 exports.main = (event, context, callback) => {
+    let response;
     const patient = JSON.parse(event?.body ?? '{}');
+    console.log(context);
     if (Object.entries(patient).length === 0) {
-        callback(JSON.stringify({
-            error: 'Error',
-            detail: 'Patient data is empty',
-        }));
+        response = {
+            statusCode: 400,
+            body: {
+                error: 'Error',
+                message: 'Patient data is empty',
+            },
+        };
+        throw new Error(JSON.stringify(response));
     }
     /**
      * TODO's
@@ -32,9 +39,14 @@ exports.main = (event, context, callback) => {
     const item = {
         id,
         key: 'general',
-        lastName,
-        firstName,
         birthdate,
+        country,
+        firstName,
+        gender,
+        hispanic,
+        language,
+        lastName,
+        zipCode5,
         createdAt,
     };
     const params = {
@@ -42,7 +54,6 @@ exports.main = (event, context, callback) => {
         Item: item,
     };
     dynamoDb.put(params, (error, result) => {
-        let response;
         if (error) {
             console.error(error);
             response = {
@@ -50,7 +61,6 @@ exports.main = (event, context, callback) => {
                 headers: { 'Content-Type': 'text/plain' },
                 body: `Error: Couldn't put the patient ${firstName} ${lastName} with ID: ${id}`,
             };
-            callback(null, response);
             return;
         }
         response = {
@@ -59,5 +69,4 @@ exports.main = (event, context, callback) => {
         };
         callback(null, response);
     });
-    console.log(context.getRemainingTimeInMillis()); // TODO CLEAN
 };

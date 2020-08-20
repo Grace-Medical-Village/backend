@@ -17,12 +17,7 @@ custom:
   prefix: gmv
   serverless-offline:
     httpPort: 4000
-    prefix: api
   tableName: patients
-  webpack:
-    includeModules: true
-    packager: npm
-    webpackConfig: ./webpack.config.js
 
 package:
   individually: true
