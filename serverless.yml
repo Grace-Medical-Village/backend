@@ -9,8 +9,14 @@ custom:
       dir: offline
       inMemory: true
       migrate: true
+      seed: true
     migration:
       port: 8000
+    seed:
+      domain:
+        sources:
+          - table: patients
+            sources: [./resources/patients.json]
     stages:
       - dev
       - test
@@ -49,7 +55,7 @@ provider:
 
 functions:
   getPatient:
-    handler: src/get-patient.main
+    handler: src/get.main
     events:
       - http:
           path: patient
@@ -58,7 +64,7 @@ functions:
           authorizer: aws_iam
 
   newPatient:
-    handler: src/new-patient.main
+    handler: src/post.main
     events:
       - http:
           path: patient
@@ -70,15 +76,19 @@ functions:
 
 resources:
   Resources:
-    TodosDynamoDbTable:
+    PatientsDynamoDbTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: key
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+          - AttributeName: key
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:custom.tableName}

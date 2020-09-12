@@ -1,14 +1,14 @@
 {
   "name": "gmv-backend",
   "version": "1.0.0",
-  "description": "this repo builds the API Grace Medical Village",
+  "description": "Patient API for Grace Medical Village",
   "scripts": {
     "deploy:dev": "serverless deploy -s dev",
     "deploy:prod": "serverless deploy -s prod",
     "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "lint:fix": "eslint . --ext .ts --fix",
-    "local": "serverless offline",
+    "local": "serverless offline start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc -w"

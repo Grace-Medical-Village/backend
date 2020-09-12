@@ -1,15 +1,10 @@
 import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
-import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
+import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
 
 interface Options {
   region?: string;
   endpoint?: string;
-}
-
-interface Item {
-  id: string;
-  key: string;
 }
 
 let options: Options = {};
@@ -23,34 +18,42 @@ if (process.env.IS_OFFLINE) {
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event: APIGatewayEvent, context: Context, callback: Callback): void => {
+export const main: Handler = (event: APIGatewayEvent, _context: Context, callback: Callback): void => {
   let response;
-  const id: string = event?.queryStringParameters?.id ?? '';
-  console.log(id);
+  const data: any = JSON.parse(event?.body ?? '{}');
 
-  const item = {
-    id,
-  };
+  if (Object.entries(data).length === 0) {
+    response = {
+      statusCode: 400,
+      body: {
+        error: 'Error',
+        message: 'Patient data is empty',
+      },
+    };
+    throw new Error(JSON.stringify(response));
+  }
+  console.log(data);
 
   const params = {
     TableName: process.env.DYNAMODB_TABLE ?? 'patients',
-    Key: item,
+    Item: data,
   };
 
-  dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
+  dynamoDb.put(params, (error: AWSError, result: PutItemOutput) => {
     if (error) {
       console.error(error);
+
       response = {
         statusCode: error.statusCode || 400,
         headers: { 'Content-Type': 'text/plain' },
-        body: "Error: Couldn't get the new patient",
+        body: `Error: Couldn't put the data ${JSON.stringify(data)}`,
       };
-      callback(error, response);
+      return;
     }
 
     response = {
       statusCode: 200,
-      body: JSON.stringify(result.Item),
+      body: JSON.stringify(result),
     };
     callback(null, response);
   });

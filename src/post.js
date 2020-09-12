@@ -8,13 +8,11 @@ if (process.env.IS_OFFLINE) {
         endpoint: 'http://localhost:8000',
     };
 }
-console.log(options);
 const dynamoDb = new aws_sdk_1.DynamoDB.DocumentClient(options);
-exports.main = (event, context, callback) => {
+exports.main = (event, _context, callback) => {
     let response;
-    const patient = JSON.parse(event?.body ?? '{}');
-    console.log(context);
-    if (Object.entries(patient).length === 0) {
+    const data = JSON.parse(event?.body ?? '{}');
+    if (Object.entries(data).length === 0) {
         response = {
             statusCode: 400,
             body: {
@@ -24,34 +22,10 @@ exports.main = (event, context, callback) => {
         };
         throw new Error(JSON.stringify(response));
     }
-    /**
-     * TODO's
-     * Testing
-     * Birthdate Regex Validation
-     * First Name Regex Validation
-     * Last Name Regex Validation
-     */
-    const birthdate = patient?.birthdate;
-    const firstName = patient?.firstName.toLowerCase().trim();
-    const lastName = patient?.lastName.toLowerCase().trim();
-    const id = `${lastName}${firstName}${birthdate}`;
-    const createdAt = new Date().getTime();
-    const item = {
-        id,
-        key: 'general',
-        birthdate,
-        country,
-        firstName,
-        gender,
-        hispanic,
-        language,
-        lastName,
-        zipCode5,
-        createdAt,
-    };
+    console.log(data);
     const params = {
         TableName: process.env.DYNAMODB_TABLE ?? 'patients',
-        Item: item,
+        Item: data,
     };
     dynamoDb.put(params, (error, result) => {
         if (error) {
@@ -59,7 +33,7 @@ exports.main = (event, context, callback) => {
             response = {
                 statusCode: error.statusCode || 400,
                 headers: { 'Content-Type': 'text/plain' },
-                body: `Error: Couldn't put the patient ${firstName} ${lastName} with ID: ${id}`,
+                body: `Error: Couldn't put the data ${JSON.stringify(data)}`,
             };
             return;
         }
