@@ -44,17 +44,17 @@ export const main: Handler = (event: APIGatewayEvent, _context: Context, callbac
       console.error(error);
 
       response = {
-        statusCode: error.statusCode || 400,
+        statusCode: error.statusCode || 500,
         headers: { 'Content-Type': 'text/plain' },
         body: `Error: Couldn't put the data ${JSON.stringify(data)}`,
       };
       return;
+    } else {
+      response = {
+        statusCode: 200,
+        body: JSON.stringify(result),
+      };
     }
-
-    response = {
-      statusCode: 200,
-      body: JSON.stringify(result),
-    };
     callback(null, response);
   });
 };

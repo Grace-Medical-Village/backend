@@ -1,14 +1,14 @@
 {
-  "name": "gmv-backend",
+  "name": "gmv-patient-api",
   "version": "1.0.0",
   "description": "Patient API for Grace Medical Village",
   "scripts": {
-    "deploy:dev": "serverless deploy -s dev",
-    "deploy:prod": "serverless deploy -s prod",
+    "deploy:development": "serverless deploy -s development",
+    "deploy:production": "serverless deploy -s production",
     "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "lint:fix": "eslint . --ext .ts --fix",
-    "local": "serverless offline start",
+    "local": "serverless offline start -s local",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc -w"
@@ -27,6 +27,8 @@
     "@types/aws-lambda": "^8.10.61",
     "@types/aws-sdk": "^2.7.0",
     "@types/node": "^14.0.27",
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
     "aws-sdk": "^2.734.0",
     "babel-jest": "^26.3.0",
     "eslint": "^7.6.0",

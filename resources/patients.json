@@ -2,11 +2,11 @@
   "id": "theodoreroosevelt1999-12-31",
   "key": "general",
   "birthdate": "1999-12-31",
-  "firstName": "Theodore",
+  "firstName": "John",
   "gender": "male",
   "hispanic": "yes",
   "language": "English",
-  "lastName": "Roosevelt",
+  "lastName": "Doe",
   "country": "United States",
   "zipCode5": "12345"
 }

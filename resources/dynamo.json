@@ -1,0 +1,36 @@
+{
+  "Table": {
+    "TableName": "patients",
+
+    "KeySchema": [
+      {
+        "AttributeName": "id",
+
+        "KeyType": "HASH"
+      },
+      {
+        "AttributeName": "key",
+
+        "KeyType": "RANGE"
+      }
+    ],
+
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "id",
+
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "key",
+
+        "AttributeType": "S"
+      }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 1,
+
+      "WriteCapacityUnits": 1
+    }
+  }
+}

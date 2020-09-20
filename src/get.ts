@@ -25,49 +25,59 @@ const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event: APIGatewayEvent, _context: Context, callback: Callback): void => {
   let response;
-  const id: string = event?.queryStringParameters?.id ?? '';
-  const key: string = event?.queryStringParameters?.key ?? '';
 
-  if (!id) {
+  const id: string = event?.queryStringParameters?.id;
+  const key: string = event?.queryStringParameters?.key;
+
+  if (!id || !key) {
     response = {
       statusCode: 400,
       body: {
-        error: 'Error',
-        message: 'ID parameter is required',
+        error: true,
+        message: 'Error: ID and Key are required',
       },
     };
     throw new Error(JSON.stringify(response));
-  }
-
-  const item: Item = {
-    id,
-  };
-
-  if (key) {
-    item.key = key;
-  }
-
-  const params = {
-    TableName: process.env.DYNAMODB_TABLE ?? 'patients',
-    Key: item,
-  };
-
-  dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
-    if (error) {
-      console.error(error);
-      response = {
-        statusCode: error.statusCode || 400,
-        headers: { 'Content-Type': 'text/plain' },
-        body: "Error: Couldn't get the new patient",
-      };
-      callback(error, response);
-    }
-
-    response = {
-      statusCode: 200,
-      body: JSON.stringify(result.Item),
+  } else {
+    const item: Item = {
+      id,
+      key,
     };
-    console.log(response);
-    callback(null, response);
-  });
+
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE ?? 'patients',
+      Key: item,
+    };
+
+    dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
+      if (error) {
+        console.error(error);
+        response = {
+          statusCode: error.statusCode || 400,
+          headers: { 'Content-Type': 'text/plain' },
+          body: {
+            error: true,
+            message: 'Error: Item does not exist for that id/key',
+          },
+        };
+        callback(error, JSON.stringify(response));
+      } else if (!result.Item) {
+        response = {
+          statusCode: 404,
+          body: JSON.stringify({
+            error: false,
+            message: 'Not Found',
+          }),
+        };
+      } else {
+        response = {
+          statusCode: 200,
+          body: JSON.stringify(result.Item),
+        };
+      }
+
+      console.log(response);
+      callback(null, response);
+    });
+  }
 };
