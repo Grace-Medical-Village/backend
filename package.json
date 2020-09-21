@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Patient API for Grace Medical Village",
   "scripts": {
+    "build": "tsc",
     "deploy:development": "serverless deploy -s development",
     "deploy:production": "serverless deploy -s production",
     "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
@@ -10,8 +11,7 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "local": "serverless offline start -s local",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "typecheck": "tsc --noEmit",
-    "typecheck:watch": "tsc -w"
+    "type:watch": "tsc -w"
   },
   "repository": {
     "type": "git",
