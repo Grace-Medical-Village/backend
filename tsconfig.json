@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
+    "baseUrl": "./api/src",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["esnext"],
@@ -10,7 +10,7 @@
     "noImplicitUseStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "api/build",
+    "outDir": "./api/build",
     "skipLibCheck": true,
     "target": "esnext"
   },
