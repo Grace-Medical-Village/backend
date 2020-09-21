@@ -1,17 +1,27 @@
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.main = void 0;
-const aws_sdk_1 = require('aws-sdk');
-let options = {};
+import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
+import { AWSError, DynamoDB } from 'aws-sdk';
+import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
+
+interface Options {
+  region?: string;
+  endpoint?: string;
+}
+
+let options: Options = {};
+
 if (process.env.IS_OFFLINE) {
   options = {
     region: 'localhost',
     endpoint: 'http://localhost:8000',
   };
 }
-const dynamoDb = new aws_sdk_1.DynamoDB.DocumentClient(options);
-exports.main = (event, _context, callback) => {
+
+const dynamoDb = new DynamoDB.DocumentClient(options);
+
+export const main: Handler = (event: APIGatewayEvent, _context: Context, callback: Callback): void => {
   let response;
-  const data = JSON.parse(event?.body ?? '{}');
+  const data: unknown = JSON.parse(event?.body ?? '{}');
+
   if (Object.entries(data).length === 0) {
     response = {
       statusCode: 400,
@@ -23,13 +33,16 @@ exports.main = (event, _context, callback) => {
     throw new Error(JSON.stringify(response));
   }
   console.log(data);
+
   const params = {
     TableName: process.env.DYNAMODB_TABLE ?? 'patients',
     Item: data,
   };
-  dynamoDb.put(params, (error, result) => {
+
+  dynamoDb.put(params, (error: AWSError, result: PutItemOutput) => {
     if (error) {
       console.error(error);
+
       response = {
         statusCode: error.statusCode || 500,
         headers: { 'Content-Type': 'text/plain' },

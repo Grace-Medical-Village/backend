@@ -10,6 +10,7 @@
     "noImplicitUseStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "outDir": "api/build",
     "skipLibCheck": true,
     "target": "esnext"
   },
