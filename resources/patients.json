@@ -1,12 +1,16 @@
-{
-  "id": "theodoreroosevelt1999-12-31",
-  "key": "general",
-  "birthdate": "1999-12-31",
-  "firstName": "John",
-  "gender": "male",
-  "hispanic": "yes",
-  "language": "English",
-  "lastName": "Doe",
-  "country": "United States",
-  "zipCode5": "12345"
-}
+[
+  {
+    "id": "johndoe2000-01-01",
+    "key": "general",
+    "birthdate": "2000-01-01",
+    "country": "United States",
+    "email": "john@gmail.com",
+    "firstName": "John",
+    "gender": "male",
+    "hispanic": "yes",
+    "literacy": "Average",
+    "nativeLanguage": "English",
+    "lastName": "Doe",
+    "zipCode5": "12345"
+  }
+]

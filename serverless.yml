@@ -7,9 +7,6 @@ plugins:
   - serverless-pseudo-parameters
 
 custom:
-  stage: ${opt:stage, self:provider.stage}
-  prefix: gmv
-  tableName: patients
   domains:
     development: api.gracemedicalvillagedev.com
     production: api.gracemedicalvillage.com
@@ -18,6 +15,7 @@ custom:
     basePath: patients
     stage: ${self:custom.stage}
     createRoute53Record: true
+  deployTable: false
   dynamodb:
     start:
       dir: offline
@@ -28,15 +26,26 @@ custom:
       dir: './resources/dynamoTable.json'
       port: 8000
     seed:
-      domain:
+      patients:
         sources:
           - table: patients
             sources: [./resources/patients.json]
+      # medications:
+      #   sources:
+      #     - table: patients
+      #       sources: [./resources/medications.json]
+      metrics:
+        sources:
+          - table: patients
+            sources: [./resources/metrics.json]
     stages:
       - local
       - test
+  prefix: gmv
   serverless-offline:
     httpPort: 4000
+  stage: ${opt:stage, self:provider.stage}
+  tableName: patients
 
 package:
   individually: true
@@ -82,3 +91,30 @@ functions:
           authorizer: aws_iam
     environment:
       TABLE_NAME: ${self:custom.tableName}
+
+resources:
+  Conditions:
+    DeployPatientsTable:
+      Fn::Equals:
+        - ${self:custom.deployTable}
+        - true
+
+  Resources:
+    patientsTable:
+      Type: AWS::DynamoDB::Table
+      Condition: DeployPatientsTable
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: key
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
