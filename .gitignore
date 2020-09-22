@@ -1,7 +1,6 @@
 .archive
 .build
 .dynamodb
-.env*
 .serverless
 .vscode
 .webpack
