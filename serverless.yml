@@ -52,12 +52,11 @@ package:
 
 provider:
   name: aws
+  region: us-east-1
   runtime: nodejs12.x
   stage: ${provider.stage, 'development'}
-  region: us-east-1
-  tracing:
-    apigateway: true
-    lambda: true
+  environment:
+    stage: ${self:custom.stage}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -68,8 +67,9 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.tableName}'
-  environment:
-    stage: ${self:custom.stage}
+  tracing:
+    apigateway: true
+    lambda: true
 
 functions:
   get-patient-data:
