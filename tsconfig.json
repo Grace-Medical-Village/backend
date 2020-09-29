@@ -12,7 +12,7 @@
     "noUnusedParameters": true,
     "outDir": "./api/build",
     "skipLibCheck": true,
-    "target": "esnext"
+    "target": "es5"
   },
   "exclude": [".dynamodb/**/*", ".serverless/**/*", ".vscode/**/*", ".webpack/**/*", "node_modules"],
   "types": ["node"]
