@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Patient API for Grace Medical Village",
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "deploy:development": "serverless deploy -s development",
     "deploy:production": "serverless deploy -s production",
     "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
