@@ -1,6 +1,6 @@
 import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
-import { Key, UpdateItemInput, UpdateItemOutput } from 'aws-sdk/clients/dynamodb';
+import { UpdateItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Item, Options, Response } from './types';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
