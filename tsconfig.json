@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./api/src",
+    "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["esnext"],
@@ -10,10 +10,11 @@
     "noImplicitUseStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "./api/build",
+    "outDir": "./build",
     "skipLibCheck": true,
+    "sourceMap": true,
     "target": "es5"
   },
-  "exclude": [".dynamodb/**/*", ".serverless/**/*", ".vscode/**/*", ".webpack/**/*", "node_modules"],
+  "exclude": [".dynamodb/**/*", ".serverless/**/*", ".vscode/**/*", ".webpack/**/*", "node_modules", "**/types.ts"],
   "types": ["node"]
 }

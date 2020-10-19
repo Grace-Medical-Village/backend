@@ -1,0 +1,62 @@
+{
+  "patientGeneral": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "general",
+    "firstName": "First",
+    "lastName": "Last",
+    "birthdate": "YYYY-MM-DD",
+    "email": "example@mail.com",
+    "gender": "male",
+    "country": "Country",
+    "nativeLanguage": "Language",
+    "literacy": "rating",
+    "zipCode5": "00000",
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  },
+  "patientMetric": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "metrics-YYYY-MM-DD",
+    "metricName": 0,
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  },
+  "patientMedication": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "medications-active",
+    "medicationId": "YYYY-MM-DD",
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  },
+  "staffNotes": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "note-YYYY-MM-DD",
+    "staff": "Dr/Ms. First Last",
+    "note": "lorem ipsum dolor",
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  },
+  "medications": {
+    "id": "medicationId",
+    "key": "medicationName",
+    "type": "enum",
+    "amount": "varies",
+    "strength": "varies",
+    "form": "enum",
+    "expirationDate": "YYYY-MM-DD",
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  },
+  "staff": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "staff",
+    "firstName": "First",
+    "lastName": "Last",
+    "birthdate": "YYYY-MM-DD",
+    "title": "enum",
+    "mobile": "1234567890",
+    "email": "example@mail.com",
+    "createdAt": "timestampMillis",
+    "modifiedAt": "timestampMillis"
+  }
+}

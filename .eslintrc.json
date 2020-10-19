@@ -37,7 +37,7 @@
     "import/resolver": {
       "typescript": {
         "alwaysTryTypes": true,
-        "project": "api/src/"
+        "project": "src/"
       }
     }
   }

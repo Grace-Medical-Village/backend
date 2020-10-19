@@ -1,8 +1,8 @@
 .archive
-.build
 .dynamodb
 .serverless
-.vscode
+.vscode/settings.json
 .webpack
+build/
+dist/
 node_modules
-api/build/*

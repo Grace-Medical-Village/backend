@@ -5,6 +5,7 @@ plugins:
   - serverless-dynamodb-local
   - serverless-offline
   - serverless-pseudo-parameters
+  - serverless-dotenv-plugin
 
 custom:
   domains:
@@ -30,14 +31,6 @@ custom:
         sources:
           - table: patients
             sources: [./resources/patients.json]
-      # medications:
-      #   sources:
-      #     - table: patients
-      #       sources: [./resources/medications.json]
-      metrics:
-        sources:
-          - table: patients
-            sources: [./resources/metrics.json]
     stages:
       - local
       - test
@@ -73,7 +66,16 @@ provider:
 
 functions:
   get-patient-data:
-    handler: api/build/get.main
+    handler: build/get.main
+    events:
+      - http:
+          path: patient
+          method: get
+          cors: true
+          authorizer: aws_iam
+
+  query-patient-data:
+    handler: build/query.main
     events:
       - http:
           path: patients
@@ -82,11 +84,33 @@ functions:
           authorizer: aws_iam
 
   put-patient-data:
-    handler: api/build/put.main
+    handler: build/put.main
     events:
       - http:
-          path: patients
+          path: patient
           method: post
+          cors: true
+          authorizer: aws_iam
+    environment:
+      TABLE_NAME: ${self:custom.tableName}
+
+  update-patient-data:
+    handler: build/update.main
+    events:
+      - http:
+          path: patient
+          method: put
+          cors: true
+          authorizer: aws_iam
+    environment:
+      TABLE_NAME: ${self:custom.tableName}
+
+  delete-patient-data:
+    handler: build/delete.main
+    events:
+      - http:
+          path: patient
+          method: delete
           cors: true
           authorizer: aws_iam
     environment:
