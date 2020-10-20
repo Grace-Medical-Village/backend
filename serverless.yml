@@ -11,11 +11,17 @@ custom:
   domains:
     development: api.gracemedicalvillagedev.com
     production: api.gracemedicalvillage.com
+  certificateName:
+    development: '*.gracemedicalvillagedev.com'
+    production: '*.gracemedicalvillage.com'
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
-    basePath: patients
-    stage: ${self:custom.stage}
+    basePath: ''
+    certificateName: ${self:custom.certificateName.${self:custom.stage}}
     createRoute53Record: true
+    endpointType: regional
+    securityPolicy: tls_1_2
+    stage: ${self:custom.stage}
   deployTable: false
   dynamodb:
     start:
