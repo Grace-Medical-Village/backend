@@ -8,12 +8,12 @@ plugins:
   - serverless-dotenv-plugin
 
 custom:
-  domains:
-    development: api.gracemedicalvillagedev.com
-    production: api.gracemedicalvillage.com
   certificateName:
     development: '*.gracemedicalvillagedev.com'
     production: '*.gracemedicalvillage.com'
+  cognitoArn:
+    development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
+    production: '' #TODO
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
     basePath: ''
@@ -23,6 +23,9 @@ custom:
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   deployTable: false
+  domains:
+    development: api.gracemedicalvillagedev.com
+    production: api.gracemedicalvillage.com
   dynamodb:
     start:
       dir: offline
@@ -78,7 +81,9 @@ functions:
           path: patient
           method: get
           cors: false
-          authorizer: aws_iam
+          authorizer:
+            name: cognito_auth
+            arn: ${self.custom.cognitoArn.${self.custom.stage}}
 
   query-patient-data:
     handler: build/query.main
