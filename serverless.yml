@@ -81,6 +81,7 @@ functions:
           path: patient
           method: get
           cors: false
+          integration: lambda
           authorizer:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
