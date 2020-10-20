@@ -77,7 +77,7 @@ functions:
       - http:
           path: patient
           method: get
-          cors: true
+          cors: false
           authorizer: aws_iam
 
   query-patient-data:
@@ -86,7 +86,7 @@ functions:
       - http:
           path: patients
           method: get
-          cors: true
+          cors: false
           authorizer: aws_iam
 
   put-patient-data:
@@ -95,7 +95,7 @@ functions:
       - http:
           path: patient
           method: post
-          cors: true
+          cors: false
           authorizer: aws_iam
 
   update-patient-data:
@@ -104,7 +104,7 @@ functions:
       - http:
           path: patient
           method: put
-          cors: true
+          cors: false
           authorizer: aws_iam
 
   delete-patient-data:
@@ -113,7 +113,7 @@ functions:
       - http:
           path: patient
           method: delete
-          cors: true
+          cors: false
           authorizer: aws_iam
 
 resources:
