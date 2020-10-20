@@ -83,7 +83,7 @@ functions:
           cors: false
           authorizer:
             name: cognito_auth
-            arn: ${self.custom.cognitoArn.${self.custom.stage}}
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   query-patient-data:
     handler: build/query.main
