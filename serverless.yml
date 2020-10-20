@@ -93,7 +93,10 @@ functions:
           path: patients
           method: get
           cors: false
-          authorizer: aws_iam
+          integration: lambda
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}
 
   put-patient-data:
     handler: build/put.main
@@ -102,7 +105,10 @@ functions:
           path: patient
           method: post
           cors: false
-          authorizer: aws_iam
+          integration: lambda
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}
 
   update-patient-data:
     handler: build/update.main
@@ -111,7 +117,10 @@ functions:
           path: patient
           method: put
           cors: false
-          authorizer: aws_iam
+          integration: lambda
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}
 
   delete-patient-data:
     handler: build/delete.main
@@ -120,7 +129,10 @@ functions:
           path: patient
           method: delete
           cors: false
-          authorizer: aws_iam
+          integration: lambda
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}
 
 resources:
   Conditions:
