@@ -19,7 +19,7 @@ custom:
     basePath: ''
     certificateName: ${self:custom.certificateName.${self:custom.stage}}
     createRoute53Record: true
-    endpointType: regional
+    endpointType: edge
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   deployTable: false
