@@ -5,7 +5,7 @@
     "firstName": "First",
     "lastName": "Last",
     "birthdate": "YYYY-MM-DD",
-    "email": "example@mail.com",
+    "mobile": "1234567890",
     "gender": "male",
     "country": "Country",
     "nativeLanguage": "Language",
