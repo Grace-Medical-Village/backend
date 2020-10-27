@@ -9,11 +9,17 @@ plugins:
 
 custom:
   certificateName:
+    local: '*.gracemedicalvillagedev.com'
     development: '*.gracemedicalvillagedev.com'
     production: '*.gracemedicalvillage.com'
   cognitoArn:
+    local: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     production: '' #TODO
+  cors:
+    local: true
+    development: false
+    production: false
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
     basePath: ''
@@ -80,7 +86,7 @@ functions:
       - http:
           path: patient
           method: get
-          cors: false
+          cors: ${self:custom.cors.${self:custom.stage}}
           integration: lambda
           authorizer:
             name: cognito_auth

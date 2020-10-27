@@ -1,4 +1,4 @@
-import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
+import { APIGatewayEvent, APIGatewayProxyEvent, Callback, Context, Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Response, Item, Options } from './types';
@@ -15,9 +15,9 @@ if (IS_OFFLINE) {
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event: APIGatewayEvent, _context: Context, callback: Callback): void => {
-  const id: string = event?.queryStringParameters?.id;
-  const key: string = event?.queryStringParameters?.key;
+export const main: Handler = (event: any, _context: Context, callback: Callback): void => {
+  const id: string = event?.query?.id;
+  const key: string = event?.query?.key;
 
   const item: Item = {
     id,
@@ -39,7 +39,7 @@ export const main: Handler = (event: APIGatewayEvent, _context: Context, callbac
     } else {
       response = {
         statusCode: 200,
-        body: JSON.stringify(result.Item ?? {}),
+        body: JSON.stringify(result.Item),
       };
     }
     console.log(response);

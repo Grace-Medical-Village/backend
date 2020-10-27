@@ -1,6 +1,6 @@
 [
   {
-    "id": "johndoe-2000-01-01",
+    "id": "doejohn_2000-01-01",
     "key": "general",
     "birthdate": "2000-01-01",
     "country": "United States",
@@ -13,7 +13,7 @@
     "zipCode5": "12345"
   },
   {
-    "id": "janesmith-1999-12-31",
+    "id": "smithjane_1999-12-31",
     "key": "general",
     "birthdate": "1999-12-31",
     "country": "United States",
