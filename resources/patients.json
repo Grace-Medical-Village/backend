@@ -1,7 +1,7 @@
 [
   {
     "id": "doejohn_2000-01-01",
-    "key": "general",
+    "key": "background",
     "birthdate": "2000-01-01",
     "country": "United States",
     "mobile": "1239546667",
@@ -14,7 +14,7 @@
   },
   {
     "id": "smithjane_1999-12-31",
-    "key": "general",
+    "key": "background",
     "birthdate": "1999-12-31",
     "country": "United States",
     "mobile": "9879919990",

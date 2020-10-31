@@ -80,7 +80,7 @@ provider:
     lambda: true
 
 functions:
-  get-patient-data:
+  get-data:
     handler: build/get.main
     events:
       - http:
@@ -92,7 +92,7 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  query-patient-data:
+  query-data:
     handler: build/query.main
     events:
       - http:
@@ -104,20 +104,20 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}
 
-  put-patient-data:
-    handler: build/put.main
+  post-data:
+    handler: build/post.main
     events:
       - http:
           path: patient
           method: post
-          cors: false
+          cors: ${self:custom.cors.${self:custom.stage}}
           integration: lambda
           authorizer:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}
 
-  update-patient-data:
-    handler: build/update.main
+  put-data:
+    handler: build/put.main
     events:
       - http:
           path: patient
@@ -128,7 +128,7 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}
 
-  delete-patient-data:
+  delete-data:
     handler: build/delete.main
     events:
       - http:

@@ -1,7 +1,8 @@
 {
-  "patientGeneral": {
+  "patientBackground": {
     "id": "firstlast-YYYY-MM-DD",
-    "key": "general",
+    "key": "background",
+    "type": "patient",
     "firstName": "First",
     "lastName": "Last",
     "birthdate": "YYYY-MM-DD",
@@ -17,6 +18,7 @@
   "patientMetric": {
     "id": "firstlast-YYYY-MM-DD",
     "key": "metrics-YYYY-MM-DD",
+    "type": "patientMetric",
     "metricName": 0,
     "createdAt": "timestampMillis",
     "modifiedAt": "timestampMillis"
@@ -24,13 +26,15 @@
   "patientMedication": {
     "id": "firstlast-YYYY-MM-DD",
     "key": "medications-active",
+    "type": "patientMedication",
     "medicationId": "YYYY-MM-DD",
     "createdAt": "timestampMillis",
     "modifiedAt": "timestampMillis"
   },
   "staffNotes": {
     "id": "firstlast-YYYY-MM-DD",
-    "key": "note-YYYY-MM-DD",
+    "key": "note-timestampMillis",
+    "type": "note",
     "staff": "Dr/Ms. First Last",
     "note": "lorem ipsum dolor",
     "createdAt": "timestampMillis",
@@ -39,7 +43,7 @@
   "medications": {
     "id": "medicationId",
     "key": "medicationName",
-    "type": "enum",
+    "type": "medication",
     "amount": "varies",
     "strength": "varies",
     "form": "enum",
@@ -50,6 +54,7 @@
   "staff": {
     "id": "firstlast-YYYY-MM-DD",
     "key": "staff",
+    "type": "staff",
     "firstName": "First",
     "lastName": "Last",
     "birthdate": "YYYY-MM-DD",

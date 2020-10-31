@@ -1,7 +1,7 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
-import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
-import { Response, Item, Options } from './types';
+import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
+import { Options, RequestBody, Response } from './types';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
 let options: Options = {};
@@ -16,31 +16,25 @@ if (IS_OFFLINE) {
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event: any, _context: Context, callback: Callback): void => {
-  const id: string = event?.query?.id;
-  const key: string = event?.query?.key;
-
-  const item: Item = {
-    id,
-    key,
-  };
-
+  const data: RequestBody = event?.body ?? {};
   const params = {
     TableName: TABLE_NAME,
-    Key: item,
+    Item: data,
   };
 
   let response: Response = {};
-  dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
+  dynamoDb.put(params, (error: AWSError, result: PutItemOutput) => {
     if (error) {
       response = {
         statusCode: error.statusCode,
         body: JSON.stringify({ error: error.message }),
       };
+      console.error(error);
     } else {
       response = {
-        statusCode: 200,
-        body: JSON.stringify(result.Item) ?? '{}',
+        statusCode: 201,
       };
+      console.log({ ...result, ...data });
     }
     console.log(response);
     callback(null, response);

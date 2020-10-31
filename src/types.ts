@@ -16,3 +16,8 @@ export interface Response {
   error?: string;
   body?: string;
 }
+
+export interface RequestBody extends Item {
+  createdAt?: number;
+  modifiedAt?: number;
+}
