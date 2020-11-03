@@ -15,6 +15,14 @@
     "createdAt": "timestampMillis",
     "modifiedAt": "timestampMillis"
   },
+  "patientConditions": {
+    "id": "firstlast-YYYY-MM-DD",
+    "key": "conditions",
+    "type": "conditions",
+    "diabetic": false,
+    "highCholesterol": false,
+    "hypertension": false
+  },
   "patientMetric": {
     "id": "firstlast-YYYY-MM-DD",
     "key": "metrics-YYYY-MM-DD",

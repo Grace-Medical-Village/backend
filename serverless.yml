@@ -102,7 +102,7 @@ functions:
           integration: lambda
           authorizer:
             name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   post-data:
     handler: build/post.main
@@ -114,7 +114,7 @@ functions:
           integration: lambda
           authorizer:
             name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   put-data:
     handler: build/put.main
@@ -126,7 +126,7 @@ functions:
           integration: lambda
           authorizer:
             name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   delete-data:
     handler: build/delete.main
@@ -138,9 +138,9 @@ functions:
           integration: lambda
           authorizer:
             name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-resources:
+ resources:
   Conditions:
     DeployPatientsTable:
       Fn::Equals:
