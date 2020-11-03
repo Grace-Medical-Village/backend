@@ -140,7 +140,7 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
- resources:
+resources:
   Conditions:
     DeployPatientsTable:
       Fn::Equals:
