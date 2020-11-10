@@ -154,9 +154,9 @@ resources:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
 		    ResponseType: DEFAULT_4XX
-		    RestApiId:
-          Ref: ${self:custom.restApiId.${self:custom.stage}}
-    patientsTable:
+        RestApiId: ${self:custom.restApiId.${self:custom.stage}}
+
+    PatientsTable:
       Type: AWS::DynamoDB::Table
       Condition: DeployPatientsTable
       Properties:
