@@ -15,7 +15,7 @@ custom:
   cognitoArn:
     local: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
-    production: '' #TODO
+    production: '' # todo
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
     basePath: ''
@@ -46,6 +46,9 @@ custom:
       - local
       - test
   prefix: gmv
+  restApiId:
+    development: 'tb62ntz7g2'
+    production: '' # todo
   serverless-offline:
     httpPort: 4000
   stage: ${opt:stage, self:provider.stage}
@@ -144,6 +147,16 @@ resources:
         - true
 
   Resources:
+		GatewayResponseDefault4XX:
+		  Type: 'AWS::ApiGateway::GatewayResponse'
+		  Properties:
+		    ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+		    ResponseType: DEFAULT_4XX
+		    RestApiId:
+          Ref: ${self:custom.restApiId.${self:custom.stage}}
+
     patientsTable:
       Type: AWS::DynamoDB::Table
       Condition: DeployPatientsTable

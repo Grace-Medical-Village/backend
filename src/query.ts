@@ -1,21 +1,16 @@
-import { APIGatewayEvent, Callback, Context, Handler } from 'aws-lambda';
+import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { QueryOutput } from 'aws-sdk/clients/dynamodb';
 import { Options, Response } from './types';
+import { localOptions } from './utils';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
-let options: Options = {};
 
-if (IS_OFFLINE) {
-  options = {
-    region: 'localhost',
-    endpoint: 'http://localhost:8000',
-  };
-}
+const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event: APIGatewayEvent, _context: Context, callback: Callback): void => {
+export const main: Handler = (event, _context, callback) => {
   const id: string = event?.queryStringParameters?.id ?? '';
 
   const params = {

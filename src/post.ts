@@ -1,21 +1,16 @@
-import { Callback, Context, Handler } from 'aws-lambda';
+import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Options, RequestBody, Response } from './types';
+import { localOptions } from './utils';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
-let options: Options = {};
 
-if (IS_OFFLINE) {
-  options = {
-    region: 'localhost',
-    endpoint: 'http://localhost:8000',
-  };
-}
+const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event: any, _context: Context, callback: Callback): void => {
+export const main: Handler = (event, _context, callback) => {
   const data: RequestBody = event?.body ?? {};
   const params = {
     TableName: TABLE_NAME,
