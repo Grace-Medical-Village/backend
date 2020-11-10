@@ -148,7 +148,7 @@ resources:
 
   Resources:
 		GatewayResponseDefault4XX:
-		  Type: 'AWS::ApiGateway::GatewayResponse'
+		  Type: AWS::ApiGateway::GatewayResponse
 		  Properties:
 		    ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
@@ -156,7 +156,6 @@ resources:
 		    ResponseType: DEFAULT_4XX
 		    RestApiId:
           Ref: ${self:custom.restApiId.${self:custom.stage}}
-
     patientsTable:
       Type: AWS::DynamoDB::Table
       Condition: DeployPatientsTable
