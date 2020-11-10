@@ -11,10 +11,15 @@ export interface Options {
   endpoint?: string;
 }
 
+export type HeaderType = 'Access-Control-Allow-Origin' | 'Access-Control-Allow-Credentials';
+export type Header = {
+  [key in HeaderType]: string | boolean;
+};
 export interface Response {
   statusCode?: number;
-  error?: string;
+  headers?: Header;
   body?: string;
+  error?: string;
 }
 
 export interface RequestBody extends Item {

@@ -1,4 +1,4 @@
-import { Callback, Context, Handler } from 'aws-lambda';
+import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Response, Item, Options } from './types';
@@ -15,7 +15,7 @@ if (IS_OFFLINE) {
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event: any, _context: Context, callback: Callback): void => {
+export const main: Handler = (event, _context, callback) => {
   const id: string = event?.query?.id;
   const key: string = event?.query?.key;
 
@@ -29,7 +29,13 @@ export const main: Handler = (event: any, _context: Context, callback: Callback)
     Key: item,
   };
 
-  let response: Response = {};
+  let response: Response = {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+  };
   dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
     if (error) {
       response = {
@@ -38,7 +44,6 @@ export const main: Handler = (event: any, _context: Context, callback: Callback)
       };
     } else {
       response = {
-        statusCode: 200,
         body: JSON.stringify(result.Item) ?? '{}',
       };
     }
