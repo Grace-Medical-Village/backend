@@ -109,7 +109,7 @@ functions:
       - http:
           path: patient
           method: post
-          cors: ${self:custom.cors.${self:custom.stage}}
+          cors: true
           integration: lambda
           authorizer:
             name: cognito_auth
