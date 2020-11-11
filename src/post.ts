@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { PutItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Options, RequestBody, Response } from './types';
-import { localOptions } from './utils';
+import { genericResponse, localOptions } from './utils';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
 
@@ -10,14 +10,14 @@ const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event, _context, callback) => {
+export const main: Handler = (event, context, callback) => {
   const data: RequestBody = event?.body ?? {};
   const params = {
     TableName: TABLE_NAME,
     Item: data,
   };
 
-  let response: Response = {};
+  let response: Response = { ...genericResponse };
   dynamoDb.put(params, (error: AWSError, result: PutItemOutput) => {
     if (error) {
       response = {
@@ -26,10 +26,12 @@ export const main: Handler = (event, _context, callback) => {
       };
       console.error(error);
     } else {
-      response = {
-        statusCode: 201,
-      };
-      console.log({ ...result, ...data });
+      response.statusCode = 201;
+      console.log({
+        data: { ...data },
+        result: { ...result },
+        remainingTimeMillis: context.getRemainingTimeInMillis(),
+      });
     }
     console.log(response);
     callback(null, response);

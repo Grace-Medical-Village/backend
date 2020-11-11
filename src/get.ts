@@ -2,7 +2,7 @@ import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { GetItemOutput } from 'aws-sdk/clients/dynamodb';
 import { Response, Item, Options } from './types';
-import { localOptions } from './utils';
+import { genericResponse, localOptions } from './utils';
 
 const { IS_OFFLINE, TABLE_NAME } = process.env;
 
@@ -24,16 +24,11 @@ export const main: Handler = (event, context, callback) => {
     Key: item,
   };
 
-  let response: Response = {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-  };
+  let response: Response = { ...genericResponse };
   dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
     if (error) {
       response = {
+        ...response,
         statusCode: error.statusCode,
         body: JSON.stringify({ error: error.message }),
       };
@@ -44,6 +39,7 @@ export const main: Handler = (event, context, callback) => {
       response: { ...response },
       remainingTimeMillis: context.getRemainingTimeInMillis(),
     });
+
     callback(null, response);
   });
 };
