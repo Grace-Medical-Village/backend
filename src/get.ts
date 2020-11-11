@@ -10,7 +10,7 @@ const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
-export const main: Handler = (event, _context, callback) => {
+export const main: Handler = (event, context, callback) => {
   const id: string = event?.query?.id;
   const key: string = event?.query?.key;
 
@@ -37,12 +37,13 @@ export const main: Handler = (event, _context, callback) => {
         statusCode: error.statusCode,
         body: JSON.stringify({ error: error.message }),
       };
-    } else {
-      response = {
-        body: JSON.stringify(result.Item) ?? '{}',
-      };
-    }
-    console.log(response);
+    } else response.body = JSON.stringify(result.Item) ?? '{}';
+
+    console.log({
+      item: { ...item },
+      response: { ...response },
+      remainingTimeMillis: context.getRemainingTimeInMillis(),
+    });
     callback(null, response);
   });
 };
