@@ -11,8 +11,6 @@ const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event, context, callback) => {
-  console.log('___42 EVENT___');
-  console.log(...event);
   const id: string = event?.query?.id;
   const key: string = event?.query?.key;
 
@@ -26,8 +24,6 @@ export const main: Handler = (event, context, callback) => {
     Key: item,
   };
 
-  console.log('___42 params___');
-  console.log(params);
   let response: Response = { ...genericResponse };
   dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
     if (error) {
@@ -36,8 +32,12 @@ export const main: Handler = (event, context, callback) => {
         statusCode: error.statusCode,
         body: JSON.stringify({ error: error.message }),
       };
+      console.log('__ERROR__');
+      console.log(error);
     } else response.body = JSON.stringify(result.Item) ?? '{}';
 
+    console.log('__RESULT__');
+    console.log({ ...result });
     console.log({
       item: { ...item },
       response: { ...response },
