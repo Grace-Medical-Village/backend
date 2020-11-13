@@ -25,7 +25,9 @@ export const main: Handler = (event, context, callback) => {
   };
 
   let response: Response = { ...genericResponse };
+  console.log('GET STARTING...');
   dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
+    console.log('YOU ARE HERE...');
     if (error) {
       response = {
         ...response,
