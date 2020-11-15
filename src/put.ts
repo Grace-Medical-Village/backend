@@ -1,12 +1,11 @@
 import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { UpdateItemOutput } from 'aws-sdk/clients/dynamodb';
-import { Item, Options, Response } from './types';
-import { genericResponse, localOptions } from './utils';
+import { Item, Response } from './types';
+import { genericResponse, options } from './utils';
 
-const { IS_OFFLINE, TABLE_NAME } = process.env;
+const { TABLE_NAME } = process.env;
 
-const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event, context, callback) => {

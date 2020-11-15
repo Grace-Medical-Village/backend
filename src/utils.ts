@@ -1,9 +1,13 @@
 import { Options } from './types';
 
-export const localOptions: Options = {
+const isLocal = (): boolean => process.env.STAGE === 'local' ?? false;
+
+const localOptions: Options = {
   region: 'localhost',
   endpoint: 'http://localhost:8000',
 };
+
+export const options: Options = isLocal() ? { ...localOptions } : {};
 
 export const genericResponse = {
   statusCode: 200,
