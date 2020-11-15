@@ -5,8 +5,8 @@
   "scripts": {
     "build": "tsc",
     "debug": "SLS_DEBUG=* && node --inspect && npm run local",
-    "deploy:development": "serverless deploy -s development",
-    "deploy:production": "serverless deploy -s production",
+    "deploy:development": "NODE_ENV=development && serverless deploy -s development",
+    "deploy:production": "NODE_ENV=production && serverless deploy -s production",
     "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
     "lint": "eslint . --ext .ts --ignore-path .gitignore",
     "lint:fix": "eslint . --ext .ts --fix",
