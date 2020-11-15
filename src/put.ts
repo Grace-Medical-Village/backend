@@ -10,9 +10,9 @@ const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event, context, callback) => {
-  const id: string = event?.queryStringParameters?.id;
-  const key: string = event?.queryStringParameters?.key;
-  const data: unknown = JSON.parse(event?.body ?? '{}');
+  const id: string = event?.query?.id;
+  const key: string = event?.query?.key;
+  const data: unknown = event?.body ?? '{}';
   let updateExpression = 'SET';
   const expressionAttributeValues: unknown = {};
 

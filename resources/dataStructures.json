@@ -25,7 +25,7 @@
   },
   "patientMetric": {
     "id": "firstlast-YYYY-MM-DD",
-    "key": "metrics-YYYY-MM-DD",
+    "key": "metrics_YYYY-MM-DD",
     "type": "metric",
     "metricName": 0,
     "createdAt": "timestampMillis",
@@ -33,7 +33,7 @@
   },
   "patientMedication": {
     "id": "firstlast-YYYY-MM-DD",
-    "key": "medications-active",
+    "key": "medications_active",
     "type": "patientMedication",
     "medicationId": "YYYY-MM-DD",
     "createdAt": "timestampMillis",
