@@ -7,6 +7,7 @@ import { genericResponse, localOptions } from './utils';
 const { IS_OFFLINE, TABLE_NAME } = process.env;
 
 const options: Options = IS_OFFLINE ? { ...localOptions } : {};
+console.log(options);
 
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
@@ -25,8 +26,7 @@ export const main: Handler = (event, context, callback) => {
   };
 
   let response: Response = { ...genericResponse };
-  console.log('__RESPONSE__');
-  console.log(response);
+
   dynamoDb.get(params, (error: AWSError, result: GetItemOutput) => {
     console.log('YOU ARE HERE...');
     if (error) {
