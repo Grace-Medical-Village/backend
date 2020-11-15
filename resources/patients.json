@@ -13,16 +13,28 @@
     "zipCode5": "12345"
   },
   {
-    "id": "smithjane_1999-12-31",
-    "key": "background",
-    "birthdate": "1999-12-31",
-    "country": "United States",
-    "mobile": "9879919990",
-    "firstName": "Jane",
-    "gender": "female",
-    "nativeLanguage": "English",
-    "literacy": "Poor",
-    "lastName": "Smith",
-    "zipCode5": "23456"
+    "id": "doejohn_2000-01-01",
+    "key": "conditions",
+    "type": "conditions",
+    "diabetes": true,
+    "highCholesterol": true
+  },
+  {
+    "id": "doejohn_2000-01-01",
+    "key": "note-1605300438678",
+    "type": "note",
+    "staff": "Dr. Waldman",
+    "note": "Beware; for I am fearless, and therefore powerful.",
+    "createdAt": "1605300438678",
+    "modifiedAt": "1605300438678"
+  },
+  {
+    "id": "doejohn_2000-01-01",
+    "key": "note-1505300438678",
+    "type": "note",
+    "staff": "Dr. Waldman",
+    "note": "There is something at work in my soul, which I do not understand.",
+    "createdAt": "1505300438678",
+    "modifiedAt": "1505300438678"
   }
 ]

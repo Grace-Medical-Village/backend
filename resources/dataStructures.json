@@ -26,7 +26,7 @@
   "patientMetric": {
     "id": "firstlast-YYYY-MM-DD",
     "key": "metrics-YYYY-MM-DD",
-    "type": "patientMetric",
+    "type": "metric",
     "metricName": 0,
     "createdAt": "timestampMillis",
     "modifiedAt": "timestampMillis"

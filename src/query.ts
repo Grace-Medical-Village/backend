@@ -11,7 +11,7 @@ const options: Options = IS_OFFLINE ? { ...localOptions } : {};
 const dynamoDb = new DynamoDB.DocumentClient(options);
 
 export const main: Handler = (event, context, callback) => {
-  const id: string = event?.queryStringParameters?.id ?? '';
+  const id: string = event?.query?.id ?? '';
 
   const params = {
     ExpressionAttributeNames: {
