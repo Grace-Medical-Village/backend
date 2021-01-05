@@ -26,3 +26,8 @@ export interface RequestBody extends Item {
   createdAt?: number;
   modifiedAt?: number;
 }
+
+export type DataType = string | number | boolean;
+export interface ExpressionAttributeValue {
+  [key: string]: DataType;
+}

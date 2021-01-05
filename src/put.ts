@@ -1,7 +1,8 @@
 import { Handler } from 'aws-lambda';
 import { AWSError, DynamoDB } from 'aws-sdk';
 import { UpdateItemOutput } from 'aws-sdk/clients/dynamodb';
-import { Item, Response } from './types';
+import { DataType } from 'aws-sdk/clients/frauddetector';
+import { ExpressionAttributeValue, Item, Response } from './types';
 import { genericResponse, options } from './utils';
 
 const { TABLE_NAME } = process.env;
@@ -11,14 +12,14 @@ const dynamoDb = new DynamoDB.DocumentClient(options);
 export const main: Handler = (event, context, callback) => {
   const id: string = event?.query?.id;
   const key: string = event?.query?.key;
-  const data: unknown = event?.body ?? '{}';
+  const data = (event?.body ?? {}) as ExpressionAttributeValue;
   let updateExpression = 'SET';
-  const expressionAttributeValues: unknown = {};
+  const expressionAttributeValues: ExpressionAttributeValue = {};
 
   Object.keys(data).map((x: string) => {
     const y = `:${x}`;
     updateExpression = updateExpression.concat(` ${x} = ${y},`);
-    expressionAttributeValues[y] = data[x];
+    expressionAttributeValues[y] = data[x] as DataType;
   });
 
   const item: Item = {

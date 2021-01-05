@@ -81,6 +81,7 @@ provider:
 functions:
   get-data:
     handler: build/get.main
+    timeout: 10
     events:
       - http:
           path: patient
@@ -93,6 +94,7 @@ functions:
 
   query-data:
     handler: build/query.main
+    timeout: 20
     events:
       - http:
           path: patients
@@ -105,6 +107,7 @@ functions:
 
   post-data:
     handler: build/post.main
+    timeout: 10
     events:
       - http:
           path: patient
@@ -117,6 +120,7 @@ functions:
 
   put-data:
     handler: build/put.main
+    timeout: 10
     events:
       - http:
           path: patient
@@ -129,6 +133,7 @@ functions:
 
   delete-data:
     handler: build/delete.main
+    timeout: 10
     events:
       - http:
           path: patient
