@@ -1,0 +1,8 @@
+.archive
+.dockerignore
+.dynamodb
+.serverless
+.vscode
+build
+Dockerfile
+node_modules

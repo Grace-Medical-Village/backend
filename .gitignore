@@ -6,3 +6,6 @@
 build/
 dist/
 node_modules
+src/**/*.js
+src/**/*.map
+coverage

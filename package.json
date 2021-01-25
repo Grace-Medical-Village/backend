@@ -1,18 +1,19 @@
 {
-  "name": "gmv-patient-api",
+  "name": "gmvc-patient-api",
   "version": "1.0.0",
-  "description": "Patient API for Grace Medical Village",
+  "description": "API for Grace Medical Village Clinic",
   "scripts": {
+    "format": "prettier --write \"**/*.+(ts|tsx|js|jsx|json|css|md|mdx|html)\"",
+    "lint": "eslint . --ext .ts --ignore-path .gitignore",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "types:watch": "tsc -w",
+    "start": "nodemon --exec \"serverless offline start -s local\"",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watchAll",
     "build": "tsc",
     "debug": "SLS_DEBUG=* && node --inspect && npm run local",
     "deploy:development": "NODE_ENV=development && serverless deploy -s development",
-    "deploy:production": "NODE_ENV=production && serverless deploy -s production",
-    "format": "prettier --write \"**/*.+(js|ts|json|css|md|mdx|html)\" --ignore-path .gitignore",
-    "lint": "eslint . --ext .ts --ignore-path .gitignore",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "local": "nodemon --exec \"serverless offline start -s local\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "type:watch": "tsc -w"
+    "deploy:production": "NODE_ENV=production && serverless deploy -s production"
   },
   "repository": {
     "type": "git",
@@ -27,11 +28,12 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.64",
     "@types/aws-sdk": "^2.7.0",
+    "@types/jest": "^26.0.20",
     "@types/node": "^14.14.9",
+    "@types/pg": "^7.14.8",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
     "aws-sdk": "^2.798.0",
-    "babel-jest": "^26.6.3",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-import-resolver-typescript": "^2.3.0",
@@ -44,10 +46,12 @@
     "serverless": "^1.83.2",
     "serverless-domain-manager": "^4.2.3",
     "serverless-dotenv-plugin": "^3.1.0",
-    "serverless-dynamodb-local": "^0.2.39",
     "serverless-offline": "^6.8.0",
     "serverless-pseudo-parameters": "^2.5.0",
+    "ts-jest": "^26.4.4",
     "typescript": "^3.9.7"
   },
-  "dependencies": {}
+  "dependencies": {
+    "pg": "^8.5.1"
+  }
 }
