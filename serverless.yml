@@ -30,6 +30,7 @@ custom:
     development: 'tb62ntz7g2'
     production: '' # todo
   serverless-offline:
+    host: localhost
     httpPort: 4000
   stage: ${opt:stage, self:provider.stage}
 
@@ -323,30 +324,6 @@ functions:
     events:
       - http:
           path: patient
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  put-patient-condition:
-    handler: build/put-patient-condition.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/condition
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  put-patient-medication:
-    handler: build/put-patient-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/medication
           method: put
           cors: true
           authorizer:

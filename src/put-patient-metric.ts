@@ -7,13 +7,14 @@ import { Query } from './utils/types';
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
+
   const id = getRequestBodyValue(event, 'id');
-  const note = getRequestBodyValue(event, 'note');
+  const value = getRequestBodyValue(event, 'value');
 
   const query: Query = {
     name: 'put-patient-metric',
-    text: 'update patient_metric set note = $1 where id = $2;',
-    values: [note, id],
+    text: 'update patient_metric set value = $1 where id = $2;',
+    values: [value, id],
   };
 
   await client.query(query);

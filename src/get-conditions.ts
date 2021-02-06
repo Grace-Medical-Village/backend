@@ -1,8 +1,9 @@
 import { Handler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
+import { headers } from './utils/response';
 import { Query } from './utils/types';
 
-export const main: Handler = async (_event, _context, callback) => {
+export const main: Handler = async () => {
   const client = clientBuilder();
   await client.connect();
 
@@ -15,6 +16,13 @@ export const main: Handler = async (_event, _context, callback) => {
 
   await client.end();
 
-  const response = rows.length > 0 ? rows : [];
-  callback(null, response);
+  const body = rows.length > 0 ? rows : [];
+
+  const response = {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(body),
+  };
+
+  return response;
 };

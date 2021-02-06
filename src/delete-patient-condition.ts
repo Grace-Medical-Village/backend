@@ -7,6 +7,7 @@ import { Query } from './utils/types';
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
+
   const id = getParameter(event, 'id');
 
   const query: Query = {

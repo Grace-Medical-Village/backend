@@ -7,12 +7,13 @@ import { Query } from './utils/types';
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
-  const id = getParameter(event, 'id');
+
+  const patientId = getParameter(event, 'patient_id');
 
   const query: Query = {
     name: 'get-patient-medication',
     text: 'select * from patient_medication where patient_id = $1;',
-    values: [id],
+    values: [patientId],
   };
 
   const { rows } = await client.query(query);

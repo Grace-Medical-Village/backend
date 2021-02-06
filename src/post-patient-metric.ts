@@ -9,12 +9,12 @@ export const main: APIGatewayProxyHandler = async (event) => {
   await client.connect();
 
   const patientId = getRequestBodyValue(event, 'patient_id');
-  const note = getRequestBodyValue(event, 'note');
+  const metricId = getRequestBodyValue(event, 'metric_id');
 
   const query: Query = {
     name: 'post-patient-metric',
-    text: 'insert into patient_metric (patient_id, note) values ($1, $2);',
-    values: [patientId, note],
+    text: 'insert into patient_metric (patient_id, metric_id) values ($1, $2);',
+    values: [patientId, metricId],
   };
 
   await client.query(query);

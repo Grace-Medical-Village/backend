@@ -9,7 +9,7 @@ export const main: APIGatewayProxyHandler = async () => {
 
   const query: Query = {
     name: 'get-medications',
-    text: 'select * from medication;',
+    text: 'select m.*, mc.name category_name from medication m join medication_category mc on m.category_id = mc.id;',
   };
 
   const { rows } = await client.query(query);
