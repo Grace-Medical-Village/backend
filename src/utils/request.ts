@@ -27,7 +27,7 @@ export const buildValsFromKeys: BuildValsFromKeys = (keys) => keys.map((_, index
 export const getParameter: GetParameter = (event, key) => {
   const value: Value = event?.queryStringParameters[key] ?? null;
 
-  if (!value) throw Error(`'${key}' is a required query parameter`);
+  if (!value) console.error(`'${key}' is a required query parameter`);
 
   return value;
 };
@@ -39,7 +39,7 @@ export const getRequestBodyValue: GetRequestBodyValue = (event, key) => {
 
   const value: Value = body[key] ?? null;
 
-  if (!value) throw Error(`'${key}' is required in the request body`);
+  if (!value) console.error(`'${key}' is required in the request body`);
 
   return value;
 };

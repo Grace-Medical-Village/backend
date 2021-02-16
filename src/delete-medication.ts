@@ -1,8 +1,8 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
 import { getParameter } from './utils/request';
-import { headers } from './utils/response';
-import { Query } from './utils/types';
+import { responseBase } from './utils/response';
+import { DeleteResponseBody, Query, Response } from './utils/types';
 
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
@@ -15,15 +15,24 @@ export const main: APIGatewayProxyHandler = async (event) => {
     values: [id],
   };
 
-  await client.query(query);
+  const { rowCount } = await client.query(query);
 
   await client.end();
 
-  const response = {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({}),
+  const body: DeleteResponseBody = { data: {} };
+
+  if (rowCount === 0) {
+    const message = `Error: Medication record does not exist for id ${id}`;
+    body.error = {
+      code: 600,
+      message,
+    };
+  }
+
+  const response: Response = {
+    ...responseBase,
   };
 
+  console.log(response);
   return response;
 };

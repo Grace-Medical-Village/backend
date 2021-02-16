@@ -45,10 +45,42 @@ export interface GetPatientResponse extends GetObject {
   zip_code_5: string;
 }
 
-// CLIENT RESPONSE
-// export type Response = {
-//   statusCode: number;
-//   headers: any;
-//   data: any;
-//   error: any;
-// };
+// RESPONSE
+export type Headers = {
+  [key: string]: string | boolean;
+};
+
+type ResponseHeaders = {
+  headers: Headers;
+};
+
+export type ResponseStatus = {
+  statusCode: number;
+  statusText: string;
+};
+
+export type ResponseError = {
+  error?: {
+    code: number;
+    message: string;
+  };
+};
+
+export type ResponseBody = {
+  data: any; // todo
+};
+
+export interface Response extends ResponseHeaders, ResponseStatus {
+  body: string;
+}
+
+// GET
+
+// POST
+
+// PUT
+
+// DELETE
+export interface DeleteResponseBody extends ResponseError {
+  data: Record<string, never>;
+}

@@ -1,7 +1,8 @@
+// import { APIGatewayProxyHandler } from 'aws-lambda';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
-import { headers } from './utils/response';
-import { Query } from './utils/types';
+import { responseBase } from './utils/response';
+import { Query, Response, ResponseBody } from './utils/types';
 
 export const main: APIGatewayProxyHandler = async () => {
   const client = clientBuilder();
@@ -16,13 +17,15 @@ export const main: APIGatewayProxyHandler = async () => {
 
   await client.end();
 
-  const body = rows.length > 0 ? rows : [];
+  const body: ResponseBody = {
+    data: rows,
+  };
 
-  const response = {
-    statusCode: 200,
-    headers,
+  const response: Response = {
+    ...responseBase,
     body: JSON.stringify(body),
   };
 
+  console.log(response);
   return response;
 };

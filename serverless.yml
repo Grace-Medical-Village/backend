@@ -150,6 +150,18 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
+  get-medication-categories:
+    handler: build/get-medication-categories.main
+    timeout: 15
+    events:
+      - http:
+          path: medication-categories
+          method: get
+          cors: true
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+
   get-metrics:
     handler: build/get-metrics.main
     timeout: 15
