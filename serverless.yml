@@ -186,54 +186,6 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-patient-conditions:
-    handler: build/get-patient-conditions.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/conditions
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  get-patient-medications:
-    handler: build/get-patient-medications.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/medications
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  get-patient-metrics:
-    handler: build/get-patient-metrics.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/metrics
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  get-patient-notes:
-    handler: build/get-patient-notes.main
-    timeout: 15
-    events:
-      - http:
-          path: notes
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
   get-patients:
     handler: build/get-patients.main
     timeout: 15
@@ -311,7 +263,7 @@ functions:
     timeout: 15
     events:
       - http:
-          path: note
+          path: patient/note
           method: post
           cors: true
           authorizer:

@@ -1,15 +1,15 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
 import { getRequestBodyValue } from './utils/request';
-import { headers } from './utils/response';
-import { Query } from './utils/types';
+import { responseBase } from './utils/response';
+import { Query, Response } from './utils/types';
 
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
 
-  const patientId = getRequestBodyValue(event, 'patient_id');
-  const medicationId = getRequestBodyValue(event, 'medication_id');
+  const patientId = getRequestBodyValue(event, 'patientId');
+  const medicationId = getRequestBodyValue(event, 'medicationId');
 
   const query: Query = {
     name: 'post-patient-medication',
@@ -21,10 +21,9 @@ export const main: APIGatewayProxyHandler = async (event) => {
 
   await client.end();
 
-  const response = {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({}),
+  const response: Response = {
+    ...responseBase,
+    statusCode: 201,
   };
 
   return response;

@@ -1,4 +1,5 @@
 import { Client } from 'pg';
+import { BuildValues } from './types';
 
 const { PG_USER, PG_HOST, PG_DATABASE, PG_PASSWORD } = process.env;
 
@@ -10,3 +11,5 @@ export const clientBuilder = (): Client =>
     password: PG_PASSWORD,
     port: 5432,
   });
+
+export const buildValues: BuildValues = (values) => values.map((_, i) => `$${i + 1}`).join();

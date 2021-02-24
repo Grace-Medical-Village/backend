@@ -1,4 +1,3 @@
-// import { APIGatewayProxyHandler } from 'aws-lambda';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
 import { responseBase } from './utils/response';
@@ -26,6 +25,5 @@ export const main: APIGatewayProxyHandler = async () => {
     body: JSON.stringify(body),
   };
 
-  console.log(response);
   return response;
 };

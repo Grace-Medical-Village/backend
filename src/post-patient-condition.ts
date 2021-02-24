@@ -8,8 +8,8 @@ export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
 
-  const patientId = getRequestBodyValue(event, 'patient_id');
-  const conditionId = getRequestBodyValue(event, 'condition_id');
+  const patientId = getRequestBodyValue(event, 'patientId');
+  const conditionId = getRequestBodyValue(event, 'conditionId');
 
   const query: Query = {
     name: 'post-patient-condition',
