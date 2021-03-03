@@ -1,29 +1,29 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
 import { getParameter } from './utils/request';
-import { headers } from './utils/response';
-import { Query } from './utils/types';
+import { responseBase } from './utils/response';
+import { Query, Response } from './utils/types';
 
 export const main: APIGatewayProxyHandler = async (event) => {
   const client = clientBuilder();
   await client.connect();
 
-  const id = getParameter(event, 'id', true);
+  const patientId = getParameter(event, 'patientId', true);
+  const conditionId = getParameter(event, 'conditionId', true);
 
   const query: Query = {
     name: 'delete-patient-condition',
-    text: 'delete from patient_condition where id = $1;',
-    values: [id],
+    text: 'delete from patient_condition where patient_id = $1 and condition_id = $2;',
+    values: [patientId, conditionId],
   };
 
   await client.query(query);
 
   await client.end();
 
-  const response = {
+  const response: Response = {
+    ...responseBase,
     statusCode: 200,
-    headers,
-    body: JSON.stringify({}),
   };
 
   return response;

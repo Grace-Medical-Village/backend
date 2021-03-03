@@ -46,7 +46,10 @@ export const main: APIGatewayProxyHandler = async (event) => {
   if (conditions === true) {
     const getPatientConditionsQuery: Query = {
       name: 'get-patient-conditions',
-      text: 'select * from patient_condition where patient_id = $1;',
+      text: `select pc.*, c.condition_name
+      from patient_condition pc
+      inner join condition c on pc.condition_id = c.id
+      where patient_id = $1;`,
       values: [id],
     };
 

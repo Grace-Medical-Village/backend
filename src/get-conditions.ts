@@ -1,7 +1,7 @@
 import { Handler } from 'aws-lambda';
 import { clientBuilder } from './utils/db';
-import { headers } from './utils/response';
-import { Query } from './utils/types';
+import { responseBase } from './utils/response';
+import { Query, Response, ResponseBody } from './utils/types';
 
 export const main: Handler = async () => {
   const client = clientBuilder();
@@ -12,15 +12,15 @@ export const main: Handler = async () => {
     text: 'select id, condition_name from condition;',
   };
 
-  const { rows }: any = await client.query(query);
+  const { rows } = await client.query(query);
 
   await client.end();
 
-  const body = rows.length > 0 ? rows : [];
-
-  const response = {
-    statusCode: 200,
-    headers,
+  const body: ResponseBody = {
+    data: rows,
+  };
+  const response: Response = {
+    ...responseBase,
     body: JSON.stringify(body),
   };
 
