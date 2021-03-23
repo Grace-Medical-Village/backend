@@ -7,24 +7,23 @@ plugins:
   - serverless-dotenv-plugin
 
 custom:
-  certificateName:
-    local: '*.gracemedicalvillagedev.com'
-    development: '*.gracemedicalvillagedev.com'
-    production: '*.gracemedicalvillage.com'
   cognitoArn:
     local: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     production: '' # todo
   customDomain:
-    domainName: ${self:custom.domains.${self:custom.stage}}
+    apiType: http
+    autoDomain: false
+    domainName: 'api.${self:custom.domains.${self:custom.stage}}'
     basePath: api
-    certificateName: ${self:custom.certificateName.${self:custom.stage}}
+    certificateName: '*.${self:custom.domains.${self:custom.stage}}'
     createRoute53Record: true
     endpointType: edge
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   domains:
-    development: gracemedicalvillagedev.com
+    local: gracemedicalvillagedev.com
+    development: getDomainName
     production: gracemedicalvillage.com
   restApiId:
     development: 'tb62ntz7g2'
