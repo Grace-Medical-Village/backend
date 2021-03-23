@@ -1,5 +1,5 @@
 {
-  "name": "gmvc-patient-api",
+  "name": "gmvc-api",
   "version": "1.0.0",
   "description": "API for Grace Medical Village Clinic",
   "scripts": {
@@ -17,14 +17,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Grace-Medical-Village/gmv-backend.git"
+    "url": "git+https://github.com/Grace-Medical-Village/backend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Grace-Medical-Village/gmv-backend/issues"
+    "url": "https://github.com/Grace-Medical-Village/backend/issues"
   },
-  "homepage": "https://github.com/Grace-Medical-Village/gmv-backend#readme",
+  "homepage": "https://github.com/Grace-Medical-Village/backend#readme",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.64",
     "@types/aws-sdk": "^2.7.0",

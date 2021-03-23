@@ -18,8 +18,10 @@
     "target": "es5"
   },
   "exclude": [
+    ".archive/**/*",
     ".dynamodb/**/*",
     ".serverless/**/*",
+    "tmp/**/*",
     ".vscode/**/*",
     ".webpack/**/*",
     "node_modules",

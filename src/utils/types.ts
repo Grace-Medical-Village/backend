@@ -18,6 +18,33 @@ export type Query = {
   values?: Values[];
 };
 
+export type Medication = {
+  id: number;
+  name: string;
+  strength: string;
+  categoryId: number;
+  categoryName: string;
+  createdAt: string;
+  modifiedAt: string;
+};
+
+export enum Med {
+  ID,
+  CATEGORY_ID,
+  NAME,
+  STRENGTH,
+  CREATED_AT,
+  MODIFIED_AT,
+  CATEGORY_NAME,
+}
+
+export enum T {
+  IS_NULL = 'isNull',
+  BOOLEAN = 'booleanValue',
+  NUMBER = 'longValue',
+  STRING = 'stringValue',
+}
+
 export type Patient = {
   id: number;
   firstName: string;
@@ -128,6 +155,9 @@ export interface Response extends ResponseHeaders, ResponseStatus {
 }
 
 // GET
+export type GetMedicationResponse = {
+  data: Medication;
+};
 
 // POST
 

@@ -17,15 +17,15 @@ custom:
     production: '' # todo
   customDomain:
     domainName: ${self:custom.domains.${self:custom.stage}}
-    basePath: ''
+    basePath: api
     certificateName: ${self:custom.certificateName.${self:custom.stage}}
     createRoute53Record: true
     endpointType: edge
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   domains:
-    development: api.gracemedicalvillagedev.com
-    production: api.gracemedicalvillage.com
+    development: gracemedicalvillagedev.com
+    production: gracemedicalvillage.com
   restApiId:
     development: 'tb62ntz7g2'
     production: '' # todo
@@ -47,96 +47,96 @@ provider:
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
-        - rds:* # todo
-      Resource: '*' # todo
+        - rds:*
+      Resource: '*'
   tracing:
     apigateway: true
     lambda: true
 
 functions:
-  delete-medication:
-    handler: build/delete-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: medication
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-medication:
+  #   handler: build/delete-medication.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: medication
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  delete-patient:
-    handler: build/delete-patient.main
-    timeout: 15
-    events:
-      - http:
-          path: patient
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-patient:
+  #   handler: build/delete-patient.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  delete-patient-condition:
-    handler: build/delete-patient-condition.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/condition
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-patient-condition:
+  #   handler: build/delete-patient-condition.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/condition
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  delete-patient-medication:
-    handler: build/delete-patient-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/medication
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-patient-medication:
+  #   handler: build/delete-patient-medication.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/medication
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  delete-patient-metric:
-    handler: build/delete-patient-metric.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/metric
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-patient-metric:
+  #   handler: build/delete-patient-metric.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/metric
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  delete-patient-note:
-    handler: build/delete-patient-note.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/note
-          method: delete
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # delete-patient-note:
+  #   handler: build/delete-patient-note.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/note
+  #         method: delete
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-conditions:
-    handler: build/get-conditions.main
-    timeout: 15
-    events:
-      - http:
-          path: conditions
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # get-conditions:
+  #   handler: build/get-conditions.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: conditions
+  #         method: get
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   get-medications:
     handler: build/get-medications.main
@@ -150,173 +150,173 @@ functions:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-medication-categories:
-    handler: build/get-medication-categories.main
-    timeout: 15
-    events:
-      - http:
-          path: medication-categories
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # get-medication-categories:
+  #   handler: build/get-medication-categories.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: medication-categories
+  #         method: get
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-metrics:
-    handler: build/get-metrics.main
-    timeout: 15
-    events:
-      - http:
-          path: metrics
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # get-metrics:
+  #   handler: build/get-metrics.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: metrics
+  #         method: get
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-patient:
-    handler: build/get-patient.main
-    timeout: 15
-    events:
-      - http:
-          path: patient
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # get-patient:
+  #   handler: build/get-patient.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient
+  #         method: get
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  get-patients:
-    handler: build/get-patients.main
-    timeout: 15
-    events:
-      - http:
-          path: patients
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # get-patients:
+  #   handler: build/get-patients.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patients
+  #         method: get
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-medication:
-    handler: build/post-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: medication
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-medication:
+  #   handler: build/post-medication.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: medication
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-patient:
-    handler: build/post-patient.main
-    timeout: 15
-    events:
-      - http:
-          path: patient
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-patient:
+  #   handler: build/post-patient.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-patient-condition:
-    handler: build/post-patient-condition.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/condition
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-patient-condition:
+  #   handler: build/post-patient-condition.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/condition
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-patient-medication:
-    handler: build/post-patient-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/medication
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-patient-medication:
+  #   handler: build/post-patient-medication.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/medication
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-patient-metric:
-    handler: build/post-patient-metric.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/metric
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-patient-metric:
+  #   handler: build/post-patient-metric.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/metric
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  post-patient-note:
-    handler: build/post-patient-note.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/note
-          method: post
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # post-patient-note:
+  #   handler: build/post-patient-note.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/note
+  #         method: post
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  put-medication:
-    handler: build/put-medication.main
-    timeout: 15
-    events:
-      - http:
-          path: medication
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # put-medication:
+  #   handler: build/put-medication.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: medication
+  #         method: put
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  put-patient:
-    handler: build/put-patient.main
-    timeout: 15
-    events:
-      - http:
-          path: patient
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # put-patient:
+  #   handler: build/put-patient.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient
+  #         method: put
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  put-patient-metric:
-    handler: build/put-patient-metric.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/metric
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # put-patient-metric:
+  #   handler: build/put-patient-metric.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/metric
+  #         method: put
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
-  put-patient-note:
-    handler: build/put-patient-note.main
-    timeout: 15
-    events:
-      - http:
-          path: patient/note
-          method: put
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+  # put-patient-note:
+  #   handler: build/put-patient-note.main
+  #   timeout: 15
+  #   events:
+  #     - http:
+  #         path: patient/note
+  #         method: put
+  #         cors: true
+  #         authorizer:
+  #           name: cognito_auth
+  #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
 resources:
   Resources:

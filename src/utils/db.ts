@@ -1,15 +1,24 @@
-import { Client } from 'pg';
+import { RDSDataService } from 'aws-sdk';
+import { ExecuteStatementRequest } from 'aws-sdk/clients/rdsdataservice';
 import { BuildValues } from './types';
 
-const { PG_USER, PG_HOST, PG_DATABASE, PG_PASSWORD } = process.env;
+const { DATABASE, ENDPOINT, RESOURCE_ARN, SECRET_ARN } = process.env;
 
-export const clientBuilder = (): Client =>
-  new Client({
-    user: PG_USER,
-    host: PG_HOST,
-    database: PG_DATABASE,
-    password: PG_PASSWORD,
-    port: 5432,
-  });
+export const rdsParams: ExecuteStatementRequest = {
+  continueAfterTimeout: true,
+  database: DATABASE,
+  includeResultMetadata: false,
+  parameters: [],
+  resourceArn: RESOURCE_ARN,
+  secretArn: SECRET_ARN,
+  sql: '',
+};
+
+export const rdsDataService = new RDSDataService({
+  apiVersion: '2018-08-01',
+  endpoint: ENDPOINT,
+  maxRetries: 3,
+  sslEnabled: true,
+});
 
 export const buildValues: BuildValues = (values) => values.map((_, i) => `$${i + 1}`).join();

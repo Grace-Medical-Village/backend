@@ -1,6 +1,5 @@
 .archive
 .dockerignore
-.dynamodb
 .serverless
 .vscode
 build
