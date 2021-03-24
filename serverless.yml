@@ -143,7 +143,7 @@ functions:
     handler: build/get-medications.main
     timeout: 15
     events:
-      - httpApi:
+      - http:
           path: medications
           method: get
           cors: true
