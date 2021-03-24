@@ -31,9 +31,6 @@ custom:
   hostedZoneId:
     development: Z03413242K12VXBMESSYC
     production: '' #todo
-  restApiId:
-    development: 'tb62ntz7g2'
-    production: '' # todo
   serverless-offline:
     host: localhost
     httpPort: 4000
@@ -321,14 +318,13 @@ functions:
   #         authorizer:
   #           name: cognito_auth
   #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-resources:
-  Resources:
-    GatewayResponseDefault4XX:
-      Type: AWS::ApiGateway::GatewayResponse
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        ResponseType: DEFAULT_4XX
-        RestApiId: ${self:custom.restApiId.${self:custom.stage}}
+# resources:
+# Resources:
+# GatewayResponseDefault4XX:
+# Type: AWS::ApiGateway::GatewayResponse
+# Properties:
+# ResponseParameters:
+# gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+# gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+# ResponseType: DEFAULT_4XX
+# RestApiId: ${self:custom.restApiId.${self:custom.stage}}
