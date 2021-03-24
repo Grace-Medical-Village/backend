@@ -12,6 +12,7 @@
     "test:watch": "jest --coverage --watchAll",
     "build": "tsc",
     "debug": "SLS_DEBUG=* && node --inspect && npm run local",
+    "deploy:domain": "serverless create_domain",
     "deploy:development": "NODE_ENV=development && serverless deploy -s development",
     "deploy:production": "NODE_ENV=production && serverless deploy -s production"
   },
