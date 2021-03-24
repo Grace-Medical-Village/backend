@@ -55,6 +55,17 @@ provider:
     lambda: true
 
 functions:
+  get-medications:
+    handler: build/get-medications.main
+    timeout: 15
+    events:
+      - http:
+          path: medications
+          method: get
+          cors: true
+          authorizer:
+            name: cognito_auth
+            arn: ${self:custom.cognitoArn.${self:custom.stage}}
   # delete-medication:
   #   handler: build/delete-medication.main
   #   timeout: 15
@@ -138,18 +149,6 @@ functions:
   #         authorizer:
   #           name: cognito_auth
   #           arn: ${self:custom.cognitoArn.${self:custom.stage}}
-
-  get-medications:
-    handler: build/get-medications.main
-    timeout: 15
-    events:
-      - http:
-          path: medications
-          method: get
-          cors: true
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
 
   # get-medication-categories:
   #   handler: build/get-medication-categories.main
