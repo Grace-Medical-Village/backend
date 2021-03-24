@@ -26,7 +26,7 @@ custom:
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   domains:
-    development: api.gracemedicalvillagedev.com
+    development: gracemedicalvillagedev.com
     production: gracemedicalvillage.com
   hostedZoneId:
     development: Z03413242K12VXBMESSYC
