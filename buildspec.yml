@@ -14,5 +14,4 @@ phases:
   build:
     commands:
       - npm run build
-      - npm run deploy:domain:${ENVIRONMENT}
       - npm run deploy:${ENVIRONMENT}
