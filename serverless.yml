@@ -20,7 +20,7 @@ custom:
     basePath: ''
     certificateArn: ${self:custom.certificateArn.${self:custom.stage}}
     createRoute53Record: true
-    endpointType: edge
+    endpointType: regional
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   domains:
