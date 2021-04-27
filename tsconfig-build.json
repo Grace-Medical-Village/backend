@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
     "noEmit": false,
-    "outDir": "./build",
+    "outDir": "./build"
   },
   "extends": "./tsconfig.json",
   "exclude": [
     "__tests__/**/*",
     "test/**/*",
+    "tmp/**/*",
     "types/**/*",
     "**/*.test.ts",
     "**/*.spec.ts"

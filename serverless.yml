@@ -1,29 +1,31 @@
-frameworkVersion: v2.35.0
+frameworkVersion: v2.38.0
 service: backend
 useDotenv: true
 
 plugins:
   - serverless-domain-manager
+  - serverless-dotenv-plugin
 
 custom:
   certificateArn:
     development: arn:aws:acm:us-east-1:435765244332:certificate/779f6a51-049f-466c-9a86-960e21c0453b
+    production: '' # todo
   cognitoArn:
     local: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     production: '' # todo
   customDomain:
     apiType: rest
-    domainName: ${self:custom.domains.${self:custom.stage}}
-    basePath: ''
+    basePath: 'v'
     certificateArn: ${self:custom.certificateArn.${self:custom.stage}}
     createRoute53Record: true
+    domainName: ${self:custom.domains.${self:custom.stage}}
     endpointType: regional
     securityPolicy: tls_1_2
     stage: ${self:custom.stage}
   domains:
     development: api.gracemedicalvillagedev.com
-    production: gracemedicalvillage.com
+    production: api.gracemedicalvillage.com
   stage: ${opt:stage, self:provider.stage}
 
 package:
@@ -49,8 +51,10 @@ functions:
     handler: build/index.main
     timeout: 30
     events:
-      - lambda-proxy:
-          cors: true
+      - http:
           authorizer:
             name: cognito_auth
             arn: ${self:custom.cognitoArn.${self:custom.stage}}
+          cors: true
+          method: any
+          path: /{proxy+}
