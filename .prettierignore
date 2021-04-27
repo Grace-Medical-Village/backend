@@ -1,3 +1,4 @@
+**/*.js
 .archive
 .dynamodb
 .serverless
@@ -10,4 +11,4 @@ dist
 node_modules
 offline
 package-lock.json
-**/*.js
+tmp
