@@ -13,7 +13,8 @@ export const main: APIGatewayProxyHandler = async (event) => {
 
   const query: Query = {
     name: 'delete-patient-condition',
-    text: 'delete from patient_condition where patient_id = $1 and condition_id = $2;',
+    text:
+      'delete from patient_condition where patient_id = $1 and condition_id = $2;',
     values: [patientId, conditionId],
   };
 

@@ -1,11 +1,21 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 // REQUESTS
-export type BuildSetStatement = (event: APIGatewayProxyEvent, o: string[]) => string[];
+export type BuildSetStatement = (
+  event: APIGatewayProxyEvent,
+  o: string[]
+) => string[];
 export type BuildValsFromKeys = (keys: string[]) => string[];
-export type GetParameter = (event: APIGatewayProxyEvent, key: string, required: boolean) => Value;
+export type GetParameter = (
+  event: APIGatewayProxyEvent,
+  key: string,
+  required: boolean
+) => Value;
 export type GetRequestBodyKeys = (event: APIGatewayProxyEvent) => string[];
-export type GetRequestBodyValue = (event: APIGatewayProxyEvent, key: string) => Value;
+export type GetRequestBodyValue = (
+  event: APIGatewayProxyEvent,
+  key: string
+) => Value;
 // export type GetRequestBodyString = (event: APIGatewayProxyEvent, key: string, required: boolean) => string;
 // export type GetRequestBodyString = (event: APIGatewayProxyEvent, key: string, required: boolean) => number;
 export type GetRequestBodyValues = (event: APIGatewayProxyEvent) => Value[];
@@ -146,9 +156,10 @@ export type ResponseError = {
   };
 };
 
-export type ResponseBody = {
-  data: any; // todo
-};
+export type ResponseData = Medication[];
+// export type ResponseBody = {
+// data: any; // todo
+// };
 
 export interface Response extends ResponseHeaders, ResponseStatus {
   body: string;
@@ -170,3 +181,12 @@ export interface DeleteResponseBody extends ResponseError {
 
 // UTILITY
 export type BuildValues = <T>(values: Array<T>) => string;
+
+// TEST
+export type EnvironmentTestObject = {
+  environment: string;
+  false: string[];
+  function: () => boolean;
+  true: string[];
+  name: string;
+};

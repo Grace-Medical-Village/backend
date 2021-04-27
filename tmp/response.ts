@@ -1,4 +1,4 @@
-import { Headers, Response, ResponseStatus } from './types';
+import { Headers, Response, ResponseStatus, ResponseData } from '../src/types';
 
 export const headers: Headers = {
   'Access-Control-Allow-Origin': '*',
@@ -14,4 +14,11 @@ export const responseBase: Response = {
   ...status,
   headers,
   body: '{}',
+};
+
+export const buildResponse = (data: ResponseData): Response => {
+  return {
+    ...responseBase,
+    body: JSON.stringify(data),
+  };
 };

@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 12
+      nodejs: 14
   pre_build:
     commands:
       - echo ${ENVIRONMENT}
@@ -14,5 +14,6 @@ phases:
   build:
     commands:
       - npm run build
+      - npm run test
       - npm run deploy:domain:${ENVIRONMENT}
       - npm run deploy:${ENVIRONMENT}

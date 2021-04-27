@@ -9,15 +9,10 @@
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript",
-    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "import",
-    "jest",
-    "@typescript-eslint"
-  ],
+  "plugins": ["import", "jest", "@typescript-eslint"],
   "root": true,
   "rules": {
     "max-len": [
@@ -32,14 +27,12 @@
       }
     ],
     "no-console": "off",
-    "@typescript-eslint/no-var-requires": 0
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off"
   },
   "settings": {
     "import/parsers": {
-      "@typescript-eslint/parser": [
-        ".ts",
-        ".tsx"
-      ]
+      "@typescript-eslint/parser": [".ts", ".tsx"]
     },
     "import/resolver": {
       "typescript": {

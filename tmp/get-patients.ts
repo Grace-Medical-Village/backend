@@ -12,7 +12,8 @@ export const main: APIGatewayProxyHandler = async (event) => {
   const birthdate = getParameter(event, 'birthdate', false);
 
   let text = 'select * from patient;';
-  const patientSearchStatementBase = 'select id, first_name, last_name, birthdate, gender, mobile from patient';
+  const patientSearchStatementBase =
+    'select id, first_name, last_name, birthdate, gender, mobile from patient';
 
   if (name && typeof name === 'string') {
     name = name.trim().toLowerCase();
@@ -22,7 +23,11 @@ export const main: APIGatewayProxyHandler = async (event) => {
       const fullName = name.split(' ');
       text = `${patientSearchStatementBase} where lower(first_name) like '%${fullName[0]}%' or lower(last_name) like '%${fullName[0]}%' or lower(first_name) like '%${fullName[1]}% or lower(last_name) like '%${fullName[1]}%'';`;
     }
-  } else if (birthdate && typeof birthdate === 'string' && checkIso8601Format(birthdate)) {
+  } else if (
+    birthdate &&
+    typeof birthdate === 'string' &&
+    checkIso8601Format(birthdate)
+  ) {
     text = `${patientSearchStatementBase} where birthdate = '${birthdate}';`;
   }
 

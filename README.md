@@ -1,9 +1,11 @@
 # GMVC API
 
-## Response Structure
+## Backlog
 
-### Error Codes
-
-| Code | API               | Message                                        |
-| ---- | ----------------- | ---------------------------------------------- |
-| 600  | Delete Medication | Error: Medication record does not exist for id |
+### High
+- configure winston
+- get util for fieldList
+  - get index and type
+  
+### Low
+- jest setup in TypeScript

@@ -1,11 +1,9 @@
-FROM node:alpine
+FROM node:14-alpine
 
-WORKDIR /backend
+WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package*.json .
 
 RUN npm install --silent
 
-COPY . ./
-
-CMD [ "npm", "start" ]
+COPY . .

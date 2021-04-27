@@ -15,7 +15,8 @@ export const main: APIGatewayProxyHandler = async (event) => {
 
   const query: Query = {
     name: 'post-patient-metric',
-    text: 'insert into patient_metric (patient_id, metric_id, value) values ($1, $2, $3);',
+    text:
+      'insert into patient_metric (patient_id, metric_id, value) values ($1, $2, $3);',
     values: [patientId, metricId, value],
   };
 

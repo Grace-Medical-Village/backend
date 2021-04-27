@@ -1,7 +1,11 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { snakeCase } from 'lodash';
 import { clientBuilder } from './utils/db';
-import { buildValsFromKeys, getRequestBodyKeys, getRequestBodyValues } from './utils/request';
+import {
+  buildValsFromKeys,
+  getRequestBodyKeys,
+  getRequestBodyValues,
+} from './utils/request';
 import { responseBase } from './utils/response';
 import { Query, Response, ResponseBody } from './utils/types';
 
@@ -13,7 +17,9 @@ export const main: APIGatewayProxyHandler = async (event) => {
   const values = getRequestBodyValues(event);
   const v = buildValsFromKeys(keys);
 
-  const queryText = `insert into patient (${[...keys]}) values (${[...v]}) returning id`;
+  const queryText = `insert into patient (${[...keys]}) values (${[
+    ...v,
+  ]}) returning id`;
 
   const query: Query = {
     name: 'post-patient',

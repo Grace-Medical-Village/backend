@@ -14,7 +14,8 @@ export const main: APIGatewayProxyHandler = async (event) => {
 
   const query: Query = {
     name: 'put-medication',
-    text: 'update medication set category_id = $1, name = $2, strength = $3 where id = $4;',
+    text:
+      'update medication set category_id = $1, name = $2, strength = $3 where id = $4;',
     values: [categoryId, name, strength, id],
   };
 

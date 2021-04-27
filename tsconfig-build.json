@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./build",
+  },
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "__tests__/**/*",
+    "test/**/*",
+    "types/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

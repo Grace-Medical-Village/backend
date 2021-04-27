@@ -1,6 +1,8 @@
 import { RDSDataService } from 'aws-sdk';
-import { ExecuteStatementRequest } from 'aws-sdk/clients/rdsdataservice';
-import { BuildValues } from './types';
+import {
+  ExecuteStatementRequest,
+  ExecuteStatementResponse,
+} from 'aws-sdk/clients/rdsdataservice';
 
 const { DATABASE, ENDPOINT, RESOURCE_ARN, SECRET_ARN } = process.env;
 
@@ -18,7 +20,17 @@ export const rdsDataService = new RDSDataService({
   apiVersion: '2018-08-01',
   endpoint: ENDPOINT,
   maxRetries: 3,
+  region: 'us-east-1',
   sslEnabled: true,
 });
 
-export const buildValues: BuildValues = (values) => values.map((_, i) => `$${i + 1}`).join();
+export const getData = async (
+  sql: string
+): Promise<ExecuteStatementResponse> => {
+  return await rdsDataService
+    .executeStatement({
+      ...rdsParams,
+      sql,
+    })
+    .promise();
+};
