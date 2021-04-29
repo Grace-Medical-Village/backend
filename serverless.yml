@@ -28,9 +28,6 @@ custom:
     production: api.gracemedicalvillage.com
   stage: ${opt:stage, self:provider.stage}
 
-package:
-  individually: true
-
 provider:
   name: aws
   region: us-east-1
@@ -39,16 +36,19 @@ provider:
   environment:
     stage: ${self:custom.stage}
   iamRoleStatements:
-    - Effect: 'Allow'
+    - Effect: Allow
       Action:
         - rds:*
       Resource: '*'
+  logRetentionInDays: 30
   tracing:
+    apiGateway: true
     lambda: true
 
 functions:
   api:
     handler: build/index.main
+    memorySize: 1024
     timeout: 30
     events:
       - http:
