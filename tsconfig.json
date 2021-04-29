@@ -24,7 +24,7 @@
     ".vscode/**/*",
     ".webpack/**/*",
     "node_modules",
-    "tmp/**/*"
+    ".archive/tmp/**/*"
   ],
   "types": ["node"]
 }

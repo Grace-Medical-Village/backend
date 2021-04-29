@@ -52,9 +52,9 @@ functions:
     timeout: 30
     events:
       - http:
-          authorizer:
-            name: cognito_auth
-            arn: ${self:custom.cognitoArn.${self:custom.stage}}
+          # authorizer:
+            # name: cognito_auth
+            # arn: ${self:custom.cognitoArn.${self:custom.stage}}
           cors: true
           method: any
           path: /{proxy+}
