@@ -11,4 +11,6 @@ export const localServer = (): void => {
   app.listen(port, () => console.log(`Listening on port: ${port}`));
 };
 
+console.log(process.env);
+
 if (isLocal()) localServer();
