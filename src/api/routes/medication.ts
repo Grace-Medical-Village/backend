@@ -7,15 +7,19 @@ import { Med, Medication, T } from '../../types';
 import { getData } from '../../utils/db';
 
 async function getMedications(req: Request, res: Response): Promise<void> {
+  console.log('medication.10');
   const sql =
     'select m.*, mc.name category_name from medication m join medication_category mc on m.category_id = mc.id;';
 
   const result = await getData(sql);
+  console.log('medication.15');
 
   const data = buildMedicationData(result);
+  console.log('medication.18');
 
   res.status(200);
   res.json(data);
+  console.log('medication.23');
 }
 
 function buildMedicationData(
@@ -41,6 +45,7 @@ function buildMedicationData(
       modifiedAt,
     };
 
+    console.log('medication.48');
     return medication;
   });
 }
