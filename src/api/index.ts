@@ -13,5 +13,6 @@ export const getMedicationRouter = (): Router => {
   const router = Router();
   console.log('api.14');
   router.get('/', getMedications);
+  console.log('api.16');
   return router;
 };
