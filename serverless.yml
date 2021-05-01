@@ -38,7 +38,7 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - rds:*
+        - rds-data:*
       Resource: '*'
   logRetentionInDays: 30
   tracing:
