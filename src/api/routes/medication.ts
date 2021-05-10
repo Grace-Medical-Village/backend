@@ -14,7 +14,6 @@ async function getMedications(req: Request, res: Response): Promise<void> {
   if (records && records.length > 0) {
     const data = buildMedicationData(records);
     res.status(200);
-    console.log(data);
     res.json(data);
   } else {
     res.status(404);

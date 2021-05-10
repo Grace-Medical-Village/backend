@@ -2,9 +2,11 @@ import { RDSDataService } from 'aws-sdk';
 import {
   ExecuteStatementRequest,
   FieldList,
+  SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { T } from '../types';
 import { indexOutOfBounds } from './index';
+import { isLocal } from '../config';
 
 type GetData = (sql: string) => Promise<FieldList[]>;
 
@@ -16,27 +18,31 @@ type GetField = (
 type GetFieldNumber = (fieldList: FieldList, index: number) => number;
 type GetFieldString = (fieldList: FieldList, index: number) => string;
 type GetRdsDataService = () => RDSDataService | void;
-type GetDefaultRdsParams = () => ExecuteStatementRequest | void;
+interface Overrides {
+  parameters?: SqlParametersList | undefined;
+}
+type GetRdsParams = (
+  sql: string,
+  overrides: Overrides
+) => ExecuteStatementRequest | void;
 
 const { DATABASE, ENDPOINT, RESOURCE_ARN, SECRET_ARN } = process.env;
 
 export const getRdsDataService: GetRdsDataService = () => {
-  if (ENDPOINT) {
-    return new RDSDataService({
-      apiVersion: '2018-08-01',
-      endpoint: ENDPOINT,
-      maxRetries: 3,
-      region: 'us-east-1',
-      sslEnabled: true,
-    });
-  } else {
-    throw new Error(
-      `Error: unable to getRdsDataService with { ENDPOINT: ${ENDPOINT} }`
-    );
+  const config: RDSDataService.Types.ClientConfiguration = {
+    apiVersion: '2018-08-01',
+    maxRetries: 3,
+    region: 'us-east-1',
+    sslEnabled: true,
+  };
+  if (isLocal()) {
+    config.endpoint = ENDPOINT;
   }
+
+  return new RDSDataService(config);
 };
 
-export const getDefaultRdsParams: GetDefaultRdsParams = () => {
+export const getRdsParams: GetRdsParams = (sql, overrides) => {
   if (DATABASE && RESOURCE_ARN && SECRET_ARN)
     return {
       continueAfterTimeout: false,
@@ -45,7 +51,8 @@ export const getDefaultRdsParams: GetDefaultRdsParams = () => {
       parameters: [],
       resourceArn: RESOURCE_ARN,
       secretArn: SECRET_ARN,
-      sql: '',
+      sql,
+      ...overrides,
     };
   else {
     throw new Error(
@@ -56,17 +63,12 @@ export const getDefaultRdsParams: GetDefaultRdsParams = () => {
 
 export const getData: GetData = async (sql) => {
   const rdsDataService = getRdsDataService();
-  const defaultRdsParams = getDefaultRdsParams();
+  const rdsParams: ExecuteStatementRequest | void = getRdsParams(sql, {});
 
   let data: FieldList[] = [];
 
-  if (rdsDataService && defaultRdsParams) {
-    const params: ExecuteStatementRequest = {
-      ...defaultRdsParams,
-      sql,
-    };
-
-    const response = await rdsDataService.executeStatement(params).promise();
+  if (rdsDataService && rdsParams) {
+    const response = await rdsDataService.executeStatement(rdsParams).promise();
 
     if (response.records && response.records.length > 0)
       data = response.records;
