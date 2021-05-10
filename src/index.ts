@@ -1,11 +1,9 @@
 import serverlessExpress from '@vendia/serverless-express';
 import { app } from './app';
-import { isLocal } from './config';
+// import { isLocal } from './config';
 
-export const main = (): void => {
-  console.log('main.6');
+export const main = async (): Promise<void> => {
   serverlessExpress({ app });
-  console.log('main.8');
 };
 
 export const localServer = (): void => {
@@ -13,4 +11,5 @@ export const localServer = (): void => {
   app.listen(port, () => console.log(`Listening on port: ${port}`));
 };
 
-if (isLocal()) localServer();
+// if (isLocal()) localServer();
+localServer();

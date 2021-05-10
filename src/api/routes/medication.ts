@@ -1,39 +1,36 @@
 import { Request, Response } from 'express';
-import {
-  ExecuteStatementResponse,
-  FieldList,
-} from 'aws-sdk/clients/rdsdataservice';
-import { Med, Medication, T } from '../../types';
-import { getData } from '../../utils/db';
+import { FieldList } from 'aws-sdk/clients/rdsdataservice';
+import { Med, Medication } from '../../types';
+import { getData, getFieldNumber, getFieldString } from '../../utils/db';
 
 async function getMedications(req: Request, res: Response): Promise<void> {
-  console.log('medication.10');
   const sql =
     'select m.*, mc.name category_name from medication m join medication_category mc on m.category_id = mc.id;';
 
-  const result = await getData(sql);
-  console.log('medication.15');
+  const records = await getData(sql)
+    .then((r) => r)
+    .catch((err) => console.error(err));
 
-  const data = buildMedicationData(result);
-  console.log('medication.18');
-
-  res.status(200);
-  res.json(data);
-  console.log('medication.23');
+  if (records && records.length > 0) {
+    const data = buildMedicationData(records);
+    res.status(200);
+    console.log(data);
+    res.json(data);
+  } else {
+    res.status(404);
+    res.json([]);
+  }
 }
 
-function buildMedicationData(
-  queryResult: ExecuteStatementResponse
-): Medication[] {
-  return queryResult.records?.map((med: FieldList) => {
-    console.log(med);
-    const id = med[Med.ID][T.NUMBER];
-    const name = med[Med.NAME][T.STRING];
-    const strength = med[Med.STRENGTH][T.STRING];
-    const categoryId = med[Med.ID][T.NUMBER];
-    const categoryName = med[Med.CATEGORY_NAME][T.STRING];
-    const createdAt = med[Med.CREATED_AT][T.STRING];
-    const modifiedAt = med[Med.MODIFIED_AT][T.STRING];
+function buildMedicationData(records: FieldList[]): Medication[] {
+  return records?.map((med: FieldList) => {
+    const id = getFieldNumber(med, Med.ID);
+    const name = getFieldString(med, Med.NAME);
+    const strength = getFieldString(med, Med.STRENGTH);
+    const categoryId = getFieldNumber(med, Med.ID);
+    const categoryName = getFieldString(med, Med.CATEGORY_NAME);
+    const createdAt = getFieldString(med, Med.CREATED_AT);
+    const modifiedAt = getFieldString(med, Med.MODIFIED_AT);
 
     const medication: Medication = {
       id,
@@ -45,7 +42,6 @@ function buildMedicationData(
       modifiedAt,
     };
 
-    console.log('medication.48');
     return medication;
   });
 }

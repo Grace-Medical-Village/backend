@@ -185,7 +185,7 @@ export type BuildValues = <T>(values: Array<T>) => string;
 // TEST
 export type EnvironmentTestObject = {
   environment: string;
-  false: string[];
+  false: Array<string | null | undefined>;
   function: () => boolean;
   true: string[];
   name: string;

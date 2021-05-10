@@ -37,7 +37,7 @@ describe('environment tests', () => {
         process.env.NODE_ENV = obj.environment;
 
         obj.false.forEach((f) => {
-          process.env.NODE_ENV = f;
+          process.env.NODE_ENV = String(f);
           expect(obj.function()).toStrictEqual(false);
         });
       });

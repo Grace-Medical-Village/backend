@@ -9,12 +9,13 @@
     "moduleResolution": "node",
     "noEmit": true,
     "noImplicitAny": true,
-    "noImplicitUseStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "rootDir": "./src",
     "skipLibCheck": true,
     "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
     "target": "es5"
   },
   "exclude": [
