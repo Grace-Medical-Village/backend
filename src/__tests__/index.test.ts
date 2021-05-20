@@ -1,6 +1,6 @@
 import serverlessExpress from '@vendia/serverless-express';
 import { app } from '../app';
-import { localServer, main } from '../index';
+import { startServer, main } from '../index';
 
 jest.mock('@vendia/serverless-express');
 
@@ -9,12 +9,12 @@ function buildMockApp(): void {
   jest.spyOn(app, 'use').mockImplementation();
 }
 
-describe('localServer', () => {
+describe('server', () => {
   it('builds a Express app for local development', () => {
     expect.assertions(1);
 
     buildMockApp();
-    localServer();
+    startServer();
 
     expect(app.listen).toHaveBeenCalledTimes(1);
   });

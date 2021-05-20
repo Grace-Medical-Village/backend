@@ -28,6 +28,11 @@ export type Query = {
   values?: Values[];
 };
 
+export type Condition = {
+  id: number;
+  conditionName: string;
+};
+
 export type Medication = {
   id: number;
   name: string;
@@ -38,15 +43,25 @@ export type Medication = {
   modifiedAt: string;
 };
 
-export enum Med {
-  ID,
-  CATEGORY_ID,
-  NAME,
-  STRENGTH,
-  CREATED_AT,
-  MODIFIED_AT,
-  CATEGORY_NAME,
-}
+export type MedicationCategory = {
+  id: number;
+  name: string;
+  createdAt: string;
+  modifiedAt: string;
+};
+
+export type Metric = {
+  id: number;
+  metricName: string;
+  unitOfMeasure: string;
+  uom: string;
+  map: boolean;
+  defaultValue: number | null;
+  minValue: number | null;
+  maxValue: number | null;
+  createdAt: string;
+  modifiedAt: string;
+};
 
 export enum T {
   IS_NULL = 'isNull',
@@ -72,37 +87,45 @@ export type Patient = {
   smoker: boolean;
 };
 
+export type PatientListRecord = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  birthdate: string;
+  gender: string;
+};
+
 export type PatientCondition = {
   id: number;
-  condition_id: number;
-  patient_id: number;
-  created_at: string;
-  modified_at: string;
+  conditionId: number;
+  patientId: number;
+  createdAt: string;
+  modifiedAt: string;
 };
 
 export type PatientMedication = {
   id: number;
-  medication_id: number;
-  patient_id: number;
-  created_at: string;
-  modified_at: string;
+  medicationId: number;
+  patientId: number;
+  createdAt: string;
+  modifiedAt: string;
 };
 
 export type PatientMetric = {
   id: number;
-  metric_id: number;
-  patient_id: number;
+  metricId: number;
+  patientId: number;
   value: string;
-  created_at: string;
-  modified_at: string;
+  createdAt: string;
+  modifiedAt: string;
 };
 
 export type PatientNote = {
   id: number;
   note: string;
-  patient_id: number;
-  created_at: string;
-  modified_at: string;
+  patientId: number;
+  createdAt: string;
+  modifiedAt: string;
 };
 
 export type PatientData = {
@@ -190,3 +213,107 @@ export type EnvironmentTestObject = {
   true: string[];
   name: string;
 };
+
+// DATA API INDEXES
+// Medication
+export enum Med {
+  ID,
+  CATEGORY_ID,
+  NAME,
+  STRENGTH,
+  CREATED_AT,
+  MODIFIED_AT,
+  CATEGORY_NAME,
+}
+
+// Medication Category
+export enum MedCat {
+  ID,
+  NAME,
+  CREATED_AT,
+  MODIFIED_AT,
+}
+
+// Metric
+export enum Met {
+  ID,
+  METRIC_NAME,
+  UNIT_OF_MEASURE,
+  UOM,
+  MAP,
+  DEFAULT_VALUE,
+  MIN_VALUE,
+  MAX_VALUE,
+  CREATED_AT,
+  MODIFIED_AT,
+}
+
+// Condition
+export enum Con {
+  ID,
+  CONDITION_NAME,
+}
+
+// Patient
+export enum Pat {
+  ID,
+  FIRST_NAME,
+  LAST_NAME,
+  BIRTHDATE,
+  GENDER,
+  EMAIL,
+  HEIGHT,
+  MOBILE,
+  MAP,
+  COUNTRY,
+  NATIVE_LANGUAGE,
+  NATIVE_LITERACY,
+  SMOKER,
+}
+
+// Patient Conditions
+export enum PC {
+  ID,
+  CONDITION_ID,
+  PATIENT_ID,
+  CREATED_AT,
+  MODIFIED_AT,
+  // CONDITION_NAME,
+}
+
+// Patient Medications
+export enum PMed {
+  ID,
+  MEDICATION_ID,
+  PATIENT_ID,
+  CREATED_AT,
+  MODIFIED_AT,
+}
+
+// Patient Medications
+export enum PMet {
+  ID,
+  PATIENT_ID,
+  METRIC_ID,
+  VALUE,
+  CREATED_AT,
+  MODIFIED_AT,
+}
+
+// Patient Notes
+export enum PNote {
+  ID,
+  NOTE,
+  PATIENT_ID,
+  CREATED_AT,
+  MODIFIED_AT,
+}
+
+// Patients
+export enum Pats {
+  ID,
+  FIRST_NAME,
+  LAST_NAME,
+  BIRTHDATE,
+  GENDER,
+}

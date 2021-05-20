@@ -5,22 +5,21 @@ import {
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { T } from '../types';
-import { indexOutOfBounds } from './index';
 import { isLocal } from '../config';
 
-type GetData = (sql: string) => Promise<FieldList[]>;
+type DbRequest = (sql: string) => Promise<FieldList[]>;
 
-type GetField = (
+type GetFieldValue = (
   fieldList: FieldList,
-  index: number,
-  type: T
-) => string | number | boolean | undefined | void;
-type GetFieldNumber = (fieldList: FieldList, index: number) => number;
-type GetFieldString = (fieldList: FieldList, index: number) => string;
+  index: number
+) => string | number | boolean | null;
+
 type GetRdsDataService = () => RDSDataService | void;
+
 interface Overrides {
   parameters?: SqlParametersList | undefined;
 }
+
 type GetRdsParams = (
   sql: string,
   overrides: Overrides
@@ -47,7 +46,7 @@ export const getRdsParams: GetRdsParams = (sql, overrides) => {
     return {
       continueAfterTimeout: false,
       database: DATABASE,
-      includeResultMetadata: false,
+      includeResultMetadata: isLocal() ?? false,
       parameters: [],
       resourceArn: RESOURCE_ARN,
       secretArn: SECRET_ARN,
@@ -61,7 +60,7 @@ export const getRdsParams: GetRdsParams = (sql, overrides) => {
   }
 };
 
-export const getData: GetData = async (sql) => {
+export const dbRequest: DbRequest = async (sql) => {
   const rdsDataService = getRdsDataService();
   const rdsParams: ExecuteStatementRequest | void = getRdsParams(sql, {});
 
@@ -76,36 +75,19 @@ export const getData: GetData = async (sql) => {
   return data;
 };
 
-export const getField: GetField = (fieldList, index, type) => {
-  if (indexOutOfBounds(index, fieldList)) {
-    throw new Error(
-      `Error: getField - index ${index} out of bounds for fieldList ${fieldList}`
-    );
-  } else if (!fieldList[index][type]) {
-    throw new Error(
-      `Error: getField - unable to access property on ${fieldList}[${index}][${type}]`
-    );
-  } else {
-    return fieldList[index][type];
+export const getFieldValue: GetFieldValue = (fieldList, index) => {
+  const entry = Object.entries(fieldList[index])[0];
+  const key = entry[0] ?? null;
+  let value: string | number | boolean | null = entry[1] ?? null;
+  // if (indexOutOfBounds(index, fieldList)) {
+  //   throw new Error(
+  //     `getFieldValue - index ${index} out of bounds for fieldList ${fieldList}`
+  //   );
+  // }
+  if (key === T.IS_NULL && value) {
+    value = null;
   }
+  return value;
 };
 
-export const getFieldNumber: GetFieldNumber = (fieldList, index) => {
-  const result = getField(fieldList, index, T.NUMBER);
-  if (typeof result === 'number') return result;
-  else {
-    throw new Error(
-      `Error: getFieldNumber did not return ${T.NUMBER} for ${fieldList}[${index}][${T.NUMBER}]`
-    );
-  }
-};
-
-export const getFieldString: GetFieldString = (fieldList, index) => {
-  const result = getField(fieldList, index, T.STRING);
-  if (typeof result === 'string') return result;
-  else {
-    throw new Error(
-      `Error: getFieldString did not return ${T.STRING} for ${fieldList}[${index}][${T.STRING}]`
-    );
-  }
-};
+export const sqlParen = (x: string) => `'${x}'`;

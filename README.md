@@ -2,16 +2,12 @@
 
 ## Backlog
 
-### High
-
-- configure winston
-- get util for fieldList
-  - get index and type
-
-### Medium
-
+- build test framework
+  - unit tests
+  - integration tests 
+    - supertests
+    - Docker
+- configure logging
 - webpack
-
-### Low
-
-- jest setup in TypeScript
+- jest setup
+- `jest --findRelatedTests` to lint-staged
