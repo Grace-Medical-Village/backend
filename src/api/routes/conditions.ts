@@ -5,7 +5,7 @@ import { Condition, Con } from '../../types';
 
 async function getConditions(req: Request, res: Response): Promise<void> {
   const sql = 'select id, condition_name from condition;';
-  console.log(8);
+  console.log(sql);
 
   const records = await dbRequest(sql)
     .then((r) => r)
