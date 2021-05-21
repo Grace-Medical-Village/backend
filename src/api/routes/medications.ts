@@ -68,9 +68,9 @@ async function getMedicationCategories(
 }
 
 async function postMedication(req: Request, res: Response): Promise<void> {
-  const categoryId = req.body.categoryId; // todo validate
-  const name = sqlParen(req.body.name); // todo validate
-  const strength = req.body.strength; // todo validate
+  const categoryId = req.body.categoryId;
+  const name = sqlParen(req.body.name);
+  const strength = req.body.strength;
 
   let categories = 'category_id, name';
   const values: number | string[] = [categoryId, name];
@@ -95,10 +95,10 @@ async function postMedication(req: Request, res: Response): Promise<void> {
 }
 
 async function putMedication(req: Request, res: Response): Promise<void> {
-  const id = req.body.id; // todo validate
-  const categoryId = req.body.categoryId; // todo validate
-  const name = sqlParen(req.body.name); // todo validate
-  const strength = sqlParen(req.body.strength); // todo validate
+  const id = req.body.id;
+  const categoryId = req.body.categoryId;
+  const name = sqlParen(req.body.name);
+  const strength = sqlParen(req.body.strength);
 
   const sql = `update medication set category_id = ${categoryId}, name = ${name}, strength = ${strength} where id = ${id};`;
 

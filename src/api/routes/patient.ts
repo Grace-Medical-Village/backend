@@ -22,7 +22,7 @@ async function getPatient(req: Request, res: Response): Promise<void> {
 
   const records = await dbRequest(sql)
     .then((r) => r)
-    .catch((err) => console.error(err)); // todo clearer messages
+    .catch((err) => console.error(err));
 
   if (records && records.length === 1) {
     const conditions = await getPatientConditions(id)
@@ -127,7 +127,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
 
   const patients = await dbRequest(sql)
     .then((r) => r)
-    .catch((err) => console.error(err)); // todo clearer messages
+    .catch((err) => console.error(err));
 
   if (patients && patients.length > 0) {
     const data = buildPatientsData(patients);
@@ -209,8 +209,8 @@ async function postPatientCondition(
   req: Request,
   res: Response
 ): Promise<void> {
-  const patientId = req.body.patientId; // todo validate
-  const conditionId = req.body.conditionId; // todo validate
+  const patientId = req.body.patientId;
+  const conditionId = req.body.conditionId;
 
   const sql = `insert into patient_condition (patient_id, condition_id) values (${patientId}, ${conditionId});`;
 
@@ -230,8 +230,8 @@ async function postPatientMedication(
   req: Request,
   res: Response
 ): Promise<void> {
-  const patientId = req.body.patientId; // todo validate
-  const medicationId = req.body.medicationId; // todo validate
+  const patientId = req.body.patientId;
+  const medicationId = req.body.medicationId;
 
   const sql = `insert into patient_medication (patient_id, medicationId) values (${patientId}, ${medicationId});`;
 
@@ -248,9 +248,9 @@ async function postPatientMedication(
 }
 
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
-  const patientId = req.body.patientId; // todo validate
-  const metricId = req.body.metricId; // todo validate
-  const value = req.body.value; // todo validate
+  const patientId = req.body.patientId;
+  const metricId = req.body.metricId;
+  const value = req.body.value;
 
   const sql = `insert into patient_metric (patient_id, metricId, value) values (${patientId}, ${metricId}, ${value});`;
 
@@ -267,8 +267,8 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
 }
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {
-  const patientId = req.body.patientId; // todo validate
-  const note = sqlParen(req.body.note).trim(); // todo validate
+  const patientId = req.body.patientId;
+  const note = sqlParen(req.body.note).trim();
 
   const sql = `insert into patient_note (patient_id, note) values (${patientId}, ${note});`;
 
@@ -285,8 +285,8 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientMetric(req: Request, res: Response): Promise<void> {
-  const id = req.body.id; // todo validate
-  const value = req.body.value; // todo validate
+  const id = req.body.id;
+  const value = req.body.value;
 
   const sql = `update patient_metric set value = ${value} where id = ${id};`;
 
@@ -303,8 +303,8 @@ async function putPatientMetric(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientNote(req: Request, res: Response): Promise<void> {
-  const id = req.body.id; // todo validate
-  const note = sqlParen(req.body.categoryId).trim(); // todo validate
+  const id = req.body.id;
+  const note = sqlParen(req.body.categoryId).trim();
 
   const sql = `update patient_note set note = ${note} where id = ${id};`;
 

@@ -8,7 +8,7 @@ async function getMetrics(req: Request, res: Response): Promise<void> {
 
   const records = await dbRequest(sql)
     .then((r) => r)
-    .catch((err) => console.error(err)); // todo clearer messages
+    .catch((err) => console.error(err));
 
   if (records && records.length > 0) {
     const data = buildMetricData(records);

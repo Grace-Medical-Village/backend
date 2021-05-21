@@ -28,7 +28,6 @@ import {
 
 export const buildRouter = (): Router => {
   const router = Router();
-  console.log('api.31');
   router.use('/conditions', getConditionRouter());
   router.use('/medications', getMedicationRouter());
   router.use('/metrics', getMetricRouter());
@@ -38,7 +37,6 @@ export const buildRouter = (): Router => {
 
 export const getConditionRouter = (): Router => {
   const router = Router();
-  console.log('api.41');
   router.get('/', getConditions);
   return router;
 };
@@ -69,7 +67,6 @@ export const getPatientRouter = (): Router => {
   router.post('/medication', postPatientMedication);
   router.post('/metric', postPatientMetric);
   router.post('/note', postPatientNote);
-  // router.put('/', putPatient); TODO
   router.put('/metric', putPatientMetric);
   router.put('/note', putPatientNote);
   router.delete('/:id', deletePatient);

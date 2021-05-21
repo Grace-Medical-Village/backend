@@ -1,33 +1,3 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-
-// REQUESTS
-export type BuildSetStatement = (
-  event: APIGatewayProxyEvent,
-  o: string[]
-) => string[];
-export type BuildValsFromKeys = (keys: string[]) => string[];
-export type GetParameter = (
-  event: APIGatewayProxyEvent,
-  key: string,
-  required: boolean
-) => Value;
-export type GetRequestBodyKeys = (event: APIGatewayProxyEvent) => string[];
-export type GetRequestBodyValue = (
-  event: APIGatewayProxyEvent,
-  key: string
-) => Value;
-// export type GetRequestBodyString = (event: APIGatewayProxyEvent, key: string, required: boolean) => string;
-// export type GetRequestBodyString = (event: APIGatewayProxyEvent, key: string, required: boolean) => number;
-export type GetRequestBodyValues = (event: APIGatewayProxyEvent) => Value[];
-export type Value = string | number | boolean | null;
-type Values = unknown | string | number | boolean;
-
-export type Query = {
-  name: string;
-  text: string;
-  values?: Values[];
-};
-
 export type Condition = {
   id: number;
   conditionName: string;
@@ -63,7 +33,7 @@ export type Metric = {
   modifiedAt: string;
 };
 
-export enum T {
+export enum DATA_API_TYPES {
   IS_NULL = 'isNull',
   BOOLEAN = 'booleanValue',
   NUMBER = 'longValue',
@@ -127,83 +97,6 @@ export type PatientNote = {
   createdAt: string;
   modifiedAt: string;
 };
-
-export type PatientData = {
-  conditions?: PatientCondition[];
-  medications?: PatientMedication[];
-  metrics?: PatientMetric[];
-  notes?: PatientNote[];
-  patient?: Patient;
-};
-
-// DATABASE RESPONSE
-interface GetObject {
-  id: number;
-  created_at: string;
-  modified_at: string;
-}
-
-export interface GetPatientResponse extends GetObject {
-  first_name: string;
-  last_name: string;
-  birthdate: string;
-  gender: string;
-  email: string | null;
-  height: string | null;
-  map: boolean;
-  country: string;
-  native_language: string;
-  native_literacy: number | null;
-  smoker: boolean;
-  zip_code_5: string;
-}
-
-// RESPONSE
-export type Headers = {
-  [key: string]: string | boolean;
-};
-
-type ResponseHeaders = {
-  headers: Headers;
-};
-
-export type ResponseStatus = {
-  statusCode: number;
-  statusText: string;
-};
-
-export type ResponseError = {
-  error?: {
-    code: number;
-    message: string;
-  };
-};
-
-export type ResponseData = Medication[];
-// export type ResponseBody = {
-// data: any; // todo
-// };
-
-export interface Response extends ResponseHeaders, ResponseStatus {
-  body: string;
-}
-
-// GET
-export type GetMedicationResponse = {
-  data: Medication;
-};
-
-// POST
-
-// PUT
-
-// DELETE
-export interface DeleteResponseBody extends ResponseError {
-  data: Record<string, never>;
-}
-
-// UTILITY
-export type BuildValues = <T>(values: Array<T>) => string;
 
 // TEST
 export type EnvironmentTestObject = {

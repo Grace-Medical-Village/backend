@@ -4,7 +4,7 @@ import {
   FieldList,
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
-import { T } from '../types';
+import { DATA_API_TYPES } from '../types';
 import { isLocal } from '../config';
 
 type DbRequest = (sql: string) => Promise<FieldList[]>;
@@ -84,7 +84,7 @@ export const getFieldValue: GetFieldValue = (fieldList, index) => {
   //     `getFieldValue - index ${index} out of bounds for fieldList ${fieldList}`
   //   );
   // }
-  if (key === T.IS_NULL && value) {
+  if (key === DATA_API_TYPES.IS_NULL && value) {
     value = null;
   }
   return value;
