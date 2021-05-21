@@ -4,7 +4,7 @@
 
 - build test framework
   - unit tests
-  - integration tests 
+  - integration tests
     - supertests
     - Docker
 - configure logging

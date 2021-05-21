@@ -4,7 +4,7 @@ import { isLocal } from './config';
 import { Server } from 'http';
 
 export const main = async (): Promise<void> => {
-  serverlessExpress({ app });
+  await serverlessExpress({ app });
 };
 
 export const port: number = Number(process?.env?.PORT) ?? 4000;

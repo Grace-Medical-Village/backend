@@ -13,10 +13,10 @@ async function getConditions(req: Request, res: Response): Promise<void> {
   if (records && records.length > 0) {
     const data = buildConditionData(records);
     res.status(200);
-    res.json(data);
+    res.json(JSON.stringify(data));
   } else {
     res.status(404);
-    res.json([]);
+    res.json(JSON.stringify([]));
   }
 }
 
