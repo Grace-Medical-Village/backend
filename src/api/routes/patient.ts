@@ -78,13 +78,11 @@ async function getPatientMedications(
   let medications: ArrayLike<PatientMedication> = [];
   const sql = `select * from patient_medication where patient_id = ${id};`;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
+  await dbRequest(sql)
+    .then((r) => {
+      medications = buildPatientMedications(r);
+    })
     .catch((err) => console.error(err));
-
-  if (records && records.length > 0) {
-    medications = buildPatientMedications(records);
-  }
 
   return medications;
 }
@@ -122,8 +120,18 @@ async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
 }
 
 async function getPatients(req: Request, res: Response): Promise<void> {
-  const sql =
-    'select id, first_name, last_name, birthdate, gender from patient';
+  let sql = 'select id, first_name, last_name, birthdate, gender from patient';
+
+  if (req?.query?.name) {
+    const { name } = req.query;
+    const nameSearch = `lower('%${name}%')`;
+    sql += ` where lower(first_name) like ${nameSearch} or lower(last_name) like ${nameSearch}`;
+  } else if (req?.query?.birthdate) {
+    const { birthdate } = req.query;
+    if (typeof birthdate === 'string') {
+      sql += ` where birthdate = ${sqlParen(birthdate)}`;
+    }
+  }
 
   const patients = await dbRequest(sql)
     .then((r) => r)
@@ -144,19 +152,15 @@ async function postPatient(req: Request, res: Response): Promise<void> {
   const lastName = sqlParen(req.body.lastName);
   const birthdate = sqlParen(req.body.birthdate);
   const gender = sqlParen(req.body.gender);
-  const email = sqlParen(req.body.email) ?? null;
-  const height = req.body.height ?? null;
   const country = sqlParen(req.body.country);
   const { mobile, nativeLanguage, nativeLiteracy, smoker, zipCode5 } = req.body;
 
-  let columns = `first_name, last_name, birthdate, gender, email, height, country`;
+  let columns = `first_name, last_name, birthdate, gender, country`;
   const values: Array<string | number | boolean> = [
     firstName,
     lastName,
     birthdate,
     gender,
-    email,
-    height,
     country,
   ];
 
@@ -195,7 +199,7 @@ async function postPatient(req: Request, res: Response): Promise<void> {
       res.json({});
     });
 
-  if (records && records[0] && records[0][0]) {
+  if (records && records[0]) {
     const id = records[0][0].longValue;
     res.status(201);
     res.json({ id });
@@ -212,18 +216,26 @@ async function postPatientCondition(
   const patientId = req.body.patientId;
   const conditionId = req.body.conditionId;
 
-  const sql = `insert into patient_condition (patient_id, condition_id) values (${patientId}, ${conditionId});`;
+  const sql = `
+    insert into patient_condition (patient_id, condition_id) 
+    values (${patientId}, ${conditionId})
+    returning id;
+  `;
 
   await dbRequest(sql)
-    .then((_) => {
-      res.status(201);
+    .then((r) => {
+      if (r[0]) {
+        const id = r[0][0].longValue;
+        res.status(201);
+        res.json({ id });
+      } else {
+        res.status(500);
+        res.json({});
+      }
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
     });
-
-  res.json({});
 }
 
 async function postPatientMedication(
@@ -233,18 +245,30 @@ async function postPatientMedication(
   const patientId = req.body.patientId;
   const medicationId = req.body.medicationId;
 
-  const sql = `insert into patient_medication (patient_id, medicationId) values (${patientId}, ${medicationId});`;
+  const sql = `
+    insert into patient_medication (patient_id, medication_id) 
+    values (${patientId}, ${medicationId})
+    returning id, created_at, modified_at;
+  `;
 
   await dbRequest(sql)
-    .then((_) => {
-      res.status(201);
+    .then((r) => {
+      if (r[0]) {
+        const id = r[0][0].longValue;
+        const createdAt = r[0][1].stringValue;
+        const modifiedAt = r[0][2].stringValue;
+        res.status(201);
+        res.json({ id, createdAt, modifiedAt });
+      } else {
+        res.status(400);
+        res.json({});
+      }
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
+      res.json({});
     });
-
-  res.json({});
 }
 
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
@@ -252,36 +276,59 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const metricId = req.body.metricId;
   const value = req.body.value;
 
-  const sql = `insert into patient_metric (patient_id, metricId, value) values (${patientId}, ${metricId}, ${value});`;
+  const sql = `
+    insert into patient_metric (patient_id, metric_id, value) 
+    values (${patientId}, ${metricId}, ${value})
+    returning id, created_at, modified_at;
+  `;
 
   await dbRequest(sql)
-    .then((_) => {
-      res.status(201);
+    .then((r) => {
+      if (r[0]) {
+        const id = r[0][0].longValue;
+        const createdAt = r[0][1].stringValue;
+        const modifiedAt = r[0][2].stringValue;
+        res.status(201);
+        res.json({ id, createdAt, modifiedAt });
+      } else {
+        res.status(400);
+        res.json({});
+      }
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
+      res.json({});
     });
-
-  res.json({});
 }
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const note = sqlParen(req.body.note).trim();
 
-  const sql = `insert into patient_note (patient_id, note) values (${patientId}, ${note});`;
+  const sql = `
+    insert into patient_note (patient_id, note) 
+    values (${patientId}, ${note})
+    returning id, created_at, modified_at;
+  `;
 
   await dbRequest(sql)
-    .then((_) => {
-      res.status(201);
+    .then((r) => {
+      if (r[0]) {
+        const id = r[0][0].longValue;
+        const createdAt = r[0][1].stringValue;
+        const modifiedAt = r[0][2].stringValue;
+        res.status(201);
+        res.json({ id, createdAt, modifiedAt });
+      } else {
+        res.status(400);
+        res.json({});
+      }
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
     });
-
-  res.json({});
 }
 
 async function putPatientMetric(req: Request, res: Response): Promise<void> {
@@ -345,6 +392,7 @@ async function deletePatientCondition(
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
+      console.log(sql);
     })
     .catch((e) => {
       console.error(e);

@@ -115,18 +115,24 @@ async function putMedication(req: Request, res: Response): Promise<void> {
 }
 
 async function deleteMedication(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  const sql = `delete from medication where id = ${id}`;
+  const id = req?.params?.id;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  if (id) {
+    const sql = `delete from medication where id = ${id}`;
+
+    await dbRequest(sql)
+      .then((_) => {
+        res.status(200);
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(400);
+      });
+    res.json({});
+  } else {
+    res.status(400);
+    res.json({ message: `Failed to provide 'id' query parameter` });
+  }
 }
 
 function buildMedicationData(records: FieldList[]): Medication[] {
