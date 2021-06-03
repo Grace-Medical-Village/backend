@@ -12,39 +12,40 @@ async function getMedication(req: Request, res: Response): Promise<void> {
    where m.id = ${id};
   `;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
-
-  if (records && records.length === 1) {
-    const data = buildMedicationData(records);
-    res.status(200);
-    res.json(data[0]);
-  } else {
-    res.status(404);
-    res.json({});
-  }
+  await dbRequest(sql)
+    .then((r) => {
+      const data = buildMedicationData(r);
+      if (data.length === 1) {
+        res.status(200);
+        res.json(data[0]);
+      } else {
+        res.status(404);
+        res.json({});
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json({});
+    });
 }
 
 async function getMedications(req: Request, res: Response): Promise<void> {
   const sql =
     'select m.*, mc.name category_name from medication m join medication_category mc on m.category_id = mc.id;';
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
+  await dbRequest(sql)
+    .then((r) => {
+      const data = buildMedicationData(r);
+      if (data.length > 0) res.status(200);
+      else res.status(404);
+      res.json(data);
+    })
     .catch((err) => {
-      res.status(400);
+      res.status(500);
+      res.json([]);
       console.error(err);
     });
-
-  if (records && records.length > 0) {
-    const data = buildMedicationData(records);
-    res.status(200);
-    res.json(data);
-  } else {
-    res.status(404);
-    res.json([]);
-  }
 }
 
 async function getMedicationCategories(
@@ -53,18 +54,18 @@ async function getMedicationCategories(
 ): Promise<void> {
   const sql = 'select * from medication_category';
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
-
-  if (records && records.length > 0) {
-    const data = buildMedicationCategoryData(records);
-    res.status(200);
-    res.json(data);
-  } else {
-    res.status(404);
-    res.json([]);
-  }
+  await dbRequest(sql)
+    .then((r) => {
+      const data = buildMedicationCategoryData(r);
+      if (data.length > 0) res.status(200);
+      else res.status(404);
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json([]);
+    });
 }
 
 async function postMedication(req: Request, res: Response): Promise<void> {
@@ -88,7 +89,7 @@ async function postMedication(req: Request, res: Response): Promise<void> {
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
     });
 
   res.json({});
@@ -107,7 +108,7 @@ async function putMedication(req: Request, res: Response): Promise<void> {
       res.status(200);
     })
     .catch((e) => {
-      res.status(400);
+      res.status(500);
       console.error(e);
     });
 
@@ -126,7 +127,7 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
       })
       .catch((e) => {
         console.error(e);
-        res.status(400);
+        res.status(500);
       });
     res.json({});
   } else {

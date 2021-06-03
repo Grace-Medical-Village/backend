@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { getConditions } from './routes/conditions';
 import {
   deleteMedication,
@@ -32,6 +32,13 @@ export const buildRouter = (): Router => {
   router.use('/medications', getMedicationRouter());
   router.use('/metrics', getMetricRouter());
   router.use('/patients', getPatientRouter());
+  router.use(
+    '/health',
+    router.get('/health', (req: Request, res: Response) => {
+      res.status(200);
+      res.json({ healthy: true });
+    })
+  );
   return router;
 };
 

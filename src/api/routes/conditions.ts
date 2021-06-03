@@ -6,17 +6,18 @@ import { dbRequest, getFieldValue } from '../../utils/db';
 async function getConditions(req: Request, res: Response): Promise<void> {
   const sql = 'select id, condition_name from condition;';
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
-  if (records && records.length > 0) {
-    const data = buildConditionData(records);
-    res.status(200);
-    res.json(data);
-  } else {
-    res.status(404);
-    res.json([]);
-  }
+  await dbRequest(sql)
+    .then((r) => {
+      const data = buildConditionData(r);
+      // res.status(200);
+      // res.json(data);
+      return res.status(200).json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(404);
+      res.json([]);
+    });
 }
 
 function buildConditionData(records: FieldList[]): Condition[] {
