@@ -177,8 +177,8 @@ export enum PC {
 // Patient Medications
 export enum PMed {
   ID,
-  MEDICATION_ID,
   PATIENT_ID,
+  MEDICATION_ID,
   CREATED_AT,
   MODIFIED_AT,
 }
