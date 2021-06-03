@@ -3,7 +3,7 @@ import { app } from './app';
 import { isLocal } from './config';
 import { Server } from 'http';
 
-export const main = (): unknown => serverlessExpress({ app });
+export const main = serverlessExpress({ app });
 
 export const port: number = Number(process?.env?.PORT) ?? 4000;
 

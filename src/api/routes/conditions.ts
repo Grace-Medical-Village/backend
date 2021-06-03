@@ -9,13 +9,13 @@ async function getConditions(req: Request, res: Response): Promise<void> {
   await dbRequest(sql)
     .then((r) => {
       const data = buildConditionData(r);
-      // res.status(200);
-      // res.json(data);
-      return res.status(200).json(data);
+      if (data.length > 0) res.status(200);
+      else res.status(404);
+      res.json(data);
     })
     .catch((err) => {
       console.error(err);
-      res.status(404);
+      res.status(500);
       res.json([]);
     });
 }
