@@ -22,7 +22,11 @@ async function getPatient(req: Request, res: Response): Promise<void> {
 
   const records = await dbRequest(sql)
     .then((r) => r)
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json({});
+    });
 
   if (records && records.length === 1) {
     const conditions = await getPatientConditions(id)
@@ -62,13 +66,12 @@ async function getPatientConditions(
     inner join condition c on pc.condition_id = c.id
     where patient_id = ${id};
   `;
-  const records = await dbRequest(sql)
-    .then((r) => r)
+  await dbRequest(sql)
+    .then((r) => {
+      conditions = buildPatientConditions(r);
+    })
     .catch((err) => console.error(err));
 
-  if (records && records.length > 0) {
-    conditions = buildPatientConditions(records);
-  }
   return conditions;
 }
 
@@ -93,13 +96,11 @@ async function getPatientMetrics(
   let metrics: ArrayLike<PatientMetric> = [];
   const sql = `select * from patient_metric where patient_id = ${id};`;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
+  await dbRequest(sql)
+    .then((r) => {
+      metrics = buildPatientMetrics(r);
+    })
     .catch((err) => console.error(err));
-
-  if (records && records.length > 0) {
-    metrics = buildPatientMetrics(records);
-  }
 
   return metrics;
 }
@@ -108,43 +109,54 @@ async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
   let notes: ArrayLike<PatientNote> = [];
   const sql = `select * from patient_note where patient_id = ${id};`;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
-
-  if (records && records.length > 0) {
-    notes = buildPatientNotes(records);
-  }
+  await dbRequest(sql)
+    .then((r) => {
+      notes = buildPatientNotes(r);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   return notes;
 }
 
 async function getPatients(req: Request, res: Response): Promise<void> {
-  let sql = 'select id, first_name, last_name, birthdate, gender from patient';
+  let sql = `
+    with p as (
+      select id,
+        first_name,
+        last_name,
+        first_name || ' ' || last_name as "full_name",
+        birthdate,
+        gender
+      from patient
+    ) select * from p
+  `;
 
   if (req?.query?.name) {
     const { name } = req.query;
     const nameSearch = `lower('%${name}%')`;
-    sql += ` where lower(first_name) like ${nameSearch} or lower(last_name) like ${nameSearch}`;
+    sql += ` where lower(full_name) like ${nameSearch}`;
   } else if (req?.query?.birthdate) {
     const { birthdate } = req.query;
     if (typeof birthdate === 'string') {
       sql += ` where birthdate = ${sqlParen(birthdate)}`;
     }
-  }
+  } else res.status(400).json([]);
 
-  const patients = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
+  await dbRequest(sql)
+    .then((patients) => {
+      const data = buildPatientsData(patients);
+      if (data.length > 0) res.status(200);
+      else res.status(404);
 
-  if (patients && patients.length > 0) {
-    const data = buildPatientsData(patients);
-    res.status(200);
-    res.json(data);
-  } else {
-    res.status(404);
-    res.json([]);
-  }
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json([]);
+    });
 }
 
 async function postPatient(req: Request, res: Response): Promise<void> {
