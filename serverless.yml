@@ -39,6 +39,7 @@ provider:
     - Effect: Allow
       Action:
         - rds-data:*
+        - secretsmanager:GetSecretValue
       Resource: '*'
   logRetentionInDays: 30
   tracing:

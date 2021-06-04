@@ -581,6 +581,7 @@ function buildPatientsData(records: FieldList[]): ArrayLike<PatientListRecord> {
     const id = getFieldValue(p, Pats.ID) as number;
     const firstName = getFieldValue(p, Pats.FIRST_NAME) as string;
     const lastName = getFieldValue(p, Pats.LAST_NAME) as string;
+    const fullName = getFieldValue(p, Pats.FULL_NAME) as string;
     const birthdate = getFieldValue(p, Pats.BIRTHDATE) as string;
     const gender = getFieldValue(p, Pats.GENDER) as string;
 
@@ -588,6 +589,7 @@ function buildPatientsData(records: FieldList[]): ArrayLike<PatientListRecord> {
       id,
       firstName,
       lastName,
+      fullName,
       birthdate,
       gender,
     };

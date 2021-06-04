@@ -61,6 +61,7 @@ export type PatientListRecord = {
   id: number;
   firstName: string;
   lastName: string;
+  fullName?: string;
   birthdate: string;
   gender: string;
 };
@@ -207,6 +208,7 @@ export enum Pats {
   ID,
   FIRST_NAME,
   LAST_NAME,
+  FULL_NAME,
   BIRTHDATE,
   GENDER,
 }
