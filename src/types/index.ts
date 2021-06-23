@@ -9,6 +9,7 @@ export type Medication = {
   strength: string;
   categoryId: number;
   categoryName: string;
+  archived: boolean;
   createdAt: string;
   modifiedAt: string;
 };
@@ -55,6 +56,7 @@ export type Patient = {
   nativeLanguage?: string;
   nativeLiteracy?: string;
   smoker: boolean;
+  zipCode5?: string;
 };
 
 export type PatientListRecord = {
@@ -115,6 +117,7 @@ export enum Med {
   CATEGORY_ID,
   NAME,
   STRENGTH,
+  ARCHIVED,
   CREATED_AT,
   MODIFIED_AT,
   CATEGORY_NAME,
@@ -163,6 +166,7 @@ export enum Pat {
   NATIVE_LANGUAGE,
   NATIVE_LITERACY,
   SMOKER,
+  ZIP_CODE,
 }
 
 // Patient Conditions

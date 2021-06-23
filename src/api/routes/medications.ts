@@ -31,8 +31,12 @@ async function getMedication(req: Request, res: Response): Promise<void> {
 }
 
 async function getMedications(req: Request, res: Response): Promise<void> {
-  const sql =
-    'select m.*, mc.name category_name from medication m join medication_category mc on m.category_id = mc.id;';
+  const sql = `
+    select m.*, mc.name category_name 
+    from medication m 
+    join medication_category mc on m.category_id = mc.id
+    order by category_name, m.name, m.strength;
+  `;
 
   await dbRequest(sql)
     .then((r) => {
@@ -98,11 +102,19 @@ async function postMedication(req: Request, res: Response): Promise<void> {
 async function putMedication(req: Request, res: Response): Promise<void> {
   const id = req.body.id;
   const categoryId = req.body.categoryId;
+  const archived = req.body.archived;
   const name = sqlParen(req.body.name);
   const strength = sqlParen(req.body.strength);
 
-  const sql = `update medication set category_id = ${categoryId}, name = ${name}, strength = ${strength} where id = ${id};`;
+  const sql = `
+    update medication 
+    set category_id = ${categoryId}, 
+      name = ${name}, 
+      strength = ${strength},
+      archived = ${archived} 
+    where id = ${id};`;
 
+  console.log(sql);
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
@@ -143,6 +155,7 @@ function buildMedicationData(records: FieldList[]): Medication[] {
     const strength = getFieldValue(med, Med.STRENGTH) as string;
     const categoryId = getFieldValue(med, Med.CATEGORY_ID) as number;
     const categoryName = getFieldValue(med, Med.CATEGORY_NAME) as string;
+    const archived = getFieldValue(med, Med.ARCHIVED) as boolean;
     const createdAt = getFieldValue(med, Med.CREATED_AT) as string;
     const modifiedAt = getFieldValue(med, Med.MODIFIED_AT) as string;
 
@@ -152,6 +165,7 @@ function buildMedicationData(records: FieldList[]): Medication[] {
       strength,
       categoryId,
       categoryName,
+      archived,
       createdAt,
       modifiedAt,
     };

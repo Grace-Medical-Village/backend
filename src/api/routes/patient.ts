@@ -79,7 +79,7 @@ async function getPatientMedications(
   id: string
 ): Promise<ArrayLike<PatientMedication>> {
   let medications: ArrayLike<PatientMedication> = [];
-  const sql = `select * from patient_medication where patient_id = ${id};`;
+  const sql = `select * from patient_medication where patient_id = ${id} order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -94,7 +94,7 @@ async function getPatientMetrics(
   id: string
 ): Promise<ArrayLike<PatientMetric>> {
   let metrics: ArrayLike<PatientMetric> = [];
-  const sql = `select * from patient_metric where patient_id = ${id};`;
+  const sql = `select * from patient_metric where patient_id = ${id} order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -107,7 +107,7 @@ async function getPatientMetrics(
 
 async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
   let notes: ArrayLike<PatientNote> = [];
-  const sql = `select * from patient_note where patient_id = ${id};`;
+  const sql = `select * from patient_note where patient_id = ${id} order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -203,23 +203,28 @@ async function postPatient(req: Request, res: Response): Promise<void> {
 
   const sql = `insert into patient (${columns}) values (${values}) returning id`;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
+  await dbRequest(sql)
+    .then((r) => {
+      if (r && r[0]) {
+        const id = r[0][0].longValue;
+        res.status(201);
+        res.json({ id });
+      } else {
+        res.status(400);
+        res.json({});
+      }
+    })
     .catch((e) => {
-      console.error(e);
-      res.status(400);
-      res.json({});
+      handlePostPatientError(e, res);
     });
-
-  if (records && records[0]) {
-    const id = records[0][0].longValue;
-    res.status(201);
-    res.json({ id });
-  } else {
-    res.status(400);
-    res.json({});
-  }
 }
+
+const handlePostPatientError = (e: Error, res: Response): void => {
+  console.error(e);
+  if (e.message.match(/already exists/i)) res.status(409);
+  else res.status(400);
+  res.json({});
+};
 
 async function postPatientCondition(
   req: Request,
@@ -341,6 +346,38 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
       console.error(e);
       res.status(500);
     });
+}
+
+async function putPatient(req: Request, res: Response): Promise<void> {
+  const id = req.params.id;
+  console.log(id);
+  const updates = `
+    first_name = '${req.body.firstName}',
+    last_name = '${req.body.lastName}',
+    birthdate = '${req.body.birthdate}',
+    gender = '${req.body.gender}',
+    country = '${req.body.country}',
+    mobile = '${req.body.mobile}',
+    native_language = '${req.body.nativeLanguage}',
+    native_literacy = ${req.body.nativeLiteracy},
+    zip_code_5 = '${req.body.zipCode5}',
+    map = '${req.body.map}',
+    smoker = '${req.body.smoker}'
+  `;
+
+  const sql = `update patient set ${updates} where id = ${id};`;
+
+  // TODO 409 if patient already exists
+  await dbRequest(sql)
+    .then((_) => {
+      res.status(200);
+    })
+    .catch((e) => {
+      res.status(400);
+      console.error(e);
+    });
+
+  res.json({});
 }
 
 async function putPatientMetric(req: Request, res: Response): Promise<void> {
@@ -557,6 +594,7 @@ function buildPatientData(p: FieldList): Patient {
   const nativeLanguage = getFieldValue(p, Pat.NATIVE_LANGUAGE) as string;
   const nativeLiteracy = getFieldValue(p, Pat.NATIVE_LITERACY) as string;
   const smoker = getFieldValue(p, Pat.SMOKER) as boolean;
+  const zipCode5 = getFieldValue(p, Pat.ZIP_CODE) as string;
 
   return {
     id,
@@ -573,6 +611,7 @@ function buildPatientData(p: FieldList): Patient {
     nativeLanguage,
     nativeLiteracy,
     smoker,
+    zipCode5,
   };
 }
 
@@ -611,6 +650,7 @@ export {
   postPatientMedication,
   postPatientMetric,
   postPatientNote,
+  putPatient,
   putPatientMetric,
   putPatientNote,
 };

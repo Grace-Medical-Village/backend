@@ -22,6 +22,7 @@ import {
   postPatientMedication,
   postPatientMetric,
   postPatientNote,
+  putPatient,
   putPatientMetric,
   putPatientNote,
 } from './routes/patient';
@@ -74,6 +75,7 @@ export const getPatientRouter = (): Router => {
   router.post('/medication', postPatientMedication);
   router.post('/metric', postPatientMetric);
   router.post('/note', postPatientNote);
+  router.put('/:id', putPatient);
   router.put('/metric', putPatientMetric);
   router.put('/note', putPatientNote);
   router.delete('/:id', deletePatient);
