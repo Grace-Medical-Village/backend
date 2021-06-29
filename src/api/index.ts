@@ -76,8 +76,8 @@ export const getPatientRouter = (): Router => {
   router.post('/metric', postPatientMetric);
   router.post('/note', postPatientNote);
   router.put('/:id', putPatient);
-  router.put('/metric', putPatientMetric);
-  router.put('/note', putPatientNote);
+  router.put('/metric/:id', putPatientMetric);
+  router.put('/note/:id', putPatientNote);
   router.delete('/:id', deletePatient);
   router.delete('/condition/:id', deletePatientCondition);
   router.delete('/medication/:id', deletePatientMedication);

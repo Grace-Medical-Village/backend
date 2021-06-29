@@ -399,8 +399,8 @@ async function putPatientMetric(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientNote(req: Request, res: Response): Promise<void> {
-  const id = req.body.id;
-  const note = sqlParen(req.body.categoryId).trim();
+  const id = req.params.id;
+  const note = sqlParen(req.body.note.trim());
 
   const sql = `update patient_note set note = ${note} where id = ${id};`;
 
