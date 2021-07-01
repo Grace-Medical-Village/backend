@@ -292,7 +292,7 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
   const value = req.body.value;
-  const comment: string | null = req.body?.comment ?? null;
+  const comment: string | null = sqlParen(req.body?.comment.trim()) ?? null;
 
   const sql = `
     insert into patient_metric (patient_id, metric_id, value, comment) 
@@ -351,7 +351,6 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
 
 async function putPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  console.log(id);
   const updates = `
     first_name = '${req.body.firstName}',
     last_name = '${req.body.lastName}',
@@ -546,6 +545,7 @@ function buildPatientMetrics(records: FieldList[]): ArrayLike<PatientMetric> {
     const id = getFieldValue(pm, PMet.ID) as number;
     const metricId = getFieldValue(pm, PMet.METRIC_ID) as number;
     const value = getFieldValue(pm, PMet.VALUE) as string;
+    const comment = getFieldValue(pm, PMet.COMMENT) as string | null;
     const patientId = getFieldValue(pm, PMet.PATIENT_ID) as number;
     const createdAt = getFieldValue(pm, PMet.CREATED_AT) as string;
     const modifiedAt = getFieldValue(pm, PMet.MODIFIED_AT) as string;
@@ -555,6 +555,7 @@ function buildPatientMetrics(records: FieldList[]): ArrayLike<PatientMetric> {
       metricId,
       patientId,
       value,
+      comment,
       createdAt,
       modifiedAt,
     };

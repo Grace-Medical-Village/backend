@@ -89,6 +89,7 @@ export type PatientMetric = {
   metricId: number;
   patientId: number;
   value: string;
+  comment: string | null;
   createdAt: string;
   modifiedAt: string;
 };
@@ -194,6 +195,7 @@ export enum PMet {
   PATIENT_ID,
   METRIC_ID,
   VALUE,
+  COMMENT,
   CREATED_AT,
   MODIFIED_AT,
 }
