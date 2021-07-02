@@ -30,6 +30,7 @@ export type Metric = {
   defaultValue: number | null;
   minValue: number | null;
   maxValue: number | null;
+  mask: string | null;
   createdAt: string;
   modifiedAt: string;
 };
@@ -142,6 +143,7 @@ export enum Met {
   DEFAULT_VALUE,
   MIN_VALUE,
   MAX_VALUE,
+  MASK,
   CREATED_AT,
   MODIFIED_AT,
 }

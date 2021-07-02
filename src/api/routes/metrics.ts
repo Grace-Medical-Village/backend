@@ -30,6 +30,7 @@ function buildMetricData(records: FieldList[]): Metric[] {
     const defaultValue = getFieldValue(m, Met.DEFAULT_VALUE) as number | null;
     const minValue = getFieldValue(m, Met.MAX_VALUE) as number | null;
     const maxValue = getFieldValue(m, Met.MIN_VALUE) as number | null;
+    const mask = getFieldValue(m, Met.MASK) as string | null;
     const createdAt = getFieldValue(m, Met.CREATED_AT) as string;
     const modifiedAt = getFieldValue(m, Met.MODIFIED_AT) as string;
 
@@ -42,6 +43,7 @@ function buildMetricData(records: FieldList[]): Metric[] {
       defaultValue,
       minValue,
       maxValue,
+      mask,
       createdAt,
       modifiedAt,
     };
