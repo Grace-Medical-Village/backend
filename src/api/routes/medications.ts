@@ -114,7 +114,6 @@ async function putMedication(req: Request, res: Response): Promise<void> {
       archived = ${archived} 
     where id = ${id};`;
 
-  console.log(sql);
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
@@ -150,6 +149,7 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
 
 function buildMedicationData(records: FieldList[]): Medication[] {
   return records?.map((med: FieldList) => {
+    console.log(med);
     const id = getFieldValue(med, Med.ID) as number;
     const name = getFieldValue(med, Med.NAME) as string;
     const strength = getFieldValue(med, Med.STRENGTH) as string;
