@@ -27,10 +27,10 @@ function buildMetricData(records: FieldList[]): Metric[] {
     const unitOfMeasure = getFieldValue(m, Met.UNIT_OF_MEASURE) as string;
     const uom = getFieldValue(m, Met.UOM) as string;
     const map = getFieldValue(m, Met.MAP) as boolean;
-    const defaultValue = getFieldValue(m, Met.DEFAULT_VALUE) as number | null;
+    const format = getFieldValue(m, Met.FORMAT) as string;
+    const pattern = getFieldValue(m, Met.PATTERN) as string;
     const minValue = getFieldValue(m, Met.MAX_VALUE) as number | null;
     const maxValue = getFieldValue(m, Met.MIN_VALUE) as number | null;
-    const mask = getFieldValue(m, Met.MASK) as string | null;
     const createdAt = getFieldValue(m, Met.CREATED_AT) as string;
     const modifiedAt = getFieldValue(m, Met.MODIFIED_AT) as string;
 
@@ -40,10 +40,10 @@ function buildMetricData(records: FieldList[]): Metric[] {
       unitOfMeasure,
       uom,
       map,
-      defaultValue,
+      format,
+      pattern,
       minValue,
       maxValue,
-      mask,
       createdAt,
       modifiedAt,
     };

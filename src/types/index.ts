@@ -27,10 +27,10 @@ export type Metric = {
   unitOfMeasure: string;
   uom: string;
   map: boolean;
-  defaultValue: number | null;
+  format: string;
+  pattern: string;
   minValue: number | null;
   maxValue: number | null;
-  mask: string | null;
   createdAt: string;
   modifiedAt: string;
 };
@@ -140,10 +140,10 @@ export enum Met {
   UNIT_OF_MEASURE,
   UOM,
   MAP,
-  DEFAULT_VALUE,
   MIN_VALUE,
   MAX_VALUE,
-  MASK,
+  FORMAT,
+  PATTERN,
   CREATED_AT,
   MODIFIED_AT,
 }

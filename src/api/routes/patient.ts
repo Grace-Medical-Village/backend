@@ -292,7 +292,10 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
   const value = req.body.value;
-  const comment: string | null = sqlParen(req.body?.comment.trim()) ?? null;
+  console.log(req.body);
+  const comment: string | null = req.body.comment
+    ? sqlParen(req.body.comment.trim())
+    : null;
 
   const sql = `
     insert into patient_metric (patient_id, metric_id, value, comment) 
