@@ -15,6 +15,7 @@ import {
   PMet,
   PNote,
 } from '../../types';
+import { validateMetric } from '../../utils';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -292,35 +293,47 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
   const value = req.body.value;
-  console.log(req.body);
   const comment: string | null = req.body.comment
     ? sqlParen(req.body.comment.trim())
     : null;
 
-  const sql = `
+  const validMetric = await validateMetric(metricId, value);
+
+  if (validMetric.isValid && validMetric.metric) {
+    console.log(302);
+    console.log(validMetric);
+    const sql = `
     insert into patient_metric (patient_id, metric_id, value, comment) 
-    values (${patientId}, ${metricId}, ${value}, ${comment})
+    values (${patientId}, ${metricId}, ${sqlParen(
+      validMetric.metric
+    )}, ${comment})
     returning id, created_at, modified_at;
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
-        const createdAt = r[0][1].stringValue;
-        const modifiedAt = r[0][2].stringValue;
-        res.status(201);
-        res.json({ id, createdAt, modifiedAt });
-      } else {
-        res.status(400);
+    await dbRequest(sql)
+      .then((r) => {
+        if (r[0]) {
+          const id = r[0][0].longValue;
+          const createdAt = r[0][1].stringValue;
+          const modifiedAt = r[0][2].stringValue;
+          res.status(201);
+          res.json({ id, createdAt, modifiedAt });
+        } else {
+          res.status(400);
+          res.json({});
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500);
         res.json({});
-      }
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(500);
-      res.json({});
+      });
+  } else {
+    res.status(400);
+    res.json({
+      error: `${validMetric?.error ?? 'Metric provided is invalid'}`,
     });
+  }
 }
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {

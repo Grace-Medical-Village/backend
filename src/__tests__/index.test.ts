@@ -1,6 +1,5 @@
-import serverlessExpress from '@vendia/serverless-express';
 import { app } from '../app';
-import { startServer, main } from '../index';
+import { startServer } from '../index';
 
 jest.mock('@vendia/serverless-express');
 
@@ -17,16 +16,5 @@ describe('server', () => {
     startServer();
 
     expect(app.listen).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('main', () => {
-  it('builds a serverless-express app', () => {
-    expect.assertions(2);
-
-    main();
-
-    expect(serverlessExpress).toHaveBeenCalledTimes(1);
-    expect(serverlessExpress).toHaveBeenCalledWith({ app });
   });
 });

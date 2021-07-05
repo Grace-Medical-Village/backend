@@ -1,7 +1,7 @@
 import serverlessExpress from '@vendia/serverless-express';
 import { app } from './app';
-import { isLocal } from './config';
 import { Server } from 'http';
+import { isLocal } from './utils';
 
 export const main = serverlessExpress({ app });
 

@@ -5,7 +5,7 @@ import {
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { DATA_API_TYPES } from '../types';
-import { isLocal } from '../config';
+import { isLocal } from './index';
 
 type DbRequest = (sql: string) => Promise<FieldList[]>;
 
@@ -90,4 +90,4 @@ export const getFieldValue: GetFieldValue = (fieldList, index) => {
   return value;
 };
 
-export const sqlParen = (x: string) => `'${x}'`;
+export const sqlParen = (x: string): string => `'${x}'`;

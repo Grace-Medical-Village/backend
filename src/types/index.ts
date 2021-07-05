@@ -29,8 +29,8 @@ export type Metric = {
   map: boolean;
   format: string;
   pattern: string;
-  minValue: number | null;
-  maxValue: number | null;
+  minValue: number;
+  maxValue: number;
   createdAt: string;
   modifiedAt: string;
 };
@@ -134,7 +134,7 @@ export enum MedCat {
 }
 
 // Metric
-export enum Met {
+export enum MetricDataIndex {
   ID,
   METRIC_NAME,
   UNIT_OF_MEASURE,
@@ -146,6 +146,13 @@ export enum Met {
   PATTERN,
   CREATED_AT,
   MODIFIED_AT,
+}
+
+export enum MetricFormatDataIndex {
+  ID,
+  PATTERN,
+  MIN_VALUE,
+  MAX_VALUE,
 }
 
 // Condition
@@ -220,3 +227,19 @@ export enum Pats {
   BIRTHDATE,
   GENDER,
 }
+
+export type MetricFormat = {
+  minValue: number;
+  maxValue: number;
+  pattern?: string;
+};
+
+export type CachedMetric = {
+  [metricId: number]: MetricFormat;
+};
+
+export type ValidMetric = {
+  isValid: boolean;
+  metric?: string;
+  error?: string;
+};

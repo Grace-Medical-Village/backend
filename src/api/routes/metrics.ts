@@ -1,38 +1,66 @@
 import { Request, Response } from 'express';
 import { dbRequest, getFieldValue } from '../../utils/db';
 import { FieldList } from 'aws-sdk/clients/rdsdataservice';
-import { Met, Metric } from '../../types';
+import {
+  Metric,
+  MetricDataIndex,
+  MetricFormat,
+  MetricFormatDataIndex,
+} from '../../types';
 
 async function getMetrics(req: Request, res: Response): Promise<void> {
   const sql = 'select * from metric;';
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => console.error(err));
+  await dbRequest(sql)
+    .then((r) => {
+      if (r && r.length > 0) {
+        const data = buildMetricData(r);
+        res.status(200);
+        res.json(data);
+      } else {
+        res.status(404);
+        res.json([]);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json([]);
+    });
+}
 
-  if (records && records.length > 0) {
-    const data = buildMetricData(records);
-    res.status(200);
-    res.json(data);
-  } else {
-    res.status(404);
-    res.json([]);
-  }
+async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
+  const sql = 'select id, pattern, min_value, max_value from metric;';
+
+  let result: Array<Partial<Metric>> = [];
+  await dbRequest(sql)
+    .then((r) => {
+      if (r && r.length > 0) {
+        result = buildMetricFormatData(r);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  return result;
 }
 
 function buildMetricData(records: FieldList[]): Metric[] {
   return records?.map((m: FieldList) => {
-    const id = getFieldValue(m, Met.ID) as number;
-    const metricName = getFieldValue(m, Met.METRIC_NAME) as string;
-    const unitOfMeasure = getFieldValue(m, Met.UNIT_OF_MEASURE) as string;
-    const uom = getFieldValue(m, Met.UOM) as string;
-    const map = getFieldValue(m, Met.MAP) as boolean;
-    const format = getFieldValue(m, Met.FORMAT) as string;
-    const pattern = getFieldValue(m, Met.PATTERN) as string;
-    const minValue = getFieldValue(m, Met.MAX_VALUE) as number | null;
-    const maxValue = getFieldValue(m, Met.MIN_VALUE) as number | null;
-    const createdAt = getFieldValue(m, Met.CREATED_AT) as string;
-    const modifiedAt = getFieldValue(m, Met.MODIFIED_AT) as string;
+    const id = getFieldValue(m, MetricDataIndex.ID) as number;
+    const metricName = getFieldValue(m, MetricDataIndex.METRIC_NAME) as string;
+    const unitOfMeasure = getFieldValue(
+      m,
+      MetricDataIndex.UNIT_OF_MEASURE
+    ) as string;
+    const uom = getFieldValue(m, MetricDataIndex.UOM) as string;
+    const map = getFieldValue(m, MetricDataIndex.MAP) as boolean;
+    const format = getFieldValue(m, MetricDataIndex.FORMAT) as string;
+    const pattern = getFieldValue(m, MetricDataIndex.PATTERN) as string;
+    const minValue = getFieldValue(m, MetricDataIndex.MIN_VALUE) as number;
+    const maxValue = getFieldValue(m, MetricDataIndex.MAX_VALUE) as number;
+    const createdAt = getFieldValue(m, MetricDataIndex.CREATED_AT) as string;
+    const modifiedAt = getFieldValue(m, MetricDataIndex.MODIFIED_AT) as string;
 
     const metric: Metric = {
       id,
@@ -52,4 +80,27 @@ function buildMetricData(records: FieldList[]): Metric[] {
   });
 }
 
-export { getMetrics };
+function buildMetricFormatData(records: FieldList[]): Array<Partial<Metric>> {
+  return records?.map((m: FieldList) => {
+    const id = getFieldValue(m, MetricFormatDataIndex.ID) as number;
+    const pattern = getFieldValue(m, MetricFormatDataIndex.PATTERN) as string;
+    const minValue = getFieldValue(
+      m,
+      MetricFormatDataIndex.MIN_VALUE
+    ) as number;
+    const maxValue = getFieldValue(
+      m,
+      MetricFormatDataIndex.MAX_VALUE
+    ) as number;
+
+    const metricFormatData: Partial<Metric> = {
+      id,
+      pattern,
+      minValue,
+      maxValue,
+    };
+
+    return metricFormatData;
+  });
+}
+export { getMetrics, getMetricFormats };
