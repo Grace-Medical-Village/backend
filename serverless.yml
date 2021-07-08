@@ -9,11 +9,11 @@ plugins:
 custom:
   certificateArn:
     development: arn:aws:acm:us-east-1:435765244332:certificate/779f6a51-049f-466c-9a86-960e21c0453b
-    production: '' # todo
+    production: arn:aws:acm:us-east-1:403617656420:certificate/c63545fa-8d30-4023-aa23-68bf5f4ba62f
   cognitoArn:
     local: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
     development: arn:aws:cognito-idp:us-east-1:435765244332:userpool/us-east-1_Pku3BZzNi
-    production: '' # todo
+    production: arn:aws:cognito-idp:us-east-1:403617656420:userpool/us-east-1_mfAYQT96C
   customDomain:
     apiType: rest
     basePath: ''

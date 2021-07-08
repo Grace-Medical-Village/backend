@@ -300,8 +300,6 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const validMetric = await validateMetric(metricId, value);
 
   if (validMetric.isValid && validMetric.metric) {
-    console.log(302);
-    console.log(validMetric);
     const sql = `
     insert into patient_metric (patient_id, metric_id, value, comment) 
     values (${patientId}, ${metricId}, ${sqlParen(
