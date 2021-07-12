@@ -36,10 +36,10 @@ describe('errorMiddleware', () => {
 
     const err = createHttpError(500, 'Error');
     const req = {} as Request;
-    const res = ({
+    const res = {
       status: jest.fn(() => res),
       json: jest.fn(() => res),
-    } as unknown) as Response;
+    } as unknown as Response;
     const next = jest.fn() as NextFunction;
     errorMiddleware(err, req, res, next);
 
