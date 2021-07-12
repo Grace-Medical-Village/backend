@@ -3,7 +3,7 @@ const nodeExternals = require('webpack-node-externals');
 const slsw = require('serverless-webpack');
 
 module.exports = {
-  devtool: 'source-map',
+  devtool: slsw.lib.webpack.isLocal ? 'source-map' : false,
   mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
   entry: slsw.lib.entries,
   externals: [nodeExternals()],
@@ -25,11 +25,6 @@ module.exports = {
       },
     ],
   },
-  // output: {
-  //   libraryTarget: 'commonjs2',
-  //   path: path.join(__dirname, '.webpack'),
-  //   filename: '[name].js'
-  // },
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
   },
