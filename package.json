@@ -20,7 +20,7 @@
     "validate": "npm-run-all --parallel format lint types",
     "dev": "ts-node-dev --poll --respawn --require dotenv/config src/index.ts dotenv_config_path=.env.local",
     "start": "ts-node --require dotenv/config src/index.ts dotenv_config_path=.env.local",
-    "build": "tsc --project tsconfig-build.json",
+    "build": "serverless webpack",
     "deploy:development:domain": "serverless create_domain -s development",
     "deploy:development": "serverless deploy -s development",
     "deploy:production:domain": "serverless create_domain -s production",
