@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "noEmit": false,
-    "outDir": "./build"
+    "outDir": "./build",
+    "sourceMap": true
   },
   "extends": "./tsconfig.json",
   "exclude": [

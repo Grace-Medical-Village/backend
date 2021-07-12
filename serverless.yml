@@ -1,10 +1,11 @@
-frameworkVersion: v2.38.0
+frameworkVersion: v2.51.2
 service: backend
 useDotenv: true
 
 plugins:
   - serverless-domain-manager
   - serverless-dotenv-plugin
+  - serverless-webpack
 
 custom:
   certificateArn:
@@ -27,6 +28,16 @@ custom:
     development: api.gracemedicalvillagedev.com
     production: api.gracemedicalvillage.com
   stage: ${opt:stage, self:provider.stage}
+  webpack:
+    webpackConfig: webpack.config.js
+    includeModules:
+      forceExclude:
+        - aws-sdk
+    packager: npm
+    excludeFiles: \.ts|test|\.map
+
+package:
+  individually: true
 
 provider:
   name: aws
@@ -48,7 +59,7 @@ provider:
 
 functions:
   api:
-    handler: build/index.main
+    handler: src/index.main
     memorySize: 1024
     timeout: 30
     events:

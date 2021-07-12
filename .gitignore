@@ -2,11 +2,12 @@
 .dynamodb
 .idea
 .serverless
-.vscode/settings.json
+.vscode
 .webpack
-build/
-dist/
+build
+dist
 node_modules
 src/**/*.js
 src/**/*.map
 coverage
+package-lock.json

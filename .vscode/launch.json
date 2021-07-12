@@ -7,8 +7,10 @@
       "name": "Debug Serverless API",
       "program": "${workspaceFolder}/get.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/build/**/*.js"],
-      "envFile": "${workspaceFolder}/.env.local",
+      "outFiles": [
+        "${workspaceFolder}/build/**/*.js"
+      ],
+      "envFile": "${workspaceFolder}/.env.local"
     }
   ]
 }
