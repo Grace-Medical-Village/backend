@@ -11,10 +11,11 @@ export const startServer = (): Promise<Server> => {
   return new Promise((resolve) => {
     const server = app.listen(port, () => {
       console.log(`Listening on port: ${port}`);
-      const close = server.close.bind(server);
-      server.close = (): any => {
-        return new Promise((resolveClose) => close(resolveClose));
-      };
+
+      // const close = server.close.bind(server);
+      // server.close = (_): unknown => {
+      //   return new Promise((resolveClose) => close(resolveClose));
+      // };
       resolve(server);
     });
   });

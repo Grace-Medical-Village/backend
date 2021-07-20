@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import { getConditions } from './routes/conditions';
 import {
   deleteMedication,
@@ -26,26 +26,37 @@ import {
   putPatientMetric,
   putPatientNote,
 } from './routes/patient';
+import { getHealthCheck } from './routes/health-check';
+import { getMapPatientCount, getPatientCount } from './routes/analytics';
 
 export const buildRouter = (): Router => {
   const router = Router();
+  router.use('/analytics', getAnalyticsRouter());
   router.use('/conditions', getConditionRouter());
   router.use('/medications', getMedicationRouter());
   router.use('/metrics', getMetricRouter());
   router.use('/patients', getPatientRouter());
-  router.use(
-    '/health',
-    router.get('/health', (req: Request, res: Response) => {
-      res.status(200);
-      res.json({ healthy: true });
-    })
-  );
+  router.use('/health', getHealthCheckRouter());
+  return router;
+};
+
+export const getAnalyticsRouter = (): Router => {
+  const router = Router();
+  router.get('/patients/count', getPatientCount);
+  router.get('/patients/map/count', getMapPatientCount);
+  // router.get('/patients/map', getMapPatients);
   return router;
 };
 
 export const getConditionRouter = (): Router => {
   const router = Router();
   router.get('/', getConditions);
+  return router;
+};
+
+export const getHealthCheckRouter = (): Router => {
+  const router = Router();
+  router.get('/', getHealthCheck);
   return router;
 };
 

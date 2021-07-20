@@ -38,6 +38,10 @@ const getMetricFormat = async (
   return result;
 };
 
+function isZero(value: string | number) {
+  return Number(value) === 0;
+}
+
 const metricValueCleaner = (values: Array<string>): Array<string> => {
   return values.map((value) => value.replace(/[^\d.]/gi, ''));
 };
@@ -52,7 +56,7 @@ const validateNumericValues = (
   };
 
   values.forEach((value) => {
-    if (Number(value)) {
+    if (Number(value) || isZero(value)) {
       const isWithinMinAndMax =
         Number(value) >= minValue && Number(value) <= maxValue;
       if (!isWithinMinAndMax) {
