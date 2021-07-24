@@ -1,9 +1,20 @@
 import { Request, Response } from 'express';
 import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import { dbRequest, getFieldValue } from '../../utils/db';
+import { MapPatient } from '../../types';
 
 async function getPatientCount(req: Request, res: Response): Promise<void> {
-  const sql = 'select count(*) from patient';
+  let sql = 'select count(*) from patient;';
+
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+
+  if (startDate && endDate) {
+    sql = sql.replace(
+      ';',
+      ` where created_at >= '${startDate}' and created_at <= '${endDate}';`
+    );
+  }
 
   await dbRequest(sql)
     .then((r) => {
@@ -30,18 +41,25 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
 
 async function getMapPatientCount(req: Request, res: Response): Promise<void> {
   const sql = `
-    select count(distinct patient_id)
-    from patient_condition pc
-             left join (
-        select id
-        from condition
-        where lower(condition_name) like '%asthma%'
-           or lower(condition_name) like '%diabetes%'
-           or lower(condition_name) like '%cholesterol%'
-           or lower(condition_name) like '%hypertension%'
-        order by condition_name
-    ) c
-                       on pc.condition_id = c.id;`;
+    select count(distinct p.id)
+    from patient p
+             left join patient_condition pc on p.id = pc.patient_id
+             left join condition c on pc.condition_id = c.id
+    where lower(condition_name) like '%asthma%'
+       or lower(condition_name) like '%diabetes%'
+       or lower(condition_name) like '%cholesterol%'
+       or lower(condition_name) like '%hypertension%';
+  `;
+
+  // const startDate = req.query.startDate;
+  // const endDate = req.query.endDate;
+  //
+  // if (startDate && endDate) {
+  //   sql = sql.replace(
+  //     ';',
+  //     ` where created_at >= '${startDate}' and created_at <= '${endDate}';`
+  //   );
+  // }
 
   await dbRequest(sql)
     .then((r) => {
@@ -50,13 +68,11 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
       if (patientCount >= 0) {
         res.status(200);
         res.json({
-          healthy: true,
           patientCount,
         });
       } else {
         res.status(404);
         res.json({
-          healthy: false,
           patientCount,
         });
       }
@@ -64,9 +80,34 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
     .catch((err) => {
       console.error(err);
       res.status(500);
-      res.json({
-        healthy: false,
-      });
+      res.json({});
+    });
+}
+
+async function getMapPatients(req: Request, res: Response): Promise<void> {
+  const sql = `
+    select distinct p.id, p.first_name, p.last_name, p.birthdate, p.created_at
+    from patient p
+             left join patient_condition pc on p.id = pc.patient_id
+             left join condition c on pc.condition_id = c.id
+    where lower(c.condition_name) like '%asthma%'
+       or lower(c.condition_name) like '%diabetes%'
+       or lower(c.condition_name) like '%cholesterol%'
+       or lower(c.condition_name) like '%hypertension%';
+  `;
+
+  await dbRequest(sql)
+    .then((patients) => {
+      const data = buildMapPatientsData(patients);
+      if (data.length > 0) res.status(200);
+      else res.status(404);
+
+      res.json(data);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500);
+      res.json([]);
     });
 }
 
@@ -81,4 +122,23 @@ function buildCount(records: FieldList[]): number {
   return patientCount;
 }
 
-export { buildCount, getMapPatientCount, getPatientCount };
+function buildMapPatientsData(records: FieldList[]): MapPatient[] {
+  return records.map((rec) => {
+    const id = getFieldValue(rec, 0) as number;
+    const firstName = getFieldValue(rec, 1) as string;
+    const lastName = getFieldValue(rec, 2) as string;
+    const birthdate = getFieldValue(rec, 3) as string;
+    const createdAt = getFieldValue(rec, 4) as string;
+
+    return {
+      id,
+      firstName,
+      lastName,
+      fullName: `${firstName} ${lastName}`,
+      birthdate,
+      createdAt,
+    };
+  });
+}
+
+export { buildCount, getMapPatients, getMapPatientCount, getPatientCount };

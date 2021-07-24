@@ -4,8 +4,10 @@
 
 ### `.env.local`
 
-- Useful defaults for testing with Express.js locally instead of serverless-express.
-- Don't commit because `serverless-dotenv-plugin` will automatically include `.env.local` during build
+- Useful defaults for testing with Express.js locally instead of
+  serverless-express.
+- Don't commit because `serverless-dotenv-plugin` will automatically include
+  `.env.local` during build
 
 ```shell
 DATABASE=gmvc

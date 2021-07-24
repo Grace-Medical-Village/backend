@@ -42,6 +42,15 @@ export enum DATA_API_TYPES {
   STRING = 'stringValue',
 }
 
+export type MapPatient = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  birthdate?: string;
+  createdAt: string;
+};
+
 export type Patient = {
   id: number;
   firstName: string;

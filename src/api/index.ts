@@ -27,7 +27,11 @@ import {
   putPatientNote,
 } from './routes/patient';
 import { getHealthCheck } from './routes/health-check';
-import { getMapPatientCount, getPatientCount } from './routes/analytics';
+import {
+  getMapPatientCount,
+  getMapPatients,
+  getPatientCount,
+} from './routes/analytics';
 
 export const buildRouter = (): Router => {
   const router = Router();
@@ -42,9 +46,9 @@ export const buildRouter = (): Router => {
 
 export const getAnalyticsRouter = (): Router => {
   const router = Router();
+  router.get('/patients/map', getMapPatients);
   router.get('/patients/count', getPatientCount);
   router.get('/patients/map/count', getMapPatientCount);
-  // router.get('/patients/map', getMapPatients);
   return router;
 };
 
