@@ -18,11 +18,13 @@ import {
   getPatient,
   getPatients,
   postPatient,
+  postPatientAllergies,
   postPatientCondition,
   postPatientMedication,
   postPatientMetric,
   postPatientNote,
   putPatient,
+  putPatientAllergies,
   putPatientMetric,
   putPatientNote,
 } from './routes/patient';
@@ -86,11 +88,13 @@ export const getPatientRouter = (): Router => {
   router.get('/', getPatients);
   router.get('/:id', getPatient);
   router.post('/', postPatient);
+  router.post('/allergy', postPatientAllergies);
   router.post('/condition', postPatientCondition);
   router.post('/medication', postPatientMedication);
   router.post('/metric', postPatientMetric);
   router.post('/note', postPatientNote);
   router.put('/:id', putPatient);
+  router.put('/allergy/:id', putPatientAllergies);
   router.put('/metric/:id', putPatientMetric);
   router.put('/note/:id', putPatientNote);
   router.delete('/:id', deletePatient);

@@ -78,6 +78,14 @@ export type PatientListRecord = {
   gender: string;
 };
 
+export type PatientAllergies = {
+  id: number;
+  allergies: string;
+  patientId: number;
+  createdAt: string;
+  modifiedAt: string;
+};
+
 export type PatientCondition = {
   id: number;
   conditionId: number;
@@ -186,55 +194,6 @@ export enum Pat {
   NATIVE_LITERACY,
   SMOKER,
   ZIP_CODE,
-}
-
-// Patient Conditions
-export enum PC {
-  ID,
-  CONDITION_ID,
-  PATIENT_ID,
-  CREATED_AT,
-  MODIFIED_AT,
-  // CONDITION_NAME,
-}
-
-// Patient Medications
-export enum PMed {
-  ID,
-  PATIENT_ID,
-  MEDICATION_ID,
-  CREATED_AT,
-  MODIFIED_AT,
-}
-
-// Patient Medications
-export enum PMet {
-  ID,
-  PATIENT_ID,
-  METRIC_ID,
-  VALUE,
-  COMMENT,
-  CREATED_AT,
-  MODIFIED_AT,
-}
-
-// Patient Notes
-export enum PNote {
-  ID,
-  NOTE,
-  PATIENT_ID,
-  CREATED_AT,
-  MODIFIED_AT,
-}
-
-// Patients
-export enum Pats {
-  ID,
-  FIRST_NAME,
-  LAST_NAME,
-  FULL_NAME,
-  BIRTHDATE,
-  GENDER,
 }
 
 export type MetricFormat = {
