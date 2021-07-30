@@ -11,6 +11,7 @@ import {
 import { getMetrics } from './routes/metrics';
 import {
   deletePatient,
+  deletePatientAllergy,
   deletePatientCondition,
   deletePatientMedication,
   deletePatientMetric,
@@ -98,6 +99,7 @@ export const getPatientRouter = (): Router => {
   router.put('/metric/:id', putPatientMetric);
   router.put('/note/:id', putPatientNote);
   router.delete('/:id', deletePatient);
+  router.delete('/allergy/:id', deletePatientAllergy);
   router.delete('/condition/:id', deletePatientCondition);
   router.delete('/medication/:id', deletePatientMedication);
   router.delete('/metric/:id', deletePatientMetric);

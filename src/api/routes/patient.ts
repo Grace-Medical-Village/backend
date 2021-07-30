@@ -67,6 +67,7 @@ async function getPatientAllergies(
     where patient_id = ${id}
     limit 1;
   `;
+
   await dbRequest(sql)
     .then((r) => {
       if (r.length === 1) {
@@ -271,9 +272,10 @@ async function postPatientAllergies(
   `;
 
   await dbRequest(sql)
-    .then((_) => {
+    .then((r) => {
+      const id = r[0][0].longValue;
       res.status(201);
-      res.json({});
+      res.json({ id });
     })
     .catch((e) => {
       console.error(e);
@@ -450,17 +452,19 @@ async function putPatient(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientAllergies(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  const allergies = req.body.allergies;
+  const { id } = req.params;
+  const allergies = req.body?.allergies ?? null;
 
   if (!id) {
     res.status(400);
     res.json({ message: "'id' path parameter required" });
+    return;
   }
 
   if (!allergies) {
     res.status(400);
     res.json({ message: "'allergies' required in request body" });
+    return;
   }
 
   const sql = `
@@ -520,6 +524,24 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
 async function deletePatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
   const sql = `delete from patient where id = ${id}`;
+
+  await dbRequest(sql)
+    .then((_) => {
+      res.status(200);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(400);
+    });
+  res.json({});
+}
+
+async function deletePatientAllergy(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const id = req.params.id;
+  const sql = `delete from patient_allergy where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -601,8 +623,8 @@ async function deletePatientNote(req: Request, res: Response): Promise<void> {
 
 function buildPatientAllergies(record: FieldList): PatientAllergies {
   const id = getFieldValue(record, 0) as number;
-  const allergies = getFieldValue(record, 1) as string;
-  const patientId = getFieldValue(record, 2) as number;
+  const patientId = getFieldValue(record, 1) as number;
+  const allergies = getFieldValue(record, 2) as string;
   const createdAt = getFieldValue(record, 3) as string;
   const modifiedAt = getFieldValue(record, 4) as string;
 
@@ -758,6 +780,7 @@ function buildPatientsData(records: FieldList[]): ArrayLike<PatientListRecord> {
 
 export {
   deletePatient,
+  deletePatientAllergy,
   deletePatientCondition,
   deletePatientMedication,
   deletePatientMetric,
