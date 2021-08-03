@@ -62,8 +62,6 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
         or lower(condition_name) like '%hypertension%');
   `;
 
-  console.log(sql);
-
   await dbRequest(sql)
     .then((r) => {
       const patientCount = buildCount(r);

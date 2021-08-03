@@ -21,16 +21,25 @@ export type MedicationCategory = {
   modifiedAt: string;
 };
 
+export enum MetricType {
+  BOOLEAN = 'boolean',
+  DATE = 'date',
+  DECIMAL = 'decimal',
+  INTEGER = 'integer',
+  NUMBER = 'number',
+}
+
 export type Metric = {
   id: number;
   metricName: string;
   unitOfMeasure: string;
   uom: string;
   map: boolean;
-  format: string;
-  pattern: string;
-  minValue: number;
-  maxValue: number;
+  format?: string;
+  pattern?: string;
+  minValue?: number;
+  maxValue?: number;
+  metricType?: MetricType;
   createdAt: string;
   modifiedAt: string;
 };
@@ -170,6 +179,7 @@ export enum MetricFormatDataIndex {
   PATTERN,
   MIN_VALUE,
   MAX_VALUE,
+  METRIC_TYPE,
 }
 
 // Condition
@@ -197,9 +207,11 @@ export enum Pat {
 }
 
 export type MetricFormat = {
-  minValue: number;
-  maxValue: number;
-  pattern?: string;
+  id: number;
+  minValue?: number | null;
+  maxValue?: number | null;
+  pattern?: string | null;
+  metricType?: string | null;
 };
 
 export type CachedMetric = {

@@ -162,7 +162,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
   } else if (req?.query?.birthdate) {
     const { birthdate } = req.query;
     if (typeof birthdate === 'string') {
-      sql += ` where birthdate = ${sqlParen(birthdate)}`;
+      sql += ` where birthdate = '${birthdate}'`;
     }
   } else res.status(400).json([]);
 
@@ -351,7 +351,7 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const metricId = req.body.metricId;
   const value = req.body.value;
   const comment: string | null = req.body.comment
-    ? sqlParen(req.body.comment.trim())
+    ? req.body.comment.trim()
     : null;
 
   const validMetric = await validateMetric(metricId, value);
@@ -359,9 +359,7 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   if (validMetric.isValid && validMetric.metric) {
     const sql = `
     insert into patient_metric (patient_id, metric_id, value, comment) 
-    values (${patientId}, ${metricId}, ${sqlParen(
-      validMetric.metric
-    )}, ${comment})
+    values (${patientId}, ${metricId}, '${validMetric.metric}', '${comment}')
     returning id, created_at, modified_at;
   `;
 
@@ -393,11 +391,11 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
-  const note = sqlParen(req.body.note).trim();
+  const note = req.body.note.trim();
 
   const sql = `
     insert into patient_note (patient_id, note) 
-    values (${patientId}, ${note})
+    values (${patientId}, '${note}')
     returning id, created_at, modified_at;
   `;
 
@@ -505,9 +503,9 @@ async function putPatientMetric(req: Request, res: Response): Promise<void> {
 
 async function putPatientNote(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  const note = sqlParen(req.body.note.trim());
+  const note = req.body.note.trim();
 
-  const sql = `update patient_note set note = ${note} where id = ${id};`;
+  const sql = `update patient_note set note = '${note}' where id = ${id};`;
 
   await dbRequest(sql)
     .then((_) => {
