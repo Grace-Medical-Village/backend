@@ -6,7 +6,6 @@ import {
   MetricDataIndex,
   MetricFormat,
   MetricFormatDataIndex,
-  MetricType,
 } from '../../types';
 
 async function getMetrics(req: Request, res: Response): Promise<void> {
@@ -31,8 +30,7 @@ async function getMetrics(req: Request, res: Response): Promise<void> {
 }
 
 async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
-  const sql =
-    'select id, pattern, min_value, max_value, metric_type from metric;';
+  const sql = 'select id, pattern, min_value, max_value from metric;';
 
   let result: Array<Partial<Metric>> = [];
   await dbRequest(sql)
@@ -94,17 +92,12 @@ function buildMetricFormatData(records: FieldList[]): Array<Partial<Metric>> {
       m,
       MetricFormatDataIndex.MAX_VALUE
     ) as number;
-    const metricType = getFieldValue(
-      m,
-      MetricFormatDataIndex.METRIC_TYPE
-    ) as MetricType;
 
     const metricFormatData: Partial<Metric> = {
       id,
       pattern,
       minValue,
       maxValue,
-      metricType,
     };
 
     return metricFormatData;

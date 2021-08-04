@@ -21,14 +21,6 @@ export type MedicationCategory = {
   modifiedAt: string;
 };
 
-export enum MetricType {
-  BOOLEAN = 'boolean',
-  DATE = 'date',
-  DECIMAL = 'decimal',
-  INTEGER = 'integer',
-  NUMBER = 'number',
-}
-
 export type Metric = {
   id: number;
   metricName: string;
@@ -39,7 +31,6 @@ export type Metric = {
   pattern?: string;
   minValue?: number;
   maxValue?: number;
-  metricType?: MetricType;
   createdAt: string;
   modifiedAt: string;
 };
@@ -211,7 +202,6 @@ export type MetricFormat = {
   minValue?: number | null;
   maxValue?: number | null;
   pattern?: string | null;
-  metricType?: string | null;
 };
 
 export type CachedMetric = {

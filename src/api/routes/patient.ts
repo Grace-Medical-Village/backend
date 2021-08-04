@@ -349,7 +349,7 @@ async function postPatientMedication(
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
-  const value = req.body.value;
+  const value = req.body?.value.trim() ?? '';
   const comment: string | null = req.body.comment
     ? req.body.comment.trim()
     : null;
