@@ -350,9 +350,8 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
   const value = req.body?.value.trim() ?? '';
-  const comment: string | null = req.body.comment
-    ? req.body.comment.trim()
-    : null;
+  const comment: string | null =
+    req.body.comment !== null ? req.body.comment.trim() : '';
 
   const validMetric = await validateMetric(metricId, value);
 
