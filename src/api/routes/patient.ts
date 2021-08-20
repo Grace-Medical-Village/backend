@@ -429,7 +429,6 @@ async function putPatient(req: Request, res: Response): Promise<void> {
     native_language = '${req.body.nativeLanguage}',
     native_literacy = ${req.body.nativeLiteracy},
     zip_code_5 = '${req.body.zipCode5}',
-    map = '${req.body.map}',
     smoker = '${req.body.smoker}'
   `;
 
@@ -727,7 +726,6 @@ function buildPatientData(p: FieldList): Patient {
   const email = getFieldValue(p, Pat.EMAIL) as string;
   const height = getFieldValue(p, Pat.HEIGHT) as string;
   const mobile = getFieldValue(p, Pat.MOBILE) as string;
-  const map = getFieldValue(p, Pat.MAP) as boolean;
   const country = getFieldValue(p, Pat.COUNTRY) as string;
   const nativeLanguage = getFieldValue(p, Pat.NATIVE_LANGUAGE) as string;
   const nativeLiteracy = getFieldValue(p, Pat.NATIVE_LITERACY) as string;
@@ -744,7 +742,6 @@ function buildPatientData(p: FieldList): Patient {
     email,
     height,
     mobile,
-    map,
     country,
     nativeLanguage,
     nativeLiteracy,

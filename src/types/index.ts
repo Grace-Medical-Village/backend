@@ -61,7 +61,6 @@ export type Patient = {
   email?: string;
   height?: string;
   mobile?: string;
-  map: boolean;
   country?: string;
   nativeLanguage?: string;
   nativeLiteracy?: string;
@@ -189,7 +188,6 @@ export enum Pat {
   EMAIL,
   HEIGHT,
   MOBILE,
-  MAP,
   COUNTRY,
   NATIVE_LANGUAGE,
   NATIVE_LITERACY,
