@@ -86,7 +86,7 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
 }
 
 async function getMapPatients(req: Request, res: Response): Promise<void> {
-  const sql = `
+  let sql = `
     select distinct p.id, p.first_name, p.last_name, p.birthdate, p.created_at
     from patient p
              left join patient_condition pc on p.id = pc.patient_id
@@ -96,6 +96,23 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
        or lower(c.condition_name) like '%cholesterol%'
        or lower(c.condition_name) like '%hypertension%';
   `;
+
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+
+  if (startDate && endDate) {
+    sql = `
+      select distinct p.id, p.first_name, p.last_name, p.birthdate, p.created_at
+        from patient p
+                 left join patient_condition pc on p.id = pc.patient_id
+                 left join condition c on pc.condition_id = c.id
+        where (lower(c.condition_name) like '%asthma%'
+            or lower(c.condition_name) like '%diabetes%'
+            or lower(c.condition_name) like '%cholesterol%'
+            or lower(c.condition_name) like '%hypertension%')
+          and (p.created_at >= '${startDate}' and p.created_at <= '${endDate}');
+    `;
+  }
 
   await dbRequest(sql)
     .then((patients) => {
