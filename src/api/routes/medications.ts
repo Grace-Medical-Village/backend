@@ -82,7 +82,7 @@ async function postMedication(req: Request, res: Response): Promise<void> {
 
   if (strength) {
     categories += ', strength';
-    values.push(strength);
+    values.push(sqlParen(strength));
   }
 
   const sql = `insert into medication (${categories}) values (${values});`;
