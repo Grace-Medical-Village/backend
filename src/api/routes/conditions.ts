@@ -4,7 +4,8 @@ import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import { dbRequest, getFieldValue } from '../../utils/db';
 
 async function getConditions(req: Request, res: Response): Promise<void> {
-  const sql = 'select id, condition_name from condition;';
+  const sql =
+    'select id, condition_name from condition order by condition_name;';
 
   await dbRequest(sql)
     .then((r) => {
