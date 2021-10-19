@@ -152,6 +152,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
         birthdate,
         gender
       from patient
+      where archive = false
     ) select * from p
   `;
 
@@ -481,6 +482,26 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
     });
 }
 
+async function putPatientArchive(req: Request, res: Response): Promise<void> {
+  const id = req.params.id;
+  const archive = req.body?.archive ?? false;
+
+  const sql = `update patient set archive = ${archive} where id = ${id};`;
+
+  if (id) {
+    await dbRequest(sql)
+      .then((_) => {
+        res.status(200);
+      })
+      .catch((e) => {
+        res.status(500);
+        console.error(e);
+      });
+  } else res.status(400);
+
+  res.json({});
+}
+
 async function putPatientMetric(req: Request, res: Response): Promise<void> {
   const id = req.body.id;
   const value = req.body.value;
@@ -789,6 +810,7 @@ export {
   postPatientNote,
   putPatient,
   putPatientAllergies,
+  putPatientArchive,
   putPatientMetric,
   putPatientNote,
 };
