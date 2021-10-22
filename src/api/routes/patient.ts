@@ -15,7 +15,9 @@ import { validateMetric } from '../../utils';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  const sql = `select * from patient where id = ${id}`;
+  const sql = `select *
+               from patient
+               where id = ${id}`;
 
   const records = await dbRequest(sql)
     .then((r) => r)
@@ -63,9 +65,8 @@ async function getPatientAllergies(
 ): Promise<Partial<PatientAllergies>> {
   let allergies: Partial<PatientAllergies> = {};
   const sql = `select pa.*
-    from patient_allergy pa
-    where patient_id = ${id}
-    limit 1;
+               from patient_allergy pa
+               where patient_id = ${id} limit 1;
   `;
 
   await dbRequest(sql)
@@ -84,9 +85,9 @@ async function getPatientConditions(
 ): Promise<ArrayLike<PatientCondition>> {
   let conditions: ArrayLike<PatientCondition> = [];
   const sql = `select pc.*, c.condition_name
-    from patient_condition pc
-    inner join condition c on pc.condition_id = c.id
-    where patient_id = ${id};
+               from patient_condition pc
+                        inner join condition c on pc.condition_id = c.id
+               where patient_id = ${id};
   `;
   await dbRequest(sql)
     .then((r) => {
@@ -101,7 +102,10 @@ async function getPatientMedications(
   id: string
 ): Promise<ArrayLike<PatientMedication>> {
   let medications: ArrayLike<PatientMedication> = [];
-  const sql = `select * from patient_medication where patient_id = ${id} order by created_at desc;`;
+  const sql = `select *
+               from patient_medication
+               where patient_id = ${id}
+               order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -116,7 +120,10 @@ async function getPatientMetrics(
   id: string
 ): Promise<ArrayLike<PatientMetric>> {
   let metrics: ArrayLike<PatientMetric> = [];
-  const sql = `select * from patient_metric where patient_id = ${id} order by created_at desc;`;
+  const sql = `select *
+               from patient_metric
+               where patient_id = ${id}
+               order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -129,7 +136,10 @@ async function getPatientMetrics(
 
 async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
   let notes: ArrayLike<PatientNote> = [];
-  const sql = `select * from patient_note where patient_id = ${id} order by created_at desc;`;
+  const sql = `select *
+               from patient_note
+               where patient_id = ${id}
+               order by created_at desc;`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -144,16 +154,18 @@ async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
 
 async function getPatients(req: Request, res: Response): Promise<void> {
   let sql = `
-    with p as (
-      select id,
-        first_name,
-        last_name,
-        first_name || ' ' || last_name as "full_name",
-        birthdate,
-        gender
-      from patient
-      where archive = false
-    ) select * from p
+      with p as (
+          select id,
+                 first_name,
+                 last_name,
+                 first_name || ' ' || last_name as "full_name",
+                 birthdate,
+                 gender
+          from patient
+          where archive = false
+      )
+      select *
+      from p
   `;
 
   if (req?.query?.name) {
@@ -224,7 +236,8 @@ async function postPatient(req: Request, res: Response): Promise<void> {
     values.push(sqlParen(zipCode5));
   }
 
-  const sql = `insert into patient (${columns}) values (${values}) returning id`;
+  const sql = `insert into patient (${columns})
+               values (${values}) returning id`;
 
   await dbRequest(sql)
     .then((r) => {
@@ -267,9 +280,8 @@ async function postPatientAllergies(
   }
 
   const sql = `
-    insert into patient_allergy (patient_id, allergy) 
-    values (${patientId}, '${allergies}')
-    returning id;
+      insert into patient_allergy (patient_id, allergy)
+      values (${patientId}, '${allergies}') returning id;
   `;
 
   await dbRequest(sql)
@@ -293,9 +305,8 @@ async function postPatientCondition(
   const conditionId = req.body.conditionId;
 
   const sql = `
-    insert into patient_condition (patient_id, condition_id) 
-    values (${patientId}, ${conditionId})
-    returning id;
+      insert into patient_condition (patient_id, condition_id)
+      values (${patientId}, ${conditionId}) returning id;
   `;
 
   await dbRequest(sql)
@@ -322,9 +333,8 @@ async function postPatientMedication(
   const medicationId = req.body.medicationId;
 
   const sql = `
-    insert into patient_medication (patient_id, medication_id) 
-    values (${patientId}, ${medicationId})
-    returning id, created_at, modified_at;
+      insert into patient_medication (patient_id, medication_id)
+      values (${patientId}, ${medicationId}) returning id, created_at, modified_at;
   `;
 
   await dbRequest(sql)
@@ -358,10 +368,9 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
 
   if (validMetric.isValid && validMetric.metric) {
     const sql = `
-    insert into patient_metric (patient_id, metric_id, value, comment) 
-    values (${patientId}, ${metricId}, '${validMetric.metric}', '${comment}')
-    returning id, created_at, modified_at;
-  `;
+        insert into patient_metric (patient_id, metric_id, value, comment)
+        values (${patientId}, ${metricId}, '${validMetric.metric}', '${comment}') returning id, created_at, modified_at;
+    `;
 
     await dbRequest(sql)
       .then((r) => {
@@ -394,9 +403,8 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
   const note = req.body.note.trim();
 
   const sql = `
-    insert into patient_note (patient_id, note) 
-    values (${patientId}, '${note}')
-    returning id, created_at, modified_at;
+      insert into patient_note (patient_id, note)
+      values (${patientId}, '${note}') returning id, created_at, modified_at;
   `;
 
   await dbRequest(sql)
@@ -433,7 +441,9 @@ async function putPatient(req: Request, res: Response): Promise<void> {
     smoker = '${req.body.smoker}'
   `;
 
-  const sql = `update patient set ${updates} where id = ${id};`;
+  const sql = `update patient
+               set ${updates}
+               where id = ${id};`;
 
   // TODO 409 if patient already exists
   await dbRequest(sql)
@@ -465,9 +475,9 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
   }
 
   const sql = `
-    update patient_allergy 
-    set allergy = '${allergies}' 
-    where id = ${id};
+      update patient_allergy
+      set allergy = '${allergies}'
+      where id = ${id};
   `;
 
   await dbRequest(sql)
@@ -486,7 +496,9 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
   const archive = req.body?.archive ?? false;
 
-  const sql = `update patient set archive = ${archive} where id = ${id};`;
+  const sql = `update patient
+               set archive = ${archive}
+               where id = ${id};`;
 
   if (id) {
     await dbRequest(sql)
@@ -506,7 +518,9 @@ async function putPatientMetric(req: Request, res: Response): Promise<void> {
   const id = req.body.id;
   const value = req.body.value;
 
-  const sql = `update patient_metric set value = ${value} where id = ${id};`;
+  const sql = `update patient_metric
+               set value = ${value}
+               where id = ${id};`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -524,7 +538,9 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
   const note = req.body.note.trim();
 
-  const sql = `update patient_note set note = '${note}' where id = ${id};`;
+  const sql = `update patient_note
+               set note = '${note}'
+               where id = ${id};`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -540,7 +556,9 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
 
 async function deletePatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient where id = ${id}`;
+  const sql = `delete
+               from patient
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -558,7 +576,9 @@ async function deletePatientAllergy(
   res: Response
 ): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient_allergy where id = ${id}`;
+  const sql = `delete
+               from patient_allergy
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -576,7 +596,9 @@ async function deletePatientCondition(
   res: Response
 ): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient_condition where id = ${id}`;
+  const sql = `delete
+               from patient_condition
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -595,7 +617,9 @@ async function deletePatientMedication(
   res: Response
 ): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient_medication where id = ${id}`;
+  const sql = `delete
+               from patient_medication
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -610,7 +634,9 @@ async function deletePatientMedication(
 
 async function deletePatientMetric(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient_metric where id = ${id}`;
+  const sql = `delete
+               from patient_metric
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
@@ -625,7 +651,9 @@ async function deletePatientMetric(req: Request, res: Response): Promise<void> {
 
 async function deletePatientNote(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
-  const sql = `delete from patient_note where id = ${id}`;
+  const sql = `delete
+               from patient_note
+               where id = ${id}`;
 
   await dbRequest(sql)
     .then((_) => {
