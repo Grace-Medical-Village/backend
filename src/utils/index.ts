@@ -5,6 +5,7 @@ const indexOutOfBounds = (index: number, list: unknown[]): boolean =>
   index < 0 || index > list.length - 1;
 
 const isLocal = (): boolean => process.env.NODE_ENV === 'local';
+const isTest = (): boolean => process.env.NODE_ENV === 'test';
 const isProduction = (): boolean => process.env.NODE_ENV === 'production';
 const toIso8601 = (date: Date): string => date.toISOString().split('T')[0];
 const isNumber = (value: string) => !isNaN(Number(value));
@@ -238,4 +239,4 @@ const validateMetric = async (
   }
 };
 
-export { indexOutOfBounds, isLocal, isProduction, validateMetric };
+export { indexOutOfBounds, isLocal, isTest, isProduction, validateMetric };

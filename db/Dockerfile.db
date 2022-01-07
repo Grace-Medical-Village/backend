@@ -1,0 +1,17 @@
+FROM postgres:13 as base
+
+ENV POSTGRES_PASSWORD=gmvc \
+    POSTGRES_DB=gmvc \
+    POSTGRES_USER=gmvc \
+    PGDATA=/var/lib/postgresql/data
+
+#
+# DEV
+#
+
+#
+# TEST
+#
+FROM base as test
+
+COPY ./index.sql /docker-entrypoint-initdb.d/

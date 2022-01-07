@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
-import { Med, MedCat, Medication, MedicationCategory } from '../../types';
-import { dbRequest, getFieldValue, sqlParen } from '../../utils/db';
+import { dbRequest, sqlParen } from '../../utils/db';
+import { dataBuilder } from '../../utils/data-builder';
 
 async function getMedication(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -14,7 +13,7 @@ async function getMedication(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((r) => {
-      const data = buildMedicationData(r);
+      const data = dataBuilder.buildMedicationData(r);
       if (data.length === 1) {
         res.status(200);
         res.json(data[0]);
@@ -40,7 +39,7 @@ async function getMedications(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((r) => {
-      const data = buildMedicationData(r);
+      const data = dataBuilder.buildMedicationData(r);
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);
@@ -60,7 +59,7 @@ async function getMedicationCategories(
 
   await dbRequest(sql)
     .then((r) => {
-      const data = buildMedicationCategoryData(r);
+      const data = dataBuilder.buildMedicationCategoryData(r);
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);
@@ -147,54 +146,7 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
   }
 }
 
-function buildMedicationData(records: FieldList[]): Medication[] {
-  return records?.map((med: FieldList) => {
-    const id = getFieldValue(med, Med.ID) as number;
-    const name = getFieldValue(med, Med.NAME) as string;
-    const strength = getFieldValue(med, Med.STRENGTH) as string;
-    const categoryId = getFieldValue(med, Med.CATEGORY_ID) as number;
-    const categoryName = getFieldValue(med, Med.CATEGORY_NAME) as string;
-    const archived = getFieldValue(med, Med.ARCHIVED) as boolean;
-    const createdAt = getFieldValue(med, Med.CREATED_AT) as string;
-    const modifiedAt = getFieldValue(med, Med.MODIFIED_AT) as string;
-
-    const medication: Medication = {
-      id,
-      name,
-      strength,
-      categoryId,
-      categoryName,
-      archived,
-      createdAt,
-      modifiedAt,
-    };
-
-    return medication;
-  });
-}
-
-function buildMedicationCategoryData(
-  records: FieldList[]
-): MedicationCategory[] {
-  return records?.map((med: FieldList) => {
-    const id = getFieldValue(med, MedCat.ID) as number;
-    const name = getFieldValue(med, MedCat.NAME) as string;
-    const createdAt = getFieldValue(med, MedCat.CREATED_AT) as string;
-    const modifiedAt = getFieldValue(med, MedCat.MODIFIED_AT) as string;
-
-    const medicationCategory: MedicationCategory = {
-      id,
-      name,
-      createdAt,
-      modifiedAt,
-    };
-
-    return medicationCategory;
-  });
-}
-
 export {
-  buildMedicationData,
   getMedication,
   getMedications,
   getMedicationCategories,

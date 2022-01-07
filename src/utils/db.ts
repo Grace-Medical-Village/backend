@@ -5,7 +5,7 @@ import {
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { DATA_API_TYPES } from '../types';
-import { isLocal } from './index';
+import { isLocal, isTest } from './index';
 
 type DbRequest = (sql: string) => Promise<FieldList[]>;
 
@@ -34,7 +34,7 @@ export const getRdsDataService: GetRdsDataService = () => {
     region: 'us-east-1',
     sslEnabled: true,
   };
-  if (isLocal()) {
+  if (isLocal() || isTest()) {
     config.endpoint = ENDPOINT;
   }
 
@@ -69,25 +69,22 @@ export const dbRequest: DbRequest = async (sql) => {
   if (rdsDataService && rdsParams) {
     const response = await rdsDataService.executeStatement(rdsParams).promise();
 
-    if (response.records && response.records.length > 0)
+    if (response.records && response.records.length > 0) {
       data = response.records;
+    }
   }
   return data;
 };
 
 export const getFieldValue: GetFieldValue = (fieldList, index) => {
-  const entry = Object.entries(fieldList[index])[0];
-  const key = entry[0] ?? null;
-  let value: string | number | boolean | null = entry[1] ?? null;
-  // if (indexOutOfBounds(index, fieldList)) {
-  //   throw new Error(
-  //     `getFieldValue - index ${index} out of bounds for fieldList ${fieldList}`
-  //   );
-  // }
-  if (key === DATA_API_TYPES.IS_NULL && value) {
-    value = null;
+  let result: string | number | boolean | null = null;
+  if (fieldList.length >= index + 1) {
+    const [key, value] = Object.entries(fieldList[index])[0];
+    if (key === DATA_API_TYPES.IS_NULL && value) {
+      result = null;
+    } else result = value;
   }
-  return value;
+  return result;
 };
 
 export const sqlParen = (x: string): string => `'${x}'`;

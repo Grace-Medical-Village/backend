@@ -251,16 +251,12 @@ async function postPatient(req: Request, res: Response): Promise<void> {
       }
     })
     .catch((e) => {
-      handlePostPatientError(e, res);
+      if (e.message.match(/already exists/i)) res.status(409);
+      else res.status(400);
+      res.json({});
+      console.error(e);
     });
 }
-
-const handlePostPatientError = (e: Error, res: Response): void => {
-  console.error(e);
-  if (e.message.match(/already exists/i)) res.status(409);
-  else res.status(400);
-  res.json({});
-};
 
 async function postPatientAllergies(
   req: Request,
@@ -554,6 +550,19 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
   res.json({});
 }
 
+async function mergePatients(req: Request, res: Response): Promise<void> {
+  // const id = req.params.id;
+  await dbRequest('')
+    .then((_) => {
+      res.status(200);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(400);
+    });
+  res.json({});
+}
+
 async function deletePatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
   const sql = `delete
@@ -830,6 +839,7 @@ export {
   deletePatientNote,
   getPatient,
   getPatients,
+  mergePatients,
   postPatient,
   postPatientAllergies,
   postPatientCondition,

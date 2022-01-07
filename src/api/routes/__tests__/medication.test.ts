@@ -1,42 +1,98 @@
-import { buildMedicationData } from '../medications';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
-// import { Server } from 'http';
-// import { startServer } from '../../../index';
+import request from 'supertest';
+import { app } from '../../../app';
+import { Medication } from '../../../types';
+import { dataBuilder } from '../../../utils/data-builder';
 
-// let server: Server;
-// async function buildServer(): Promise<void> {
-//   server = await startServer();
-// }
-// async function closeServer(): Promise<void> {
-//   await server.close();
-// }
+describe('medications', () => {
+  describe('getMedications', () => {
+    it('retrieves medication data', async () => {
+      expect.assertions(3);
 
-describe('medication', () => {
-  describe('buildMedicationData', () => {
-    it('returns an empty list if field list is not provided', () => {
-      expect.assertions(1);
-      const emptyArray: FieldList[] = [];
-      expect(buildMedicationData(emptyArray)).toStrictEqual(emptyArray);
+      const response = await request(app).get('/medications/');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('returns 404 if no medications found', async () => {
+      expect.assertions(4);
+
+      const spy = jest
+        .spyOn(dataBuilder, 'buildMedicationData')
+        .mockImplementationOnce(() => []);
+
+      const response = await request(app).get('/medications/');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toHaveLength(0);
+
+      spy.mockRestore();
+    });
+
+    it('returns 500 if an error occurs', async () => {
+      expect.assertions(4);
+
+      const spy = jest
+        .spyOn(dataBuilder, 'buildMedicationData')
+        .mockImplementationOnce(() => undefined as unknown as Medication[]);
+
+      const response = await request(app).get('/medications/');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toStrictEqual(500);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toHaveLength(0);
+
+      spy.mockRestore();
     });
   });
 
-  describe('buildMedicationCategoryData', () => {
-    it.todo;
-  });
+  describe('getMedication', () => {
+    it('retrieves a single medication', async () => {
+      expect.assertions(3);
 
-  describe('getMedications', () => {
-    it.todo;
-  });
+      const medicationData = await request(app)
+        .get('/medications/')
+        .then((response) => response.body);
 
-  describe('getMedicationCategories', () => {
-    it.todo;
-  });
+      const { id = -1 } = medicationData[0];
 
-  describe('postMedication', () => {
-    it.todo;
-  });
+      const response = await request(app).get(`/medications/${id}`);
 
-  describe('putMedication', () => {
-    it.todo;
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body.id).toStrictEqual(id);
+    });
+
+    it('returns 404 if no medication is found', async () => {
+      expect.assertions(3);
+
+      const id = 1000000;
+      const response = await request(app).get(`/medications/${id}`);
+
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toStrictEqual({});
+    });
+
+    it('returns 500 if an error occurs', async () => {
+      expect.assertions(4);
+
+      const spy = jest
+        .spyOn(dataBuilder, 'buildMedicationData')
+        .mockImplementationOnce(() => undefined as unknown as Medication[]);
+
+      const response = await request(app).get('/medications/');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toStrictEqual(500);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toStrictEqual([]);
+
+      spy.mockRestore();
+    });
   });
 });
