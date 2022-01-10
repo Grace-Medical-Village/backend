@@ -1,6 +1,9 @@
 import { CachedMetric, MetricFormat, ValidMetric } from '../types';
 import { getMetricFormats } from '../api/routes/metrics';
 
+const ISO_8601 = '(\\d{4})-(\\d{2})-(\\d{2})';
+const cachedMetrics: CachedMetric = {};
+
 const indexOutOfBounds = (index: number, list: unknown[]): boolean =>
   index < 0 || index > list.length - 1;
 
@@ -9,8 +12,6 @@ const isTest = (): boolean => process.env.NODE_ENV === 'test';
 const isProduction = (): boolean => process.env.NODE_ENV === 'production';
 const toIso8601 = (date: Date): string => date.toISOString().split('T')[0];
 const isNumber = (value: string) => !isNaN(Number(value));
-
-const ISO_8601 = '(\\d{4})-(\\d{2})-(\\d{2})';
 
 const tomorrow = () => {
   const today = new Date();
@@ -24,7 +25,6 @@ const oneYearAgo = () => {
   result.setDate(result.getDate() - 365);
   return result;
 };
-const cachedMetrics: CachedMetric = {};
 
 const buildCachedMetrics = (metrics: Array<Partial<MetricFormat>>): void => {
   metrics.forEach((metric: Partial<MetricFormat>) => {

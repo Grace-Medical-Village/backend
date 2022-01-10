@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
-import { dbRequest, getFieldValue, sqlParen } from '../../utils/db';
+import {
+  beginTransaction,
+  commitTransaction,
+  dbRequest,
+  getFieldValue,
+  sqlParen,
+} from '../../utils/db';
 import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import {
   Pat,
@@ -252,7 +258,7 @@ async function postPatient(req: Request, res: Response): Promise<void> {
     })
     .catch((e) => {
       if (e.message.match(/already exists/i)) res.status(409);
-      else res.status(400);
+      else res.status(500);
       res.json({});
       console.error(e);
     });
@@ -551,16 +557,72 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
 }
 
 async function mergePatients(req: Request, res: Response): Promise<void> {
-  // const id = req.params.id;
-  await dbRequest('')
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
+  const patientId: string | null = req.params?.patientId ?? null;
+  const patientIdToArchive: string | null =
+    req.params?.patientIdToArchive ?? null;
+
+  if (!patientId || !patientIdToArchive) {
+    res.status(400);
+    res.json({
+      error: `patientId provided was ${patientId} and patientIdToArchive was ${patientIdToArchive}`,
     });
-  res.json({});
+  }
+
+  const re = new RegExp(/^\d+$/);
+  if (!re.test(patientId) || !re.test(patientIdToArchive)) {
+    res.status(400);
+    res.json({
+      error: 'patientId or patientIdToArchive provided are not numbers',
+    });
+  }
+
+  const transactionId = await beginTransaction().then((id) => id);
+
+  if (transactionId) {
+    const tables = [
+      'patient_allergy',
+      'patient_condition',
+      'patient_medication',
+      'patient_metric',
+      'patient_note',
+    ];
+
+    const patientTableUpdateSql = `
+    update table patient 
+      set archived = true 
+      where id = ${patientIdToArchive};
+  `;
+
+    const requests = [patientTableUpdateSql];
+    for (const table of tables) {
+      const sql = `
+      update table ${table}
+        set patient_id = ${patientId}
+        where patient_id = ${patientIdToArchive};
+      `;
+      requests.push(sql);
+    }
+
+    for (const request of requests) {
+      await dbRequest(request, transactionId); // TODO
+    }
+
+    await commitTransaction(transactionId)
+      .then((r) => {
+        if (r && r.transactionStatus) {
+          res.status(200);
+          res.json({});
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500);
+        res.json({});
+      });
+  } else {
+    res.status(500);
+    res.json({});
+  }
 }
 
 async function deletePatient(req: Request, res: Response): Promise<void> {
@@ -575,7 +637,7 @@ async function deletePatient(req: Request, res: Response): Promise<void> {
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
     });
   res.json({});
 }
@@ -595,7 +657,7 @@ async function deletePatientAllergy(
     })
     .catch((e) => {
       console.error(e);
-      res.status(400);
+      res.status(500);
     });
   res.json({});
 }
