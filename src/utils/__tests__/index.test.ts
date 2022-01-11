@@ -1,4 +1,11 @@
-import { indexOutOfBounds, isLocal, isProduction, isTest } from '../index';
+import {
+  indexOutOfBounds,
+  isLocal,
+  isNumber,
+  isProduction,
+  isTest,
+  regexTest,
+} from '../index';
 import { EnvironmentTestObject } from '../../types';
 
 const environmentTests: EnvironmentTestObject[] = [
@@ -75,7 +82,21 @@ describe('utils', () => {
   });
 
   describe('isNumber', () => {
-    it.todo;
+    it('returns false for non-numeric values', () => {
+      expect.assertions(4);
+      expect(isNumber('test')).toStrictEqual(false);
+      expect(isNumber('false')).toStrictEqual(false);
+      expect(isNumber('true')).toStrictEqual(false);
+      expect(isNumber('NaN')).toStrictEqual(false);
+    });
+
+    it('returns true for numeric values', () => {
+      expect.assertions(4);
+      expect(isNumber('1000')).toStrictEqual(true);
+      expect(isNumber(Number.MAX_VALUE.toString())).toStrictEqual(true);
+      expect(isNumber(Number.MIN_VALUE.toString())).toStrictEqual(true);
+      expect(isNumber('3.1450139')).toStrictEqual(true);
+    });
   });
 
   describe('tomorrow', () => {
@@ -98,8 +119,21 @@ describe('utils', () => {
     it.todo;
   });
 
-  describe('checkPattern', () => {
-    it.todo;
+  describe('regexTest', () => {
+    it('returns false if a pattern is not provided', () => {
+      expect.assertions(1);
+      const actual = regexTest(null, '');
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns true if a pattern is matched', () => {
+      expect.assertions(1);
+      const actual = regexTest(
+        '^([1-9]|[1-9]\\d+)/([1-9]|[1-9]\\d+)$',
+        '120/80'
+      );
+      expect(actual).toStrictEqual(true);
+    });
   });
 
   describe('validatePattern', () => {

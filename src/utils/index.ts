@@ -19,6 +19,7 @@ const tomorrow = () => {
   result.setDate(result.getDate() + 1);
   return result;
 };
+
 const oneYearAgo = () => {
   const today = new Date();
   const result = new Date(today);
@@ -58,6 +59,7 @@ const getMetricFormat = async (
   return result;
 };
 
+// TODO - refactor using pattern from DB?
 const isBloodPressureMetric = (value: string, metricFormat: MetricFormat) => {
   return (
     value.indexOf('/') > 0 &&
@@ -66,7 +68,9 @@ const isBloodPressureMetric = (value: string, metricFormat: MetricFormat) => {
   );
 };
 
-const checkPattern = (pattern: string, value: string): boolean => {
+const regexTest = (pattern: string | null, value: string): boolean => {
+  if (!pattern) return false;
+
   const re = new RegExp(pattern);
   return re.test(value);
 };
@@ -76,9 +80,7 @@ function validatePattern(
   metricFormat: MetricFormat,
   result: ValidMetric
 ) {
-  const patternMatched = metricFormat.pattern
-    ? checkPattern(metricFormat.pattern, value)
-    : true;
+  const patternMatched = regexTest(metricFormat?.pattern ?? null, value);
 
   if (!patternMatched) {
     result = {
@@ -239,4 +241,12 @@ const validateMetric = async (
   }
 };
 
-export { indexOutOfBounds, isLocal, isTest, isProduction, validateMetric };
+export {
+  indexOutOfBounds,
+  isLocal,
+  isNumber,
+  isTest,
+  isProduction,
+  regexTest,
+  validateMetric,
+};
