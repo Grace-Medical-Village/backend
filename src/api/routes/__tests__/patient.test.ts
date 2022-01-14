@@ -74,25 +74,4 @@ describe('patient', () => {
   describe('deletePatientNote', () => {
     it.todo;
   });
-  describe('buildPatientAllergies', () => {
-    it.todo;
-  });
-  describe('buildPatientConditions', () => {
-    it.todo;
-  });
-  describe('buildPatientMedications', () => {
-    it.todo;
-  });
-  describe('buildPatientMetrics', () => {
-    it.todo;
-  });
-  describe('buildPatientNotes', () => {
-    it.todo;
-  });
-  describe('buildPatientData', () => {
-    it.todo;
-  });
-  describe('buildPatientsData', () => {
-    it.todo;
-  });
 });

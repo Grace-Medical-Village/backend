@@ -10,6 +10,14 @@ import {
   Metric,
   MetricDataIndex,
   MetricFormatDataIndex,
+  Pat,
+  Patient,
+  PatientAllergies,
+  PatientCondition,
+  PatientListRecord,
+  PatientMedication,
+  PatientMetric,
+  PatientNote,
 } from '../types';
 import { getFieldValue } from './db';
 
@@ -158,6 +166,161 @@ const dataBuilder = {
       };
 
       return metricFormatData;
+    });
+  },
+  // TODO
+  buildPatientAllergies: (record: FieldList): PatientAllergies => {
+    const id = getFieldValue(record, 0) as number;
+    const patientId = getFieldValue(record, 1) as number;
+    const allergies = getFieldValue(record, 2) as string;
+    const createdAt = getFieldValue(record, 3) as string;
+    const modifiedAt = getFieldValue(record, 4) as string;
+
+    return {
+      id,
+      allergies,
+      patientId,
+      createdAt,
+      modifiedAt,
+    };
+  },
+  // TODO
+  buildPatientConditions: (
+    records: FieldList[]
+  ): ArrayLike<PatientCondition> => {
+    return records?.map((pc: FieldList) => {
+      const id = getFieldValue(pc, 0) as number;
+      const conditionId = getFieldValue(pc, 1) as number;
+      const patientId = getFieldValue(pc, 2) as number;
+      const createdAt = getFieldValue(pc, 3) as string;
+      const modifiedAt = getFieldValue(pc, 4) as string;
+
+      const patientCondition: PatientCondition = {
+        id,
+        conditionId,
+        patientId,
+        createdAt,
+        modifiedAt,
+      };
+      return patientCondition;
+    });
+  },
+  // TODO
+  buildPatientMedications: (
+    records: FieldList[]
+  ): ArrayLike<PatientMedication> => {
+    return records?.map((pm: FieldList) => {
+      const id = getFieldValue(pm, 0) as number;
+      const patientId = getFieldValue(pm, 1) as number;
+      const medicationId = getFieldValue(pm, 2) as number;
+      const createdAt = getFieldValue(pm, 3) as string;
+      const modifiedAt = getFieldValue(pm, 4) as string;
+
+      const patientMedication: PatientMedication = {
+        id,
+        patientId,
+        medicationId,
+        createdAt,
+        modifiedAt,
+      };
+      return patientMedication;
+    });
+  },
+  // TODO
+  buildPatientMetrics: (records: FieldList[]): ArrayLike<PatientMetric> => {
+    return records?.map((pm: FieldList) => {
+      const id = getFieldValue(pm, 0) as number;
+      const patientId = getFieldValue(pm, 1) as number;
+      const metricId = getFieldValue(pm, 2) as number;
+      const value = getFieldValue(pm, 3) as string;
+      const comment = getFieldValue(pm, 4) as string | null;
+      const createdAt = getFieldValue(pm, 5) as string;
+      const modifiedAt = getFieldValue(pm, 6) as string;
+
+      const patientMetric: PatientMetric = {
+        id,
+        metricId,
+        patientId,
+        value,
+        comment,
+        createdAt,
+        modifiedAt,
+      };
+      return patientMetric;
+    });
+  },
+  // TODO
+  buildPatientNotes: (records: FieldList[]): ArrayLike<PatientNote> => {
+    return records?.map((pm: FieldList) => {
+      const id = getFieldValue(pm, 0) as number;
+      const note = getFieldValue(pm, 1) as string;
+      const patientId = getFieldValue(pm, 2) as number;
+      const createdAt = getFieldValue(pm, 3) as string;
+      const modifiedAt = getFieldValue(pm, 4) as string;
+
+      const patientNote: PatientNote = {
+        id,
+        note,
+        patientId,
+        createdAt,
+        modifiedAt,
+      };
+      return patientNote;
+    });
+  },
+  // TODO
+  buildPatientData: (p: FieldList): Patient => {
+    const id = getFieldValue(p, Pat.ID) as number;
+    const firstName = getFieldValue(p, Pat.FIRST_NAME) as string;
+    const lastName = getFieldValue(p, Pat.LAST_NAME) as string;
+    const birthdate = getFieldValue(p, Pat.BIRTHDATE) as string;
+    const gender = getFieldValue(p, Pat.GENDER) as string;
+    const email = getFieldValue(p, Pat.EMAIL) as string;
+    const height = getFieldValue(p, Pat.HEIGHT) as string;
+    const mobile = getFieldValue(p, Pat.MOBILE) as string;
+    const country = getFieldValue(p, Pat.COUNTRY) as string;
+    const nativeLanguage = getFieldValue(p, Pat.NATIVE_LANGUAGE) as string;
+    const nativeLiteracy = getFieldValue(p, Pat.NATIVE_LITERACY) as string;
+    const smoker = getFieldValue(p, Pat.SMOKER) as boolean;
+    const zipCode5 = getFieldValue(p, Pat.ZIP_CODE) as string;
+
+    return {
+      id,
+      firstName,
+      lastName,
+      fullName: `${firstName} ${lastName}`,
+      birthdate,
+      gender,
+      email,
+      height,
+      mobile,
+      country,
+      nativeLanguage,
+      nativeLiteracy,
+      smoker,
+      zipCode5,
+    };
+  },
+  // TODO
+  buildPatientsData: (records: FieldList[]): ArrayLike<PatientListRecord> => {
+    return records?.map((p: FieldList) => {
+      const id = getFieldValue(p, 0) as number;
+      const firstName = getFieldValue(p, 1) as string;
+      const lastName = getFieldValue(p, 2) as string;
+      const fullName = getFieldValue(p, 3) as string;
+      const birthdate = getFieldValue(p, 4) as string;
+      const gender = getFieldValue(p, 5) as string;
+
+      const patientListRecord: PatientListRecord = {
+        id,
+        firstName,
+        lastName,
+        fullName,
+        birthdate,
+        gender,
+      };
+
+      return patientListRecord;
     });
   },
 };

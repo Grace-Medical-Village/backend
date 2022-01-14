@@ -5,8 +5,9 @@ import {
   isProduction,
   isTest,
   regexTest,
+  validatePattern,
 } from '../index';
-import { EnvironmentTestObject } from '../../types';
+import { EnvironmentTestObject, MetricFormat, ValidMetric } from '../../types';
 
 const environmentTests: EnvironmentTestObject[] = [
   {
@@ -137,7 +138,24 @@ describe('utils', () => {
   });
 
   describe('validatePattern', () => {
-    it.todo;
+    it.todo('will mark a metric as valid', () => {
+      expect.assertions(1);
+      const value = 'foo';
+      const validMetric: ValidMetric = {
+        isValid: true,
+        metric: '',
+        error: '',
+      };
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: null,
+      };
+      const actual = validatePattern(value, metricFormat, validMetric);
+      const expected = null;
+      expect(actual).toStrictEqual(expected);
+    });
   });
 
   describe('validateMinimum', () => {

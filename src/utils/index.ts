@@ -11,7 +11,7 @@ const isLocal = (): boolean => process.env.NODE_ENV === 'local';
 const isTest = (): boolean => process.env.NODE_ENV === 'test';
 const isProduction = (): boolean => process.env.NODE_ENV === 'production';
 const toIso8601 = (date: Date): string => date.toISOString().split('T')[0];
-const isNumber = (value: string) => !isNaN(Number(value));
+const isNumber = (value: string): boolean => !isNaN(Number(value));
 
 const tomorrow = () => {
   const today = new Date();
@@ -79,7 +79,7 @@ function validatePattern(
   value: string,
   metricFormat: MetricFormat,
   result: ValidMetric
-) {
+): ValidMetric {
   const patternMatched = regexTest(metricFormat?.pattern ?? null, value);
 
   if (!patternMatched) {
@@ -249,4 +249,5 @@ export {
   isProduction,
   regexTest,
   validateMetric,
+  validatePattern,
 };

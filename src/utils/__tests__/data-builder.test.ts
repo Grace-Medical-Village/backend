@@ -1,17 +1,76 @@
 import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import { dataBuilder } from '../data-builder';
-import { Medication, MedicationCategory } from '../../types';
+import {
+  Condition,
+  Medication,
+  MedicationCategory,
+  Metric,
+  MetricFormat,
+} from '../../types';
 
 describe('data-builder', () => {
-  // TODO - buildConditionData
-  // TODO - buildMetricData
-  // TODO - buildMetricFormatData
+  describe('buildConditionData', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildConditionData(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+
+    it('builds a list of conditions', () => {
+      expect.assertions(1);
+      const conditionList: FieldList[] = [
+        [
+          {
+            longValue: 10,
+          },
+          {
+            stringValue: 'Asthma',
+          },
+        ],
+        [
+          {
+            longValue: 12,
+          },
+          {
+            stringValue: 'Back Pain',
+          },
+        ],
+        [
+          {
+            longValue: 15,
+          },
+          {
+            stringValue: 'Diabetes',
+          },
+        ],
+      ];
+
+      const actual = dataBuilder.buildConditionData(conditionList);
+      const expected: Condition[] = [
+        {
+          id: 10,
+          conditionName: 'Asthma',
+        },
+        {
+          id: 12,
+          conditionName: 'Back Pain',
+        },
+        {
+          id: 15,
+          conditionName: 'Diabetes',
+        },
+      ];
+      expect(actual).toStrictEqual(expected);
+    });
+  });
+
   describe('buildMedicationData', () => {
     it('returns an empty list if field list is empty', () => {
       expect.assertions(1);
       const emptyArray: FieldList[] = [];
       const actual = dataBuilder.buildMedicationData(emptyArray);
-      expect(actual).toStrictEqual(emptyArray);
+      expect(actual).toStrictEqual([]);
     });
 
     it('builds a medication list', () => {
@@ -120,6 +179,187 @@ describe('data-builder', () => {
       ];
 
       expect(actual).toStrictEqual(expected);
+    });
+  });
+
+  describe('buildMetricData', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildMetricData(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+
+    it('builds a list of metrics', () => {
+      expect.assertions(1);
+      const metricList: FieldList[] = [
+        [
+          {
+            longValue: 10001,
+          },
+          {
+            stringValue: 'Weight',
+          },
+          {
+            stringValue: 'pounds',
+          },
+          {
+            stringValue: 'lb',
+          },
+          {
+            booleanValue: false,
+          },
+          {
+            longValue: 4,
+          },
+          {
+            longValue: 800,
+          },
+          {
+            stringValue: '195',
+          },
+          {
+            stringValue: '^([1-9]|[1-9]\\d+)(\\.\\d+)?$',
+          },
+          {
+            stringValue: '2022-01-05 15:25:05.806837',
+          },
+          {
+            stringValue: '2022-01-05 15:25:05.806837',
+          },
+        ],
+      ];
+
+      const actual = dataBuilder.buildMetricData(metricList);
+      const expected: Metric[] = [
+        {
+          id: 10001,
+          metricName: 'Weight',
+          unitOfMeasure: 'pounds',
+          uom: 'lb',
+          map: false,
+          format: '195',
+          pattern: '^([1-9]|[1-9]\\d+)(\\.\\d+)?$',
+          minValue: 4,
+          maxValue: 800,
+          createdAt: '2022-01-05 15:25:05.806837',
+          modifiedAt: '2022-01-05 15:25:05.806837',
+        },
+      ];
+      expect(actual).toStrictEqual(expected);
+    });
+  });
+
+  describe('buildMetricFormatData', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildMetricFormatData(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+
+    it('builds a list of metric formats', () => {
+      expect.assertions(1);
+      const metricList: FieldList[] = [
+        [
+          {
+            longValue: 1,
+          },
+          {
+            stringValue: "'^([1-9]|[1-9]\\d+)(\\.\\d+)?$'",
+          },
+          {
+            longValue: 10,
+          },
+          {
+            longValue: 500,
+          },
+        ],
+        [
+          {
+            longValue: 6,
+          },
+          {
+            stringValue: '(d{4})-(d{2})-(d{2})',
+          },
+          {
+            isNull: true,
+          },
+          {
+            isNull: true,
+          },
+        ],
+      ];
+
+      const actual = dataBuilder.buildMetricFormatData(metricList);
+      const expected: MetricFormat[] = [
+        {
+          id: 1,
+          minValue: 10,
+          maxValue: 500,
+          pattern: "'^([1-9]|[1-9]\\d+)(\\.\\d+)?$'",
+        },
+        {
+          id: 6,
+          minValue: null,
+          maxValue: null,
+          pattern: '(d{4})-(d{2})-(d{2})',
+        },
+      ];
+      expect(actual).toStrictEqual(expected);
+    });
+  });
+
+  describe('buildPatientAllergies', () => {
+    it.todo;
+  });
+
+  describe('buildPatientConditions', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildPatientConditions(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+  });
+
+  describe('buildPatientMedications', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildPatientMedications(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+  });
+
+  describe('buildPatientMetrics', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildPatientMetrics(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+  });
+
+  describe('buildPatientNotes', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildPatientNotes(emptyArray);
+      expect(actual).toStrictEqual([]);
+    });
+  });
+
+  describe('buildPatientData', () => {
+    it.todo;
+  });
+
+  describe('buildPatientsData', () => {
+    it('returns an empty list if field list is empty', () => {
+      expect.assertions(1);
+      const emptyArray: FieldList[] = [];
+      const actual = dataBuilder.buildPatientsData(emptyArray);
+      expect(actual).toStrictEqual([]);
     });
   });
 });

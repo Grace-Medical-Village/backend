@@ -3,21 +3,17 @@ import {
   beginTransaction,
   commitTransaction,
   dbRequest,
-  getFieldValue,
   sqlParen,
 } from '../../utils/db';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import {
-  Pat,
-  Patient,
   PatientAllergies,
   PatientCondition,
-  PatientListRecord,
   PatientMedication,
   PatientMetric,
   PatientNote,
 } from '../../types';
 import { validateMetric } from '../../utils';
+import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -49,7 +45,7 @@ async function getPatient(req: Request, res: Response): Promise<void> {
     const notes = await getPatientNotes(id)
       .then((r) => r)
       .catch((err) => console.error(err));
-    const patient = buildPatientData(records[0]);
+    const patient = dataBuilder.buildPatientData(records[0]);
 
     res.status(200);
     res.json({
@@ -78,7 +74,7 @@ async function getPatientAllergies(
   await dbRequest(sql)
     .then((r) => {
       if (r.length === 1) {
-        allergies = buildPatientAllergies(r[0]);
+        allergies = dataBuilder.buildPatientAllergies(r[0]);
       }
     })
     .catch((err) => console.error(err));
@@ -97,7 +93,7 @@ async function getPatientConditions(
   `;
   await dbRequest(sql)
     .then((r) => {
-      conditions = buildPatientConditions(r);
+      conditions = dataBuilder.buildPatientConditions(r);
     })
     .catch((err) => console.error(err));
 
@@ -115,7 +111,7 @@ async function getPatientMedications(
 
   await dbRequest(sql)
     .then((r) => {
-      medications = buildPatientMedications(r);
+      medications = dataBuilder.buildPatientMedications(r);
     })
     .catch((err) => console.error(err));
 
@@ -133,7 +129,7 @@ async function getPatientMetrics(
 
   await dbRequest(sql)
     .then((r) => {
-      metrics = buildPatientMetrics(r);
+      metrics = dataBuilder.buildPatientMetrics(r);
     })
     .catch((err) => console.error(err));
 
@@ -149,7 +145,7 @@ async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
 
   await dbRequest(sql)
     .then((r) => {
-      notes = buildPatientNotes(r);
+      notes = dataBuilder.buildPatientNotes(r);
     })
     .catch((err) => {
       console.error(err);
@@ -187,7 +183,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((patients) => {
-      const data = buildPatientsData(patients);
+      const data = dataBuilder.buildPatientsData(patients);
       if (data.length > 0) res.status(200);
       else res.status(404);
 
@@ -556,6 +552,7 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
   res.json({});
 }
 
+// TODO
 async function mergePatients(req: Request, res: Response): Promise<void> {
   const patientId: string | null = req.params?.patientId ?? null;
   const patientIdToArchive: string | null =
@@ -604,7 +601,7 @@ async function mergePatients(req: Request, res: Response): Promise<void> {
     }
 
     for (const request of requests) {
-      await dbRequest(request, transactionId); // TODO
+      await dbRequest(request, transactionId);
     }
 
     await commitTransaction(transactionId)
@@ -735,161 +732,6 @@ async function deletePatientNote(req: Request, res: Response): Promise<void> {
       res.status(400);
     });
   res.json({});
-}
-
-function buildPatientAllergies(record: FieldList): PatientAllergies {
-  const id = getFieldValue(record, 0) as number;
-  const patientId = getFieldValue(record, 1) as number;
-  const allergies = getFieldValue(record, 2) as string;
-  const createdAt = getFieldValue(record, 3) as string;
-  const modifiedAt = getFieldValue(record, 4) as string;
-
-  return {
-    id,
-    allergies,
-    patientId,
-    createdAt,
-    modifiedAt,
-  };
-}
-
-function buildPatientConditions(
-  records: FieldList[]
-): ArrayLike<PatientCondition> {
-  return records?.map((pc: FieldList) => {
-    const id = getFieldValue(pc, 0) as number;
-    const conditionId = getFieldValue(pc, 1) as number;
-    const patientId = getFieldValue(pc, 2) as number;
-    const createdAt = getFieldValue(pc, 3) as string;
-    const modifiedAt = getFieldValue(pc, 4) as string;
-
-    const patientCondition: PatientCondition = {
-      id,
-      conditionId,
-      patientId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientCondition;
-  });
-}
-
-function buildPatientMedications(
-  records: FieldList[]
-): ArrayLike<PatientMedication> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const patientId = getFieldValue(pm, 1) as number;
-    const medicationId = getFieldValue(pm, 2) as number;
-    const createdAt = getFieldValue(pm, 3) as string;
-    const modifiedAt = getFieldValue(pm, 4) as string;
-
-    const patientMedication: PatientMedication = {
-      id,
-      patientId,
-      medicationId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientMedication;
-  });
-}
-
-function buildPatientMetrics(records: FieldList[]): ArrayLike<PatientMetric> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const patientId = getFieldValue(pm, 1) as number;
-    const metricId = getFieldValue(pm, 2) as number;
-    const value = getFieldValue(pm, 3) as string;
-    const comment = getFieldValue(pm, 4) as string | null;
-    const createdAt = getFieldValue(pm, 5) as string;
-    const modifiedAt = getFieldValue(pm, 6) as string;
-
-    const patientMetric: PatientMetric = {
-      id,
-      metricId,
-      patientId,
-      value,
-      comment,
-      createdAt,
-      modifiedAt,
-    };
-    return patientMetric;
-  });
-}
-
-function buildPatientNotes(records: FieldList[]): ArrayLike<PatientNote> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const note = getFieldValue(pm, 1) as string;
-    const patientId = getFieldValue(pm, 2) as number;
-    const createdAt = getFieldValue(pm, 3) as string;
-    const modifiedAt = getFieldValue(pm, 4) as string;
-
-    const patientNote: PatientNote = {
-      id,
-      note,
-      patientId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientNote;
-  });
-}
-
-function buildPatientData(p: FieldList): Patient {
-  const id = getFieldValue(p, Pat.ID) as number;
-  const firstName = getFieldValue(p, Pat.FIRST_NAME) as string;
-  const lastName = getFieldValue(p, Pat.LAST_NAME) as string;
-  const birthdate = getFieldValue(p, Pat.BIRTHDATE) as string;
-  const gender = getFieldValue(p, Pat.GENDER) as string;
-  const email = getFieldValue(p, Pat.EMAIL) as string;
-  const height = getFieldValue(p, Pat.HEIGHT) as string;
-  const mobile = getFieldValue(p, Pat.MOBILE) as string;
-  const country = getFieldValue(p, Pat.COUNTRY) as string;
-  const nativeLanguage = getFieldValue(p, Pat.NATIVE_LANGUAGE) as string;
-  const nativeLiteracy = getFieldValue(p, Pat.NATIVE_LITERACY) as string;
-  const smoker = getFieldValue(p, Pat.SMOKER) as boolean;
-  const zipCode5 = getFieldValue(p, Pat.ZIP_CODE) as string;
-
-  return {
-    id,
-    firstName,
-    lastName,
-    fullName: `${firstName} ${lastName}`,
-    birthdate,
-    gender,
-    email,
-    height,
-    mobile,
-    country,
-    nativeLanguage,
-    nativeLiteracy,
-    smoker,
-    zipCode5,
-  };
-}
-
-function buildPatientsData(records: FieldList[]): ArrayLike<PatientListRecord> {
-  return records?.map((p: FieldList) => {
-    const id = getFieldValue(p, 0) as number;
-    const firstName = getFieldValue(p, 1) as string;
-    const lastName = getFieldValue(p, 2) as string;
-    const fullName = getFieldValue(p, 3) as string;
-    const birthdate = getFieldValue(p, 4) as string;
-    const gender = getFieldValue(p, 5) as string;
-
-    const patientListRecord: PatientListRecord = {
-      id,
-      firstName,
-      lastName,
-      fullName,
-      birthdate,
-      gender,
-    };
-
-    return patientListRecord;
-  });
 }
 
 export {
