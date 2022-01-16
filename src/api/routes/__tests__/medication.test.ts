@@ -95,4 +95,57 @@ describe('medications', () => {
       spy.mockRestore();
     });
   });
+
+  describe('getMedicationCategories', () => {
+    it.todo;
+  });
+
+  describe('postMedication', () => {
+    it('saves a medication to the db without strength provided', async () => {
+      expect.assertions(2);
+
+      const body = {
+        categoryId: 1,
+        name: 'TestMedicationPostMedicationName',
+      };
+
+      const response = await request(app)
+        .post('/medications/')
+        .send(body)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(201);
+      expect(response.body).toStrictEqual({});
+    });
+
+    it('saves a medication to the db with strength provided', async () => {
+      expect.assertions(2);
+
+      const body = {
+        categoryId: 1,
+        name: 'TestMedicationPostMedicationNameWithStrength',
+        strength: '500 mg',
+      };
+
+      const response = await request(app)
+        .post('/medications/')
+        .send(body)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(201);
+      expect(response.body).toStrictEqual({});
+    });
+
+    it.todo('error if categoryId or name is missing');
+    it.todo('category id does not exist');
+    it.todo('error handling');
+  });
+
+  describe('putMedication', () => {
+    it.todo;
+  });
+
+  describe('deleteMedication', () => {
+    it.todo;
+  });
 });

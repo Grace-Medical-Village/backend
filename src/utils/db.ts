@@ -60,9 +60,14 @@ export const getRdsParams: GetRdsParams = (sql, transactionId, overrides) => {
     const result: ExecuteStatementRequest = {
       continueAfterTimeout: false,
       database: DATABASE,
-      includeResultMetadata: isLocal() ?? false,
+      // includeResultMetadata: isLocal() ?? false,
+      includeResultMetadata: true,
       parameters: [],
       resourceArn: RESOURCE_ARN,
+      // TODO
+      // resultSetOptions: {
+      //   decimalReturnType: 'DOUBLE_OR_LONG',
+      // },
       secretArn: SECRET_ARN,
       sql,
       ...overrides,
@@ -122,6 +127,13 @@ export const dbRequest: DbRequest = async (sql, transactionId = null) => {
   if (rdsDataService && rdsParams) {
     const response = await rdsDataService.executeStatement(rdsParams).promise();
 
+    // TODO -> use column metadata?
+    // const { columnMetadata, records } = response;
+    //
+    // for (const record of records) {
+    //   console.log(columnMetadata);
+    //   console.log(record);
+    // }
     if (response.records && response.records.length > 0) {
       data = response.records;
     }
