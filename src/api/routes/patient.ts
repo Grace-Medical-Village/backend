@@ -1,10 +1,5 @@
 import { Request, Response } from 'express';
-import {
-  beginTransaction,
-  commitTransaction,
-  dbRequest,
-  sqlParen,
-} from '../../utils/db';
+import { dbRequest, sqlParen } from '../../utils/db';
 import {
   PatientAllergies,
   PatientCondition,
@@ -264,8 +259,8 @@ async function postPatientAllergies(
   req: Request,
   res: Response
 ): Promise<void> {
-  const patientId = req.body.patientId;
-  const allergies = req.body.allergies;
+  const patientId = req.body?.patientId ?? null;
+  const allergies = req.body?.allergies.trim() ?? null;
 
   if (!patientId) {
     res.status(400);
@@ -302,6 +297,12 @@ async function postPatientCondition(
   const patientId = req.body.patientId;
   const conditionId = req.body.conditionId;
 
+  if (!patientId || !conditionId) {
+    res.status(400);
+    res.json({});
+    return;
+  }
+
   const sql = `
       insert into patient_condition (patient_id, condition_id)
       values (${patientId}, ${conditionId}) returning id;
@@ -329,6 +330,12 @@ async function postPatientMedication(
 ): Promise<void> {
   const patientId = req.body.patientId;
   const medicationId = req.body.medicationId;
+
+  if (!patientId || !medicationId) {
+    res.status(400);
+    res.json({});
+    return;
+  }
 
   const sql = `
       insert into patient_medication (patient_id, medication_id)
@@ -358,9 +365,8 @@ async function postPatientMedication(
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
-  const value = req.body?.value.trim() ?? '';
-  const comment: string | null =
-    req.body.comment !== null ? req.body.comment.trim() : '';
+  const value = req.body.value ? req.body.value.trim() : ''; // todo what if not string?
+  const comment: string = req.body.comment ? req.body.comment.trim() : '';
 
   const validMetric = await validateMetric(metricId, value);
 
@@ -397,12 +403,20 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
 }
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {
-  const patientId = req.body.patientId;
-  const note = req.body.note.trim();
+  const patientId = req.body?.patientId ?? null;
+  const note = req.body?.note?.trim() ?? '';
+
+  if (!patientId || !note) {
+    res.status(400);
+    res.json({
+      error: 'patientId and note required in request body to save patient note',
+    });
+    return;
+  }
 
   const sql = `
       insert into patient_note (patient_id, note)
-      values (${patientId}, '${note}') returning id, created_at, modified_at;
+      values (${patientId}, '${note}') returning id, note, created_at, modified_at;
   `;
 
   await dbRequest(sql)
@@ -412,15 +426,16 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
         const createdAt = r[0][1].stringValue;
         const modifiedAt = r[0][2].stringValue;
         res.status(201);
-        res.json({ id, createdAt, modifiedAt });
+        res.json({ id, note, createdAt, modifiedAt });
       } else {
         res.status(400);
         res.json({});
       }
     })
     .catch((e) => {
+      res.status(e?.statusCode ?? 500);
+      // todo -> error message
       console.error(e);
-      res.status(500);
     });
 }
 
@@ -457,18 +472,18 @@ async function putPatient(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientAllergies(req: Request, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = req.params?.id ?? null;
   const allergies = req.body?.allergies ?? null;
 
   if (!id) {
     res.status(400);
-    res.json({ message: "'id' path parameter required" });
+    res.json({ error: "'id' path parameter required" });
     return;
   }
 
   if (!allergies) {
     res.status(400);
-    res.json({ message: "'allergies' required in request body" });
+    res.json({ error: "'allergies' required in request body" });
     return;
   }
 
@@ -484,15 +499,15 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
       res.json({});
     })
     .catch((e) => {
-      console.error(e);
-      res.status(500);
+      res.status(e?.statusCode ?? 500);
       res.json({});
+      console.error(e);
     });
 }
 
 async function putPatientArchive(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  const archive = req.body?.archive ?? false;
+  const id = req.params?.id ?? null;
+  const archive = req.body?.archive ?? null;
 
   const sql = `update patient
                set archive = ${archive}
@@ -543,84 +558,84 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
+      res.json({});
     })
     .catch((e) => {
-      res.status(400);
+      res.status(e?.statusCode ?? 500);
+      res.json({});
       console.error(e);
     });
-
-  res.json({});
 }
 
 // TODO
-async function mergePatients(req: Request, res: Response): Promise<void> {
-  const patientId: string | null = req.params?.patientId ?? null;
-  const patientIdToArchive: string | null =
-    req.params?.patientIdToArchive ?? null;
-
-  if (!patientId || !patientIdToArchive) {
-    res.status(400);
-    res.json({
-      error: `patientId provided was ${patientId} and patientIdToArchive was ${patientIdToArchive}`,
-    });
-  }
-
-  const re = new RegExp(/^\d+$/);
-  if (!re.test(patientId) || !re.test(patientIdToArchive)) {
-    res.status(400);
-    res.json({
-      error: 'patientId or patientIdToArchive provided are not numbers',
-    });
-  }
-
-  const transactionId = await beginTransaction().then((id) => id);
-
-  if (transactionId) {
-    const tables = [
-      'patient_allergy',
-      'patient_condition',
-      'patient_medication',
-      'patient_metric',
-      'patient_note',
-    ];
-
-    const patientTableUpdateSql = `
-    update table patient 
-      set archived = true 
-      where id = ${patientIdToArchive};
-  `;
-
-    const requests = [patientTableUpdateSql];
-    for (const table of tables) {
-      const sql = `
-      update table ${table}
-        set patient_id = ${patientId}
-        where patient_id = ${patientIdToArchive};
-      `;
-      requests.push(sql);
-    }
-
-    for (const request of requests) {
-      await dbRequest(request, transactionId);
-    }
-
-    await commitTransaction(transactionId)
-      .then((r) => {
-        if (r && r.transactionStatus) {
-          res.status(200);
-          res.json({});
-        }
-      })
-      .catch((e) => {
-        console.error(e);
-        res.status(500);
-        res.json({});
-      });
-  } else {
-    res.status(500);
-    res.json({});
-  }
-}
+// async function mergePatients(req: Request, res: Response): Promise<void> {
+//   const patientId: string | null = req.params?.patientId ?? null;
+//   const patientIdToArchive: string | null =
+//     req.params?.patientIdToArchive ?? null;
+//
+//   if (!patientId || !patientIdToArchive) {
+//     res.status(400);
+//     res.json({
+//       error: `patientId provided was ${patientId} and patientIdToArchive was ${patientIdToArchive}`,
+//     });
+//   }
+//
+//   const re = new RegExp(/^\d+$/);
+//   if (!re.test(patientId) || !re.test(patientIdToArchive)) {
+//     res.status(400);
+//     res.json({
+//       error: 'patientId or patientIdToArchive provided are not numbers',
+//     });
+//   }
+//
+//   const transactionId = await beginTransaction().then((id) => id);
+//
+//   if (transactionId) {
+//     const tables = [
+//       'patient_allergy',
+//       'patient_condition',
+//       'patient_medication',
+//       'patient_metric',
+//       'patient_note',
+//     ];
+//
+//     const patientTableUpdateSql = `
+//     update table patient
+//       set archived = true
+//       where id = ${patientIdToArchive};
+//   `;
+//
+//     const requests = [patientTableUpdateSql];
+//     for (const table of tables) {
+//       const sql = `
+//       update table ${table}
+//         set patient_id = ${patientId}
+//         where patient_id = ${patientIdToArchive};
+//       `;
+//       requests.push(sql);
+//     }
+//
+//     for (const request of requests) {
+//       await dbRequest(request, transactionId);
+//     }
+//
+//     await commitTransaction(transactionId)
+//       .then((r) => {
+//         if (r && r.transactionStatus) {
+//           res.status(200);
+//           res.json({});
+//         }
+//       })
+//       .catch((e) => {
+//         console.error(e);
+//         res.status(500);
+//         res.json({});
+//       });
+//   } else {
+//     res.status(500);
+//     res.json({});
+//   }
+// }
 
 async function deletePatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -743,7 +758,6 @@ export {
   deletePatientNote,
   getPatient,
   getPatients,
-  mergePatients,
   postPatient,
   postPatientAllergies,
   postPatientCondition,

@@ -17,10 +17,10 @@ async function getMetrics(req: Request, res: Response): Promise<void> {
         res.json([]);
       }
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json([]);
+      console.error(e);
     });
 }
 
@@ -34,8 +34,8 @@ async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
         result = dataBuilder.buildMetricFormatData(r);
       }
     })
-    .catch((err) => {
-      console.error(err);
+    .catch((e) => {
+      console.error(e);
     });
   return result;
 }

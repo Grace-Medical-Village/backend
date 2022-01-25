@@ -13,10 +13,10 @@ async function getConditions(req: Request, res: Response): Promise<void> {
       else res.status(404);
       res.json(data);
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json([]);
+      console.error(e);
     });
 }
 

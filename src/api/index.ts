@@ -18,7 +18,6 @@ import {
   deletePatientNote,
   getPatient,
   getPatients,
-  mergePatients,
   postPatient,
   postPatientAllergies,
   postPatientCondition,
@@ -100,7 +99,8 @@ export const getPatientRouter = (): Router => {
   router.put('/allergy/:id', putPatientAllergies);
   router.put('/archive/:id', putPatientArchive);
   router.put('/metric/:id', putPatientMetric);
-  router.put('/merge', mergePatients);
+  // TODO
+  // router.put('/merge', mergePatients);
   router.put('/note/:id', putPatientNote);
   router.delete('/:id', deletePatient);
   router.delete('/allergy/:id', deletePatientAllergy);

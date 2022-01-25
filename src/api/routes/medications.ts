@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { dbRequest, sqlParen } from '../../utils/db';
 import { dataBuilder } from '../../utils/data-builder';
+import { isNumber } from '../../utils';
 
 async function getMedication(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -22,10 +23,10 @@ async function getMedication(req: Request, res: Response): Promise<void> {
         res.json({});
       }
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json({});
+      console.error(e);
     });
 }
 
@@ -44,10 +45,10 @@ async function getMedications(req: Request, res: Response): Promise<void> {
       else res.status(404);
       res.json(data);
     })
-    .catch((err) => {
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json([]);
-      console.error(err);
+      console.error(e);
     });
 }
 
@@ -64,10 +65,10 @@ async function getMedicationCategories(
       else res.status(404);
       res.json(data);
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json([]);
+      console.error(e);
     });
 }
 
@@ -76,26 +77,42 @@ async function postMedication(req: Request, res: Response): Promise<void> {
   const name = sqlParen(req.body.name);
   const strength = req.body.strength;
 
-  let categories = 'category_id, name';
+  if (!categoryId || !name) {
+    res.status(400);
+    res.json({ error: 'categoryId and name required in request body' });
+    return;
+  }
+
+  let columns = 'category_id, name';
   const values: number | string[] = [categoryId, name];
 
   if (strength) {
-    categories += ', strength';
+    columns += ', strength';
     values.push(sqlParen(strength));
   }
 
-  const sql = `insert into medication (${categories}) values (${values});`;
+  const sql = `
+    insert into medication (${columns})
+    values (${values})
+    returning id;
+  `;
 
   await dbRequest(sql)
-    .then((_) => {
-      res.status(201);
+    .then((r) => {
+      if (r && r[0]) {
+        const id = r[0][0].longValue;
+        res.status(201);
+        res.json({ id });
+      } else {
+        res.status(400);
+        res.json({});
+      }
     })
     .catch((e) => {
+      res.status(e?.statusCode ?? 500);
+      res.json({ error: e.message });
       console.error(e);
-      res.status(500);
     });
-
-  res.json({});
 }
 
 async function putMedication(req: Request, res: Response): Promise<void> {
@@ -105,45 +122,75 @@ async function putMedication(req: Request, res: Response): Promise<void> {
   const name = sqlParen(req.body.name);
   const strength = sqlParen(req.body.strength);
 
-  const sql = `
+  if (!id || !categoryId || !name) {
+    res.status(400);
+    res.json({
+      error:
+        'putMedication requires id, categoryId, and name in request body; archived and strength are optional',
+    });
+  }
+
+  let sql = `
     update medication 
     set category_id = ${categoryId}, 
-      name = ${name}, 
+      name = ${name},
+  `;
+
+  if (strength && archived) {
+    const clause = `
       strength = ${strength},
-      archived = ${archived} 
-    where id = ${id};`;
+      archived = ${archived}
+    `;
+    sql += clause;
+  } else if (strength) {
+    sql += `
+      strength = ${strength}
+    `;
+  } else if (archived) {
+    sql += `
+      archived = ${archived}
+    `;
+  }
+
+  sql += `where id = ${id};`;
 
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
+      res.json({});
     })
     .catch((e) => {
-      res.status(500);
+      res.status(e?.statusCode ?? 500);
+      res.json({});
       console.error(e);
     });
-
-  res.json({});
 }
 
 async function deleteMedication(req: Request, res: Response): Promise<void> {
-  const id = req?.params?.id;
+  const id = req?.params?.id ?? null;
 
-  if (id) {
-    const sql = `delete from medication where id = ${id}`;
-
-    await dbRequest(sql)
-      .then((_) => {
-        res.status(200);
-      })
-      .catch((e) => {
-        console.error(e);
-        res.status(500);
-      });
-    res.json({});
-  } else {
+  if (id && !isNumber(id)) {
     res.status(400);
-    res.json({ message: `Failed to provide 'id' query parameter` });
+    res.json({ error: 'failed to provide integer id path parameter' });
+    return;
   }
+
+  const sql = `
+    delete from
+    medication
+    where id = ${id};
+  `;
+
+  await dbRequest(sql)
+    .then((_) => {
+      res.status(200);
+      res.json({});
+    })
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
+      res.json({});
+      console.error(e);
+    });
 }
 
 export {

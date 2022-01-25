@@ -61,7 +61,7 @@ export type Patient = {
   email?: string;
   height?: string;
   mobile?: string;
-  country?: string;
+  country: string;
   nativeLanguage?: string;
   nativeLiteracy?: string;
   smoker: boolean;
@@ -210,4 +210,10 @@ export type ValidMetric = {
   isValid: boolean;
   metric?: string;
   error?: string;
+};
+
+export type CreateMedicationRequestBody = {
+  categoryId: number;
+  name: string;
+  strength?: string;
 };

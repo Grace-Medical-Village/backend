@@ -248,6 +248,7 @@ export {
   isTest,
   isProduction,
   regexTest,
+  toIso8601,
   validateMetric,
   validatePattern,
 };
