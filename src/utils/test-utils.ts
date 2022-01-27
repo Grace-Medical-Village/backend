@@ -4,6 +4,7 @@ import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
 import { Patient } from '../types';
+import { dbRequest } from './db';
 
 async function createPatient(): Promise<number> {
   let result = -1;
@@ -52,6 +53,10 @@ function buildPatient(): Partial<Patient> {
     country: faker.address.country(),
     smoker: Boolean(zeroOrOne()),
   };
+}
+
+function dbRequestHelper(sql: string) {
+  return dbRequest(sql);
 }
 
 async function getRandomConditionId(): Promise<number> {
@@ -130,11 +135,12 @@ async function getRandomMetricId(): Promise<number> {
   return result;
 }
 
-const zeroOrOne = () => Math.round(Math.random());
+const zeroOrOne = (): number => Math.round(Math.random());
 
 export {
   buildPatient,
   createPatient,
+  dbRequestHelper,
   getRandomConditionId,
   getRandomMedicationCategoryId,
   getRandomMedicationId,

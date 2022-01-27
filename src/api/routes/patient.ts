@@ -7,21 +7,31 @@ import {
   PatientMetric,
   PatientNote,
 } from '../../types';
-import { validateMetric } from '../../utils';
+import { isIntegerGreaterThanZero, validateMetric } from '../../utils';
 import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
+
+  if (!isIntegerGreaterThanZero(id)) {
+    res.status(400);
+    res.json({
+      error: 'patient ID provided must be an integer and greater than 0',
+    });
+    return;
+  }
+
   const sql = `select *
                from patient
                where id = ${id}`;
 
   const records = await dbRequest(sql)
     .then((r) => r)
-    .catch((err) => {
-      console.error(err);
+    .catch((e) => {
       res.status(500);
       res.json({});
+      console.error(e);
+      return;
     });
 
   if (records && records.length === 1) {
@@ -185,9 +195,9 @@ async function getPatients(req: Request, res: Response): Promise<void> {
       res.json(data);
     })
     .catch((err) => {
-      console.error(err);
       res.status(500);
       res.json([]);
+      console.error(err);
     });
 }
 
@@ -356,9 +366,9 @@ async function postPatientMedication(
       }
     })
     .catch((e) => {
-      console.error(e);
       res.status(500);
       res.json({});
+      console.error(e);
     });
 }
 
@@ -390,9 +400,9 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
         }
       })
       .catch((e) => {
-        console.error(e);
         res.status(500);
         res.json({});
+        console.error(e);
       });
   } else {
     res.status(400);
@@ -509,22 +519,36 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
   const id = req.params?.id ?? null;
   const archive = req.body?.archive ?? null;
 
+  if (!isIntegerGreaterThanZero(id)) {
+    res.status(400);
+    res.json({
+      error: 'patient ID provided must be an integer and greater than 0',
+    });
+    return;
+  }
+
+  if (archive === null) {
+    res.status(400);
+    res.json({
+      error: "'archive' not provided in request body",
+    });
+    return;
+  }
+
   const sql = `update patient
                set archive = ${archive}
                where id = ${id};`;
 
-  if (id) {
-    await dbRequest(sql)
-      .then((_) => {
-        res.status(200);
-      })
-      .catch((e) => {
-        res.status(500);
-        console.error(e);
-      });
-  } else res.status(400);
-
-  res.json({});
+  await dbRequest(sql)
+    .then((_) => {
+      res.status(200);
+      res.json({ archive });
+    })
+    .catch((e) => {
+      res.status(500);
+      res.json({});
+      console.error(e);
+    });
 }
 
 async function putPatientMetric(req: Request, res: Response): Promise<void> {

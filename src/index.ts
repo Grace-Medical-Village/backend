@@ -5,7 +5,7 @@ import { isLocal, isTest } from './utils';
 
 export const main = serverlessExpress({ app });
 
-export const port: number = Number(process?.env?.PORT) ?? 4000;
+export const port = Number(process?.env?.PORT ?? 4000);
 
 export const startServer = (): Promise<Server> => {
   return new Promise((resolve) => {

@@ -16,14 +16,14 @@ COPY . .
 #
 FROM base as dev
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]
 
 #
 # TEST
 #
 FROM base as test
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "test:coverage"]
 
 #
 # TEST DB

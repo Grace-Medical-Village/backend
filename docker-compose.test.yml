@@ -37,6 +37,6 @@ services:
       RESOURCE_ARN: arn:aws:rds:us-east-1:123456789012:cluster:gmvc
       SECRET_ARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:gmvc
     image: koxudaxi/local-data-api
-    restart: always
     ports:
       - "8080:80"
+    restart: always

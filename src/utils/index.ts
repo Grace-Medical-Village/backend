@@ -12,6 +12,8 @@ const isTest = (): boolean => process.env.NODE_ENV === 'test';
 const isProduction = (): boolean => process.env.NODE_ENV === 'production';
 const toIso8601 = (date: Date): string => date.toISOString().split('T')[0];
 const isNumber = (value: string): boolean => !isNaN(Number(value));
+const isIntegerGreaterThanZero = (value: string): boolean =>
+  /^[1-9][0-9]*$/.test(value);
 
 const tomorrow = () => {
   const today = new Date();
@@ -244,6 +246,7 @@ const validateMetric = async (
 export {
   indexOutOfBounds,
   isLocal,
+  isIntegerGreaterThanZero,
   isNumber,
   isTest,
   isProduction,
