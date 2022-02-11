@@ -1,15 +1,13 @@
-create
-or replace function update_timestamp() returns trigger
+create or replace function update_timestamp() returns trigger
     language plpgsql
 as
 $$
 begin
-    if
-(new != old) then
+    if (new != old) then
         new.modified_at = now();
-return new;
-end if;
-return old;
+        return new;
+    end if;
+    return old;
 end;
 $$;
 
@@ -128,6 +126,7 @@ create table metric
     max_value       smallint,
     format          varchar(30),
     pattern         varchar(255),
+    archived        boolean   default false not null,
     created_at      timestamp default now() not null,
     modified_at     timestamp default now() not null
 );

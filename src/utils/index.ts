@@ -15,14 +15,18 @@ const isNumber = (value: string): boolean => !isNaN(Number(value));
 const isIntegerGreaterThanZero = (value: string): boolean =>
   /^[1-9][0-9]*$/.test(value);
 
-const tomorrow = () => {
+const tomorrow = (): Date => {
   const today = new Date();
   const result = new Date(today);
   result.setDate(result.getDate() + 1);
   return result;
 };
 
-const oneYearAgo = () => {
+const dateToDayId = (date: Date): number => {
+  return Number(date.toISOString().substring(0, 10).replaceAll('-', ''));
+};
+
+const oneYearAgo = (): Date => {
   const today = new Date();
   const result = new Date(today);
   result.setDate(result.getDate() - 365);
@@ -62,11 +66,15 @@ const getMetricFormat = async (
 };
 
 // TODO - refactor using pattern from DB?
-const isBloodPressureMetric = (value: string, metricFormat: MetricFormat) => {
-  return (
-    value.indexOf('/') > 0 &&
-    metricFormat.pattern &&
-    metricFormat.pattern?.indexOf('/') > 0
+// doesn't really test what we need
+const isBloodPressureMetric = (
+  value: string,
+  metricFormat: MetricFormat
+): boolean => {
+  return <boolean>(
+    (value.indexOf('/') > 0 &&
+      metricFormat.pattern &&
+      metricFormat.pattern?.indexOf('/') > 0)
   );
 };
 
@@ -244,13 +252,17 @@ const validateMetric = async (
 };
 
 export {
+  dateToDayId,
   indexOutOfBounds,
+  isBloodPressureMetric,
   isLocal,
   isIntegerGreaterThanZero,
   isNumber,
   isTest,
   isProduction,
+  oneYearAgo,
   regexTest,
+  tomorrow,
   toIso8601,
   validateMetric,
   validatePattern,

@@ -10,7 +10,6 @@ import {
 } from 'aws-sdk/clients/rdsdataservice';
 import { DATA_API_TYPES } from '../types';
 import { isLocal, isTest } from './index';
-import * as db from './db';
 
 type DbRequest = (
   sql: string,
@@ -141,8 +140,6 @@ export const dbRequest: DbRequest = async (sql, transactionId = null) => {
   }
   return data;
 };
-
-export const dbRequestHelper = (): Promise<unknown> => db.dbRequest('');
 
 export const beginTransaction: BeginTransaction = async () => {
   const rdsDataService = getRdsDataService();

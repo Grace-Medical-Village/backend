@@ -4,7 +4,6 @@ import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
 import { Patient } from '../types';
-import { dbRequest } from './db';
 
 async function createPatient(): Promise<number> {
   let result = -1;
@@ -40,6 +39,97 @@ async function createPatient(): Promise<number> {
   return result;
 }
 
+async function savePatientAllergies(
+  patientId: string,
+  allergies: string
+): Promise<number> {
+  let result = -1;
+  const requestBody = {
+    patientId,
+    allergies,
+  };
+
+  try {
+    const response = await request(app)
+      .post('/patients/allergy')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+  return result;
+}
+
+async function savePatientConditions(
+  patientId: string,
+  conditionIds: number[]
+): Promise<void> {
+  try {
+    for (const conditionId of conditionIds) {
+      const requestBody = {
+        patientId,
+        conditionId,
+      };
+
+      await request(app)
+        .post('/patients/condition')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function savePatientMedication(
+  patientId: string,
+  medicationId: string
+): Promise<number> {
+  let result = -1;
+  try {
+    const requestBody = {
+      patientId,
+      medicationId,
+    };
+
+    const response = await request(app)
+      .post('/patients/medication')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+  return result;
+}
+
+async function savePatientNote(
+  patientId: string,
+  note: string
+): Promise<number> {
+  let result = -1;
+  try {
+    const requestBody = {
+      patientId,
+      note,
+    };
+
+    const response = await request(app)
+      .post('/patients/note')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+
+  return result;
+}
+
 function buildPatient(): Partial<Patient> {
   const randomAge = Math.floor(Math.random() * 100); // max age 100 years
   const birthdate = toIso8601(faker.date.past(randomAge));
@@ -51,12 +141,12 @@ function buildPatient(): Partial<Patient> {
     gender: gender ? 'female' : 'male',
     birthdate,
     country: faker.address.country(),
+    mobile: '212-314-7745',
+    nativeLanguage: 'English',
+    nativeLiteracy: Math.floor(Math.random() * 5).toString(),
+    zipCode5: faker.address.zipCode().substring(0, 5),
     smoker: Boolean(zeroOrOne()),
   };
-}
-
-function dbRequestHelper(sql: string) {
-  return dbRequest(sql);
 }
 
 async function getRandomConditionId(): Promise<number> {
@@ -140,10 +230,13 @@ const zeroOrOne = (): number => Math.round(Math.random());
 export {
   buildPatient,
   createPatient,
-  dbRequestHelper,
   getRandomConditionId,
   getRandomMedicationCategoryId,
   getRandomMedicationId,
   getRandomMetricId,
+  savePatientAllergies,
+  savePatientConditions,
+  savePatientMedication,
+  savePatientNote,
   zeroOrOne,
 };

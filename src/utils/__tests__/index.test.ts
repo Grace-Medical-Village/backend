@@ -1,10 +1,16 @@
 import {
+  dateToDayId,
   indexOutOfBounds,
+  isBloodPressureMetric,
+  isIntegerGreaterThanZero,
   isLocal,
   isNumber,
   isProduction,
   isTest,
+  oneYearAgo,
   regexTest,
+  toIso8601,
+  tomorrow,
   validatePattern,
 } from '../index';
 import { EnvironmentTestObject, MetricFormat, ValidMetric } from '../../types';
@@ -78,8 +84,94 @@ describe('utils', () => {
     });
   });
 
+  describe('isIntegerGreaterThanZero', () => {
+    it('returns false for a decimal', () => {
+      expect.assertions(3);
+
+      let input = '3.14';
+      let actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = '1.0';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = '1.1';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns false for a char', () => {
+      expect.assertions(2);
+
+      let input = 'a';
+      let actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = 'X';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns false for a string', () => {
+      expect.assertions(2);
+
+      let input = '100abc7';
+      let actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = 'Once upon a time 007';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns false for zero', () => {
+      expect.assertions(1);
+      const input = '0';
+      const actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns false for a negative number', () => {
+      expect.assertions(3);
+      let input = '-1';
+      let actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = '-1000';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+
+      input = '-7.1';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns true for integers greater than zero', () => {
+      expect.assertions(3);
+      let input = '1';
+      let actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(true);
+
+      input = '1000';
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(true);
+
+      input = Number.MAX_SAFE_INTEGER.toString();
+      actual = isIntegerGreaterThanZero(input);
+      expect(actual).toStrictEqual(true);
+    });
+  });
+
   describe('toIso8601', () => {
-    it.todo;
+    it('builds an ISO-8601 date', () => {
+      expect.assertions(2);
+
+      const actual = toIso8601(new Date());
+
+      expect(actual).toHaveLength(10);
+      expect(actual).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+    });
   });
 
   describe('isNumber', () => {
@@ -101,15 +193,35 @@ describe('utils', () => {
   });
 
   describe('tomorrow', () => {
-    it.todo;
+    it('returns the date for tomorrow', () => {
+      expect.assertions(1);
+      const dayIdToday = dateToDayId(new Date());
+      const dayIdTomorrow = dateToDayId(tomorrow());
+
+      const result = dayIdTomorrow - dayIdToday;
+      const expected = 1;
+
+      expect(result).toStrictEqual(expected);
+    });
   });
 
   describe('oneYearAgo', () => {
-    it.todo;
+    it('returns the date of one year ago', () => {
+      expect.assertions(1);
+      const dayIdToday = dateToDayId(new Date());
+      const dayIdYearAgo = dateToDayId(oneYearAgo());
+
+      const result = dayIdToday - dayIdYearAgo;
+      const expected = 10000;
+
+      expect(result).toStrictEqual(expected);
+    });
   });
 
   describe('buildCachedMetrics', () => {
-    it.todo;
+    it('finds cached metrics', () => {
+      expect.assertions(0);
+    });
   });
 
   describe('getMetricFormat', () => {
@@ -117,7 +229,26 @@ describe('utils', () => {
   });
 
   describe('isBloodPressureMetric', () => {
-    it.todo;
+    it('returns false if metric pattern is missing', () => {
+      expect.assertions(1);
+      const value = '';
+      const metricFormat: MetricFormat = {
+        id: 0,
+      };
+      const actual = isBloodPressureMetric(value, metricFormat);
+      expect(actual).toStrictEqual(false);
+    });
+
+    it('returns true if metric pattern is provided and has paren', () => {
+      expect.assertions(1);
+      const value = '120/80';
+      const metricFormat: MetricFormat = {
+        id: 0,
+        pattern: '/',
+      };
+      const actual = isBloodPressureMetric(value, metricFormat);
+      expect(actual).toStrictEqual(false);
+    });
   });
 
   describe('regexTest', () => {
@@ -138,9 +269,9 @@ describe('utils', () => {
   });
 
   describe('validatePattern', () => {
-    it.todo('will mark a metric as valid', () => {
+    it('will mark a metric as valid', () => {
       expect.assertions(1);
-      const value = 'foo';
+      const value = '60';
       const validMetric: ValidMetric = {
         isValid: true,
         metric: '',
@@ -148,17 +279,30 @@ describe('utils', () => {
       };
       const metricFormat: MetricFormat = {
         id: 1,
-        minValue: null,
-        maxValue: null,
-        pattern: null,
+        minValue: 10,
+        maxValue: 1000,
+        pattern: '[0-9]+',
       };
       const actual = validatePattern(value, metricFormat, validMetric);
-      const expected = null;
+      const expected: ValidMetric = {
+        isValid: true,
+        metric: '',
+        error: '',
+      };
       expect(actual).toStrictEqual(expected);
     });
   });
 
   describe('validateMinimum', () => {
+    // if the pattern is ISO_8601
+    //   - if the date value < minimumDate
+    // else if -> it's a blood pressure metric
+    //   - split the blood pressure metric
+    //   - check if each is a number
+    //   - check if each number is within range
+    // else
+    //   - if -> it's not a number...
+    //   - if -> we have a min value and that the number is less than the min value
     it.todo;
   });
 

@@ -1,10 +1,15 @@
 import request from 'supertest';
 import { app } from '../../../app';
+import { getPatientAllergies, getPatientConditions } from '../patient';
 import {
   buildPatient,
   createPatient,
   getRandomConditionId,
   getRandomMedicationId,
+  savePatientAllergies,
+  savePatientConditions,
+  savePatientMedication,
+  savePatientNote,
 } from '../../../utils/test-utils';
 
 describe('patient', () => {
@@ -52,11 +57,69 @@ describe('patient', () => {
   });
 
   describe('getPatientAllergies', () => {
-    it.todo;
+    it('retrieves empty patient allergies object', async () => {
+      expect.assertions(1);
+
+      const patientId = await createPatient().then((r) => r.toString());
+
+      const actual = await getPatientAllergies(patientId).then((r) => r);
+      expect(actual).toStrictEqual({});
+    });
+
+    it('retrieves patient allergies object', async () => {
+      expect.assertions(5);
+
+      const patientId = await createPatient().then((r) => r);
+      const allergies = 'Dihydrogen Monoxide';
+
+      await savePatientAllergies(patientId.toString(), allergies).then(
+        (r) => r
+      );
+
+      const actual = await getPatientAllergies(patientId.toString()).then(
+        (r) => r
+      );
+      expect(actual.patientId).toStrictEqual(patientId);
+      expect(actual.allergies).toStrictEqual(allergies);
+      expect(actual.id).toBeGreaterThan(0);
+      expect(actual.createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(actual.modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+    });
   });
 
   describe('getPatientConditions', () => {
-    it.todo;
+    it('returns an empty array if patientId is not provided', async () => {
+      expect.assertions(2);
+
+      const actual = await getPatientConditions('').then((r) => r);
+
+      expect(actual).toHaveLength(0);
+      expect(actual).toStrictEqual([]);
+    });
+
+    it('returns a list of patient conditions', async () => {
+      expect.assertions(7);
+
+      const patientId = await createPatient().then((r) => r);
+      const conditionId0 = await getRandomConditionId().then((r) => r);
+      const conditionId1 = await getRandomConditionId().then((r) => r);
+      const conditionIds = [conditionId0, conditionId1];
+      await savePatientConditions(patientId.toString(), conditionIds).then(
+        (r) => r
+      );
+      const actual = await getPatientConditions(patientId.toString()).then(
+        (r) => r
+      );
+
+      // [{ id, patientId, allergies, createdAt, modifiedAt}]
+      expect(actual.length).toBeGreaterThan(0);
+      expect(actual).toHaveLength(2);
+      expect(actual[0].patientId).toStrictEqual(patientId);
+      expect(actual[0].id).toBeGreaterThan(0);
+      expect(conditionIds).toContain(actual[0].conditionId);
+      expect(actual[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(actual[0].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+    });
   });
 
   describe('getPatientMedications', () => {
@@ -111,6 +174,26 @@ describe('patient', () => {
       expect(response.statusCode).toStrictEqual(201);
       expect(response.body.id).not.toBeNull();
       expect(response.body.id).toBeGreaterThan(0);
+    });
+
+    it('returns an error if allergies is not provided', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+
+      const requestBody = {
+        patientId,
+      };
+
+      const response = await request(app)
+        .post('/patients/allergy')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        "'allergies' required in request body"
+      );
     });
   });
 
@@ -435,26 +518,194 @@ describe('patient', () => {
     });
   });
 
-  describe('putPatientMetric', () => {
-    it.todo;
-  });
-
   describe('putPatientNote', () => {
-    it.todo;
+    it('returns an error if noteId is not provided', async () => {
+      expect.assertions(2);
+
+      const requestBody = {
+        note: ' This is a test note. ',
+      };
+      const response = await request(app)
+        .put(`/patients/note/xyz`)
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"noteId" path parameter required'
+      );
+    });
+
+    it('returns an error if a note is not provided', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      let note = 'This is the first note';
+      const noteId = await savePatientNote(patientId.toString(), note).then(
+        (r) => r
+      );
+
+      note = '';
+      const response = await request(app)
+        .put(`/patients/note/${noteId}`)
+        .send({ note })
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"note" must be provided in the request body and it cannot be empty'
+      );
+    });
+
+    it('updates a note', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      let note = 'This is the first note';
+      const noteId = await savePatientNote(patientId.toString(), note).then(
+        (r) => r
+      );
+
+      note = 'This is the second note ';
+      const response = await request(app)
+        .put(`/patients/note/${noteId}`)
+        .send({ note })
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
 
   describe('deletePatient', () => {
-    it.todo;
+    it('returns an error if the patientId path parameter is invalid', async () => {
+      expect.assertions(2);
+
+      const patientId = '1.1';
+      const response = await request(app)
+        .delete(`/patients/${patientId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientId" is a required path parameter'
+      );
+    });
+
+    it('deletes a patient', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const response = await request(app)
+        .delete(`/patients/${patientId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
+
   describe('deletePatientAllergy', () => {
-    it.todo;
+    it('returns an error if patientAllergyId path parameter is not provided', async () => {
+      expect.assertions(2);
+
+      const patientAllergyId = '-1';
+      const response = await request(app)
+        .delete(`/patients/allergy/${patientAllergyId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientAllergyId" is a required path parameter'
+      );
+    });
+
+    it('successfully deletes a patient allergy', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const patientAllergyId = await savePatientAllergies(
+        patientId.toString(),
+        'Peanuts'
+      );
+
+      const response = await request(app)
+        .delete(`/patients/allergy/${patientAllergyId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
+
   describe('deletePatientCondition', () => {
-    it.todo;
+    it('returns an error if the condition path parameter is not provided', async () => {
+      expect.assertions(2);
+
+      const patientConditionId = '-';
+      const response = await request(app)
+        .delete(`/patients/condition/${patientConditionId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientConditionId" is a required path parameter'
+      );
+    });
+
+    it('successfully deletes a patient condition', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const conditionId = await getRandomConditionId().then((r) => r);
+      await savePatientConditions(patientId.toString(), [conditionId]).then(
+        (r) => r
+      );
+
+      const response = await request(app)
+        .delete(`/patients/condition/${conditionId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
+
   describe('deletePatientMedication', () => {
-    it.todo;
+    it('returns an error if the medication path parameter is not provided', async () => {
+      expect.assertions(2);
+
+      const patientMedicationId = 'x';
+      const response = await request(app)
+        .delete(`/patients/medication/${patientMedicationId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientMedicationId" is a required path parameter'
+      );
+    });
+
+    it('successfully deletes a patient medication', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      // todo -> get random medication
+      const medicationId = -1;
+      const patientMedicationId = await savePatientMedication(
+        patientId.toString(),
+        medicationId.toString()
+      ).then((r) => r);
+
+      const response = await request(app)
+        .delete(`/patients/medication/${patientMedicationId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
+
   describe('deletePatientMetric', () => {
     it.todo;
   });
