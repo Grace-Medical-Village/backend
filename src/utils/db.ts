@@ -1,11 +1,8 @@
 import { RDSDataService } from 'aws-sdk';
 import {
   BeginTransactionRequest,
-  CommitTransactionRequest,
-  CommitTransactionResponse,
   ExecuteStatementRequest,
   FieldList,
-  Id,
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { DATA_API_TYPES } from '../types';
@@ -16,11 +13,11 @@ type DbRequest = (
   transactionId?: string | null
 ) => Promise<FieldList[]>;
 
-type BeginTransaction = () => Promise<Id | null>;
+// type BeginTransaction = () => Promise<Id | null>;
 
-type CommitTransaction = (
-  transactionId: string
-) => Promise<CommitTransactionResponse | void>;
+// type CommitTransaction = (
+//   transactionId: string
+// ) => Promise<CommitTransactionResponse | void>;
 
 type GetFieldValue = (
   fieldList: FieldList,
@@ -98,21 +95,21 @@ export const buildBeginTransactionRequest =
     }
   };
 
-export const buildCommitTransactionRequest = (
-  transactionId: string
-): CommitTransactionRequest | void => {
-  if (RESOURCE_ARN && SECRET_ARN && transactionId) {
-    return {
-      resourceArn: RESOURCE_ARN,
-      secretArn: SECRET_ARN,
-      transactionId,
-    };
-  } else {
-    throw new Error(
-      `Error: unable to build buildCommitTransactionRequest with { RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN}, transactionId: ${transactionId}`
-    );
-  }
-};
+// export const buildCommitTransactionRequest = (
+//   transactionId: string
+// ): CommitTransactionRequest | void => {
+//   if (RESOURCE_ARN && SECRET_ARN && transactionId) {
+//     return {
+//       resourceArn: RESOURCE_ARN,
+//       secretArn: SECRET_ARN,
+//       transactionId,
+//     };
+//   } else {
+//     throw new Error(
+//       `Error: unable to build buildCommitTransactionRequest with { RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN}, transactionId: ${transactionId}`
+//     );
+//   }
+// };
 
 export const dbRequest: DbRequest = async (sql, transactionId = null) => {
   const rdsDataService = getRdsDataService();
@@ -141,36 +138,36 @@ export const dbRequest: DbRequest = async (sql, transactionId = null) => {
   return data;
 };
 
-export const beginTransaction: BeginTransaction = async () => {
-  const rdsDataService = getRdsDataService();
-  const beginTransactionRequest: BeginTransactionRequest | void =
-    buildBeginTransactionRequest();
+// export const beginTransaction: BeginTransaction = async () => {
+//   const rdsDataService = getRdsDataService();
+//   const beginTransactionRequest: BeginTransactionRequest | void =
+//     buildBeginTransactionRequest();
+//
+//   let result: string | null = null;
+//
+//   if (rdsDataService && beginTransactionRequest) {
+//     const response = await rdsDataService
+//       .beginTransaction(beginTransactionRequest)
+//       .promise();
+//
+//     result = response?.transactionId ?? null;
+//   }
+//   return result;
+// };
 
-  let result: string | null = null;
-
-  if (rdsDataService && beginTransactionRequest) {
-    const response = await rdsDataService
-      .beginTransaction(beginTransactionRequest)
-      .promise();
-
-    result = response?.transactionId ?? null;
-  }
-  return result;
-};
-
-export const commitTransaction: CommitTransaction = async (transactionId) => {
-  const rdsDataService = getRdsDataService();
-  const commitTransactionRequest: CommitTransactionRequest | void =
-    buildCommitTransactionRequest(transactionId);
-
-  if (rdsDataService && commitTransactionRequest) {
-    const response = await rdsDataService
-      .commitTransaction(commitTransactionRequest)
-      .promise();
-
-    return response;
-  }
-};
+// export const commitTransaction: CommitTransaction = async (transactionId) => {
+//   const rdsDataService = getRdsDataService();
+//   const commitTransactionRequest: CommitTransactionRequest | void =
+//     buildCommitTransactionRequest(transactionId);
+//
+//   if (rdsDataService && commitTransactionRequest) {
+//     const response = await rdsDataService
+//       .commitTransaction(commitTransactionRequest)
+//       .promise();
+//
+//     return response;
+//   }
+// };
 
 export const getFieldValue: GetFieldValue = (fieldList, index) => {
   let result: string | number | boolean | null = null;

@@ -3,7 +3,11 @@ import { sample } from 'lodash';
 import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
-import { Patient } from '../types';
+import { Metric, Patient } from '../types';
+
+const resetEnv = (): void => {
+  process.env.NODE_ENV = 'test';
+};
 
 async function createPatient(): Promise<number> {
   let result = -1;
@@ -106,11 +110,39 @@ async function savePatientMedication(
   return result;
 }
 
+async function savePatientMetric(
+  patientId: string,
+  metricId: string,
+  value: string,
+  comment = ''
+): Promise<number> {
+  let result = -1;
+  try {
+    const requestBody = {
+      patientId,
+      metricId,
+      value,
+      comment,
+    };
+
+    const response = await request(app)
+      .post('/patients/metric')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+  return result;
+}
+
 async function savePatientNote(
   patientId: string,
   note: string
 ): Promise<number> {
   let result = -1;
+
   try {
     const requestBody = {
       patientId,
@@ -225,6 +257,28 @@ async function getRandomMetricId(): Promise<number> {
   return result;
 }
 
+async function getSampleMetricValue(metricId: string): Promise<string> {
+  let result = '';
+
+  try {
+    const response = await request(app)
+      .get('/metrics')
+      .set('Accept', 'application/json');
+
+    if (response.body.length > 0) {
+      const metrics: Metric[] = response.body;
+      const metric: Metric = metrics.filter(
+        (metric) => metric.id.toString() === metricId
+      )[0];
+      result = metric?.format ?? '';
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  return result;
+}
+
 const zeroOrOne = (): number => Math.round(Math.random());
 
 export {
@@ -234,9 +288,12 @@ export {
   getRandomMedicationCategoryId,
   getRandomMedicationId,
   getRandomMetricId,
+  getSampleMetricValue,
+  resetEnv,
   savePatientAllergies,
   savePatientConditions,
   savePatientMedication,
+  savePatientMetric,
   savePatientNote,
   zeroOrOne,
 };

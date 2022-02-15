@@ -37,9 +37,7 @@ export type Metric = {
 
 export enum DATA_API_TYPES {
   IS_NULL = 'isNull',
-  BOOLEAN = 'booleanValue',
   NUMBER = 'longValue',
-  STRING = 'stringValue',
 }
 
 export type MapPatient = {
@@ -169,7 +167,6 @@ export enum MetricFormatDataIndex {
   PATTERN,
   MIN_VALUE,
   MAX_VALUE,
-  METRIC_TYPE,
 }
 
 // Condition
@@ -200,10 +197,6 @@ export type MetricFormat = {
   minValue?: number | null;
   maxValue?: number | null;
   pattern?: string | null;
-};
-
-export type CachedMetric = {
-  [metricId: number]: MetricFormat;
 };
 
 export type ValidMetric = {

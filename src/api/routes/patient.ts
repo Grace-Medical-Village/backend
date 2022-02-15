@@ -7,7 +7,7 @@ import {
   PatientMetric,
   PatientNote,
 } from '../../types';
-import { isIntegerGreaterThanZero, validateMetric } from '../../utils';
+import { isIntegerGreaterThanZero, validate } from '../../utils';
 import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
@@ -88,12 +88,15 @@ async function getPatientConditions(
 }
 
 async function getPatientMedications(
-  id: string
+  patientId: string
 ): Promise<ArrayLike<PatientMedication>> {
   let medications: ArrayLike<PatientMedication> = [];
+
+  if (!patientId) return medications;
+
   const sql = `select *
                from patient_medication
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
   await dbRequest(sql).then((r) => {
@@ -104,12 +107,15 @@ async function getPatientMedications(
 }
 
 async function getPatientMetrics(
-  id: string
+  patientId: string
 ): Promise<ArrayLike<PatientMetric>> {
   let metrics: ArrayLike<PatientMetric> = [];
+
+  if (!patientId) return metrics;
+
   const sql = `select *
                from patient_metric
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
   await dbRequest(sql).then((r) => {
@@ -119,11 +125,16 @@ async function getPatientMetrics(
   return metrics;
 }
 
-async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
+async function getPatientNotes(
+  patientId: string
+): Promise<ArrayLike<PatientNote>> {
   let notes: ArrayLike<PatientNote> = [];
+
+  if (!patientId) return notes;
+
   const sql = `select *
                from patient_note
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
   await dbRequest(sql).then((r) => {
@@ -165,19 +176,19 @@ async function getPatients(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  await dbRequest(sql)
-    .then((patients) => {
-      const data = dataBuilder.buildPatientsData(patients);
-      if (data.length > 0) res.status(200);
-      else res.status(404);
+  await dbRequest(sql).then((patients) => {
+    const data = dataBuilder.buildPatientsData(patients);
+    if (data.length > 0) res.status(200);
+    else res.status(404);
 
-      res.json(data);
-    })
-    .catch((e) => {
-      res.status(e?.statusCode ?? 500);
-      res.json([]);
-      console.error(e);
-    });
+    res.json(data);
+  });
+  // todo
+  // .catch((e) => {
+  //   res.status(e?.statusCode ?? 500);
+  //   res.json([]);
+  //   console.error(e);
+  // });
 }
 
 async function postPatient(req: Request, res: Response): Promise<void> {
@@ -299,20 +310,20 @@ async function postPatientCondition(
       values (${patientId}, ${conditionId}) returning id;
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
-        res.status(201);
-        res.json({ id });
-      } else {
-        res.status(500);
-        res.json({});
-      }
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+  await dbRequest(sql).then((r) => {
+    if (r[0]) {
+      const id = r[0][0].longValue;
+      res.status(201);
+      res.json({ id });
+    } else {
+      res.status(400);
+      res.json({});
+    }
+  });
+  // todo
+  // .catch((e) => {
+  //   console.error(e);
+  // });
 }
 
 async function postPatientMedication(
@@ -357,9 +368,9 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
   const value = req.body.value ? req.body.value.trim() : ''; // todo what if not string?
-  const comment: string = req.body.comment ? req.body.comment.trim() : '';
+  const comment = req.body.comment ? req.body.comment.trim() : '';
 
-  const validMetric = await validateMetric(metricId, value);
+  const validMetric = await validate(metricId, value);
 
   if (validMetric.isValid && validMetric.metric) {
     const sql = `
@@ -381,7 +392,7 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
         }
       })
       .catch((e) => {
-        res.status(500);
+        res.status(400);
         res.json({});
         console.error(e);
       });
@@ -520,16 +531,16 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
                set archive = ${archive}
                where id = ${id};`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({ archive });
-    })
-    .catch((e) => {
-      res.status(500);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({ archive });
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 // async function putPatientMetric(req: Request, res: Response): Promise<void> {
@@ -575,17 +586,17 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
                set note = '${note}'
                where id = ${noteId};`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-      // TODO return the updated note + trim
-    })
-    .catch((e) => {
-      res.status(e?.statusCode ?? 500);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+    // TODO return the updated note + trim
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(e?.statusCode ?? 500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 // TODO
@@ -675,16 +686,16 @@ async function deletePatient(req: Request, res: Response): Promise<void> {
                `;
 
   // todo -> return id? archive only?
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-    })
-    .catch((e) => {
-      res.status(500);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientAllergy(
@@ -705,16 +716,16 @@ async function deletePatientAllergy(
                from patient_allergy
                where id = ${patientAllergyId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-    })
-    .catch((e) => {
-      res.status(500);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientCondition(
@@ -735,17 +746,17 @@ async function deletePatientCondition(
                from patient_condition
                where id = ${patientConditionId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-      console.log(sql);
-    })
-    .catch((e) => {
-      res.status(400);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+    console.log(sql);
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientMedication(
@@ -764,17 +775,18 @@ async function deletePatientMedication(
 
   const sql = `delete
                from patient_medication
-               where id = ${id}`;
+               where id = ${patientMedicationId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   console.error(e);
+  //   res.status(400);
+  //   res.json({});
+  // });
 }
 
 async function deletePatientMetric(req: Request, res: Response): Promise<void> {
@@ -792,33 +804,43 @@ async function deletePatientMetric(req: Request, res: Response): Promise<void> {
                from patient_metric
                where id = ${patientMetricId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-    })
-    .catch((e) => {
-      res.status(400);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientNote(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
+  const patientNoteId = req.params.patientNoteId;
+
+  if (!patientNoteId || !isIntegerGreaterThanZero(patientNoteId)) {
+    res.status(400);
+    res.json({
+      error: '"patientNoteId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_note
-               where id = ${id}`;
+               where id = ${patientNoteId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 export {
@@ -832,6 +854,9 @@ export {
   getPatients,
   getPatientAllergies,
   getPatientConditions,
+  getPatientMedications,
+  getPatientMetrics,
+  getPatientNotes,
   postPatient,
   postPatientAllergies,
   postPatientCondition,

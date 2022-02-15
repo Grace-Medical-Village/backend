@@ -231,7 +231,7 @@ values ('Blood Pressure', 'millimeters of mercury', 'mm/Hg', '120/80', '^([1-9]|
        ('Cholesterol (Total)', 'milligrams per deciliter', 'mg/dL', '240', '^([1-9]|[1-9][0-9]{1,2})$', true, 20, 300, false),
        ('Heart Rate', 'beats per minute', 'bpm', '55', '^([1-9]|[1-9][0-9]{1,2})$', false, 1, 500, false),
        ('Height', 'inches', 'in', '63', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 4, 96, false),
-       ('Hemoglobin (A1c)', 'milligrams per deciliter', '%', '7 or 7.3', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 0.1, 20.0, false),
+       ('Hemoglobin (A1c)', 'milligrams per deciliter', '%', '7.0', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 0.1, 20.0, false),
        ('Hip Size', 'inches', 'in', '28', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 4, 100, false),
        ('Last Menstrual Period', '', '', '2000-12-31', '(\d{4})-(\d{2})-(\d{2})', false, null, null, false),
        ('Pain', '', '', '5', '^\b([0-9]|10)\b$', false, 0, 10, false),

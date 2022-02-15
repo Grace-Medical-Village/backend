@@ -11,9 +11,8 @@ import {
   regexTest,
   toIso8601,
   tomorrow,
-  validatePattern,
 } from '../index';
-import { EnvironmentTestObject, MetricFormat, ValidMetric } from '../../types';
+import { EnvironmentTestObject, MetricFormat } from '../../types';
 
 const environmentTests: EnvironmentTestObject[] = [
   {
@@ -218,14 +217,18 @@ describe('utils', () => {
     });
   });
 
+  // todo
   describe('buildCachedMetrics', () => {
     it('finds cached metrics', () => {
       expect.assertions(0);
     });
   });
 
+  // todo
   describe('getMetricFormat', () => {
-    it.todo;
+    it('tbd', async () => {
+      expect.assertions(0);
+    });
   });
 
   describe('isBloodPressureMetric', () => {
@@ -266,51 +269,5 @@ describe('utils', () => {
       );
       expect(actual).toStrictEqual(true);
     });
-  });
-
-  describe('validatePattern', () => {
-    it('will mark a metric as valid', () => {
-      expect.assertions(1);
-      const value = '60';
-      const validMetric: ValidMetric = {
-        isValid: true,
-        metric: '',
-        error: '',
-      };
-      const metricFormat: MetricFormat = {
-        id: 1,
-        minValue: 10,
-        maxValue: 1000,
-        pattern: '[0-9]+',
-      };
-      const actual = validatePattern(value, metricFormat, validMetric);
-      const expected: ValidMetric = {
-        isValid: true,
-        metric: '',
-        error: '',
-      };
-      expect(actual).toStrictEqual(expected);
-    });
-  });
-
-  describe('validateMinimum', () => {
-    // if the pattern is ISO_8601
-    //   - if the date value < minimumDate
-    // else if -> it's a blood pressure metric
-    //   - split the blood pressure metric
-    //   - check if each is a number
-    //   - check if each number is within range
-    // else
-    //   - if -> it's not a number...
-    //   - if -> we have a min value and that the number is less than the min value
-    it.todo;
-  });
-
-  describe('validateMaximum', () => {
-    it.todo;
-  });
-
-  describe('validateMetric', () => {
-    it.todo;
   });
 });

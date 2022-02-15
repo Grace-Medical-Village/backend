@@ -40,4 +40,24 @@ async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
   return result;
 }
 
-export { getMetrics, getMetricFormats };
+async function getMetricFormat(
+  metricId: string
+): Promise<Partial<MetricFormat>> {
+  const sql = `select id, pattern, min_value, max_value from metric
+               where id = ${metricId};`;
+
+  let result: Partial<MetricFormat> = {};
+  await dbRequest(sql)
+    .then((r) => {
+      if (r && r.length === 1) {
+        result = dataBuilder.buildMetricFormatData(r)[0];
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+
+  return result;
+}
+
+export { getMetrics, getMetricFormat, getMetricFormats };

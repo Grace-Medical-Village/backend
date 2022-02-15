@@ -103,6 +103,6 @@ export const getPatientRouter = (): Router => {
   router.delete('/condition/:patientConditionId', deletePatientCondition);
   router.delete('/medication/:patientMedicationId', deletePatientMedication);
   router.delete('/metric/:patientMetricId', deletePatientMetric);
-  router.delete('/note/:id', deletePatientNote);
+  router.delete('/note/:patientNoteId', deletePatientNote);
   return router;
 };

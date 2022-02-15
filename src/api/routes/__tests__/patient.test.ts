@@ -1,14 +1,23 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { getPatientAllergies, getPatientConditions } from '../patient';
+import {
+  getPatientAllergies,
+  getPatientConditions,
+  getPatientMedications,
+  getPatientMetrics,
+  getPatientNotes,
+} from '../patient';
 import {
   buildPatient,
   createPatient,
   getRandomConditionId,
   getRandomMedicationId,
+  getRandomMetricId,
+  getSampleMetricValue,
   savePatientAllergies,
   savePatientConditions,
   savePatientMedication,
+  savePatientMetric,
   savePatientNote,
 } from '../../../utils/test-utils';
 
@@ -123,19 +132,184 @@ describe('patient', () => {
   });
 
   describe('getPatientMedications', () => {
-    it.todo;
+    it('retrieves patient medications', async () => {
+      expect.assertions(11);
+
+      const patientId = await createPatient().then((r) => r);
+      const medicationId0 = await getRandomMedicationId().then((r) => r);
+      const medicationId1 = await getRandomMedicationId().then((r) => r);
+      await savePatientMedication(
+        patientId.toString(),
+        medicationId0.toString()
+      );
+      await savePatientMedication(
+        patientId.toString(),
+        medicationId1.toString()
+      );
+
+      const patientMedications = await getPatientMedications(
+        patientId.toString()
+      );
+
+      expect(patientMedications).toHaveLength(2);
+      expect(patientMedications[0].patientId).toStrictEqual(patientId);
+      expect(patientMedications[1].patientId).toStrictEqual(patientId);
+      // ordered by created_at
+      expect(patientMedications[0].medicationId).toStrictEqual(medicationId1);
+      expect(patientMedications[1].medicationId).toStrictEqual(medicationId0);
+      expect(patientMedications[0].id).toBeGreaterThan(0);
+      expect(patientMedications[1].id).toBeGreaterThan(0);
+      expect(patientMedications[0].createdAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+      expect(patientMedications[0].modifiedAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+      expect(patientMedications[1].createdAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+      expect(patientMedications[1].modifiedAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+    });
+
+    it('returns empty array if patientId is not provided', async () => {
+      expect.assertions(2);
+
+      const patientMedications = await getPatientMedications('');
+
+      expect(patientMedications).toHaveLength(0);
+      expect(patientMedications).toStrictEqual([]);
+    });
   });
 
   describe('getPatientMetrics', () => {
-    it.todo;
+    it('retrieves patient metric data', async () => {
+      expect.assertions(13);
+      const patientId = await createPatient().then((r) => r);
+      const metricId0 = await getRandomMetricId().then((r) => r);
+      const metricValue0 = await getSampleMetricValue(
+        metricId0.toString()
+      ).then((r) => r);
+      const metricId1 = await getRandomMetricId().then((r) => r);
+      const metricValue1 = await getSampleMetricValue(
+        metricId1.toString()
+      ).then((r) => r);
+
+      await savePatientMetric(
+        patientId.toString(),
+        metricId0.toString(),
+        metricValue0
+      );
+
+      await savePatientMetric(
+        patientId.toString(),
+        metricId1.toString(),
+        metricValue1
+      );
+
+      const patientMetrics = await getPatientMetrics(patientId.toString()).then(
+        (r) => r
+      );
+
+      expect(patientMetrics).toHaveLength(2);
+      expect(patientMetrics[0].id).toBeGreaterThan(0);
+      expect(patientMetrics[1].id).toBeGreaterThan(0);
+      expect(patientMetrics[0].patientId).toStrictEqual(patientId);
+      expect(patientMetrics[1].patientId).toStrictEqual(patientId);
+      // ordered descending
+      expect(patientMetrics[1].metricId).toStrictEqual(metricId0);
+      expect(patientMetrics[0].metricId).toStrictEqual(metricId1);
+      expect(patientMetrics[1].value).toStrictEqual(metricValue0);
+      expect(patientMetrics[0].value).toStrictEqual(metricValue1);
+      expect(patientMetrics[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientMetrics[0].modifiedAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+      expect(patientMetrics[1].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientMetrics[1].modifiedAt).toMatch(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
+      );
+    });
+
+    it('returns empty array if patientId is not provided', async () => {
+      expect.assertions(2);
+
+      const patientMetrics = await getPatientMetrics('');
+
+      expect(patientMetrics).toHaveLength(0);
+      expect(patientMetrics).toStrictEqual([]);
+    });
   });
 
   describe('getPatientNotes', () => {
-    it.todo;
+    it('returns an array of notes', async () => {
+      expect.assertions(11);
+
+      const patientId = await createPatient().then((r) => r);
+      const note0 = 'The patient has a headache';
+      const note1 = 'Their weight is 42';
+      await savePatientNote(patientId.toString(), note0);
+      await savePatientNote(patientId.toString(), note1);
+
+      const patientNotes = await getPatientNotes(patientId.toString());
+
+      expect(patientNotes).toHaveLength(2);
+      expect(patientNotes[0].id).toBeGreaterThan(0);
+      expect(patientNotes[1].id).toBeGreaterThan(0);
+      expect(patientNotes[0].patientId).toStrictEqual(patientId);
+      expect(patientNotes[1].patientId).toStrictEqual(patientId);
+      expect(patientNotes[0].note).toStrictEqual(note1);
+      expect(patientNotes[1].note).toStrictEqual(note0);
+      expect(patientNotes[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientNotes[0].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientNotes[1].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientNotes[1].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+    });
+
+    it('returns empty notes array if patientId is not provided', async () => {
+      expect.assertions(2);
+
+      const patientNotes = await getPatientNotes('');
+
+      expect(patientNotes).toHaveLength(0);
+      expect(patientNotes).toStrictEqual([]);
+    });
   });
 
   describe('getPatients', () => {
-    it.todo;
+    it('returns a 404 if birthdate matches no patients', async () => {
+      expect.assertions(2);
+
+      const response = await request(app)
+        .get('/patients?birthdate=2100-01-01')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.body).toStrictEqual([]);
+    });
+
+    it('returns a 404 if name matches no patients', async () => {
+      expect.assertions(2);
+
+      const response = await request(app)
+        .get('/patients?name=xxxyyyzzz')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.body).toStrictEqual([]);
+    });
+
+    it('returns an error response if no query params provided', async () => {
+      expect.assertions(2);
+
+      const response = await request(app)
+        .get('/patients')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body).toStrictEqual([]);
+    });
   });
 
   describe('postPatient', () => {
@@ -174,6 +348,24 @@ describe('patient', () => {
       expect(response.statusCode).toStrictEqual(201);
       expect(response.body.id).not.toBeNull();
       expect(response.body.id).toBeGreaterThan(0);
+    });
+
+    it('returns an error if patientId is not provided', async () => {
+      expect.assertions(2);
+
+      const requestBody = {
+        allergies: 'some allergies',
+      };
+
+      const response = await request(app)
+        .post('/patients/allergy')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        "'patientId' required in request body"
+      );
     });
 
     it('returns an error if allergies is not provided', async () => {
@@ -216,6 +408,25 @@ describe('patient', () => {
 
       expect(response.statusCode).toStrictEqual(201);
       expect(response.body.id).toBeGreaterThan(0);
+    });
+
+    it('returns an error if patient does not exist', async () => {
+      expect.assertions(2);
+
+      const conditionId = await getRandomConditionId().then((r) => r);
+
+      const requestBody = {
+        patientId: Number.MAX_SAFE_INTEGER,
+        conditionId,
+      };
+
+      const response = await request(app)
+        .post('/patients/condition')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body).toStrictEqual({});
     });
 
     it('fails if request body missing patientId', async () => {
@@ -278,6 +489,25 @@ describe('patient', () => {
       expect(response.body.modifiedAt.length).toBeGreaterThan(0);
     });
 
+    it('returns an error if the patient does not exist', async () => {
+      expect.assertions(4);
+
+      const medicationId = await getRandomMedicationId().then((r) => r);
+
+      const requestBody = {
+        patientId: Number.MAX_SAFE_INTEGER,
+        medicationId,
+      };
+
+      const response = await request(app)
+        .post('/patients/medication')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body).toStrictEqual({});
+    });
+
     it('fails to save medication if request body missing patientId', async () => {
       expect.assertions(2);
 
@@ -315,30 +545,31 @@ describe('patient', () => {
   });
 
   describe('postPatientMetric', () => {
-    it.todo;
-    // eslint-disable-next-line jest/no-commented-out-tests
-    // it('saves a metric for a patient', async () => {
-    //   expect.assertions(4);
-    //
-    //   const patientId = await createPatient().then((r) => r);
-    //   const metricId = await getRandomMetricId().then((r) => r);
-    //
-    //   const requestBody = {
-    //     patientId,
-    //     metricId,
-    //     value: '100', // TODO - potential error
-    //   };
-    //
-    //   const response = await request(app)
-    //     .post('/patients/metric')
-    //     .send(requestBody)
-    //     .set('Accept', 'application/json');
-    //
-    //   expect(response.statusCode).toStrictEqual(201);
-    //   expect(response.body.id).toBeGreaterThan(0);
-    //   expect(response.body.createdAt.length).toBeGreaterThan(0);
-    //   expect(response.body.modifiedAt.length).toBeGreaterThan(0);
-    // });
+    it('saves a metric for a patient', async () => {
+      expect.assertions(4);
+
+      const patientId = await createPatient().then((r) => r);
+      const metricId = await getRandomMetricId().then((r) => r);
+      const value = await getSampleMetricValue(metricId.toString()).then(
+        (r) => r
+      );
+
+      const requestBody = {
+        patientId,
+        metricId,
+        value,
+      };
+
+      const response = await request(app)
+        .post('/patients/metric')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(201);
+      expect(response.body.id).toBeGreaterThan(0);
+      expect(response.body.createdAt.length).toBeGreaterThan(0);
+      expect(response.body.modifiedAt.length).toBeGreaterThan(0);
+    });
   });
 
   describe('postPatientNote', () => {
@@ -690,8 +921,7 @@ describe('patient', () => {
       expect.assertions(2);
 
       const patientId = await createPatient().then((r) => r);
-      // todo -> get random medication
-      const medicationId = -1;
+      const medicationId = await getRandomMedicationId().then((r) => r);
       const patientMedicationId = await savePatientMedication(
         patientId.toString(),
         medicationId.toString()
@@ -707,9 +937,71 @@ describe('patient', () => {
   });
 
   describe('deletePatientMetric', () => {
-    it.todo;
+    it('returns an error if the metric path parameter is not provided', async () => {
+      expect.assertions(2);
+
+      const patientMetricId = 'x';
+      const response = await request(app)
+        .delete(`/patients/metric/${patientMetricId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientMetricId" is a required path parameter'
+      );
+    });
+
+    it('successfully deletes a patient metric', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const metricId = await getRandomMetricId().then((r) => r);
+      const value = 100; // todo -> get valid test value
+      const patientMetricId = await savePatientMetric(
+        patientId.toString(),
+        metricId.toString(),
+        value.toString()
+      ).then((r) => r);
+
+      const response = await request(app)
+        .delete(`/patients/metric/${patientMetricId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
+
   describe('deletePatientNote', () => {
-    it.todo;
+    it('returns an error if the note path parameter is not provided', async () => {
+      expect.assertions(2);
+
+      const patientNoteId = 'x';
+      const response = await request(app)
+        .delete(`/patients/note/${patientNoteId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        '"patientNoteId" is a required path parameter'
+      );
+    });
+
+    it('successfully deletes a patient note', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const patientNoteId = await savePatientNote(
+        patientId.toString(),
+        'Lorem ipsum dolor'
+      ).then((r) => r);
+
+      const response = await request(app)
+        .delete(`/patients/note/${patientNoteId}`)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
   });
 });
