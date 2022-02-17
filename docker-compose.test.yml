@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: test-backend
+    depends_on:
+      - test-db
+    expose:
+      - 4000
+    links:
+      - test-db
+    ports:
+      - "4000:4000"
+  test-db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test-db
+    container_name: test-db
+    depends_on:
+      - test-data-api
+    ports:
+      - "5432:5432"
+    restart: always
+  test-data-api:
+    container_name: test-data-api
+    environment:
+      ENGINE: PostgreSQLJDBC
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: gmvc
+      POSTGRES_PASSWORD: gmvc
+      RESOURCE_ARN: arn:aws:rds:us-east-1:123456789012:cluster:gmvc
+      SECRET_ARN: arn:aws:secretsmanager:us-east-1:123456789012:secret:gmvc
+    image: koxudaxi/local-data-api
+    ports:
+      - "8080:80"
+    restart: always

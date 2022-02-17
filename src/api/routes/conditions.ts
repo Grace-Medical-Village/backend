@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { Con, Condition } from '../../types';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
-import { dbRequest, getFieldValue } from '../../utils/db';
+import { dbRequest } from '../../utils/db';
+import { dataBuilder } from '../../utils/data-builder';
 
 async function getConditions(req: Request, res: Response): Promise<void> {
   const sql =
@@ -9,30 +8,16 @@ async function getConditions(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((r) => {
-      const data = buildConditionData(r);
+      const data = dataBuilder.buildConditionData(r);
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);
     })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json([]);
+      console.error(e);
     });
-}
-
-function buildConditionData(records: FieldList[]): Condition[] {
-  return records?.map((c: FieldList) => {
-    const id = getFieldValue(c, Con.ID) as number;
-    const conditionName = getFieldValue(c, Con.CONDITION_NAME) as string;
-
-    const condition: Condition = {
-      id,
-      conditionName,
-    };
-
-    return condition;
-  });
 }
 
 export { getConditions };

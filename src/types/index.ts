@@ -31,15 +31,14 @@ export type Metric = {
   pattern?: string;
   minValue?: number;
   maxValue?: number;
+  archived?: boolean;
   createdAt: string;
   modifiedAt: string;
 };
 
 export enum DATA_API_TYPES {
   IS_NULL = 'isNull',
-  BOOLEAN = 'booleanValue',
   NUMBER = 'longValue',
-  STRING = 'stringValue',
 }
 
 export type MapPatient = {
@@ -61,7 +60,7 @@ export type Patient = {
   email?: string;
   height?: string;
   mobile?: string;
-  country?: string;
+  country: string;
   nativeLanguage?: string;
   nativeLiteracy?: string;
   smoker: boolean;
@@ -160,6 +159,7 @@ export enum MetricDataIndex {
   MAX_VALUE,
   FORMAT,
   PATTERN,
+  ARCHIVED,
   CREATED_AT,
   MODIFIED_AT,
 }
@@ -169,7 +169,6 @@ export enum MetricFormatDataIndex {
   PATTERN,
   MIN_VALUE,
   MAX_VALUE,
-  METRIC_TYPE,
 }
 
 // Condition
@@ -187,12 +186,16 @@ export enum Pat {
   GENDER,
   EMAIL,
   HEIGHT,
+  MAP,
   MOBILE,
   COUNTRY,
   NATIVE_LANGUAGE,
   NATIVE_LITERACY,
   SMOKER,
   ZIP_CODE,
+  ARCHIVED,
+  CREATED_AT,
+  MODIFIED_AT,
 }
 
 export type MetricFormat = {
@@ -202,12 +205,14 @@ export type MetricFormat = {
   pattern?: string | null;
 };
 
-export type CachedMetric = {
-  [metricId: number]: MetricFormat;
-};
-
 export type ValidMetric = {
   isValid: boolean;
   metric?: string;
   error?: string;
+};
+
+export type CreateMedicationRequestBody = {
+  categoryId: number;
+  name: string;
+  strength?: string;
 };

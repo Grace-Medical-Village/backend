@@ -1,21 +1,13 @@
-# Grace Medical Village Clinic
+# Grace
 
-## Environments
-
-### `.env.local`
-
-- Useful defaults for testing with Express.js locally instead of
-  serverless-express.
-- Don't commit because `serverless-dotenv-plugin` will automatically include
-  `.env.local` during build
+## Running Locally
 
 ```shell
-DATABASE=gmvc
-ENDPOINT=http://localhost:8080
-NODE_ENV=local
-PORT=4000
-REGION=us-east-1
-RESOURCE_ARN=arn:aws:rds:us-east-1:123456789012:cluster:gmvc
-SECRET_ARN=arn:aws:secretsmanager:us-east-1:123456789012:secret:gmvc
-STAGE=local
+npm run dev
+```
+
+## Testing
+
+```shell
+docker compose --file docker-compose.test.yml up --build
 ```

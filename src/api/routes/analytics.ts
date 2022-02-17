@@ -1,13 +1,17 @@
 import { Request, Response } from 'express';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
-import { dbRequest, getFieldValue } from '../../utils/db';
-import { MapPatient } from '../../types';
+import { dbRequest } from '../../utils/db';
+import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatientCount(req: Request, res: Response): Promise<void> {
-  let sql = 'select count(*) from patient;';
+  const { startDate, endDate } = getStartAndEndDate(req);
 
-  const startDate = req.query.startDate;
-  const endDate = req.query.endDate;
+  if (startDate > endDate) {
+    res.status(400);
+    res.json({});
+    return;
+  }
+
+  let sql = 'select count(*) from patient;';
 
   if (startDate && endDate) {
     sql = sql.replace(
@@ -18,19 +22,13 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((r) => {
-      const patientCount = buildCount(r);
+      const patientCount = dataBuilder.buildCount(r);
 
-      if (patientCount >= 0) {
-        res.status(200);
-        res.json({
-          patientCount,
-        });
-      } else {
-        res.status(404);
-        res.json({
-          patientCount,
-        });
-      }
+      if (patientCount > 0) res.status(200);
+      else res.status(404);
+      res.json({
+        patientCount,
+      });
     })
     .catch((err) => {
       console.error(err);
@@ -40,13 +38,12 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
 }
 
 async function getMapPatientCount(req: Request, res: Response): Promise<void> {
-  let startDate = req.query.startDate;
-  let endDate = req.query.endDate;
-  if (!startDate) {
-    startDate = new Date(0).toISOString();
-  }
-  if (!endDate) {
-    endDate = new Date('2500-01-01').toISOString(); // TODO - refactor
+  const { startDate, endDate } = getStartAndEndDate(req);
+
+  if (startDate > endDate) {
+    res.status(400);
+    res.json({});
+    return;
   }
 
   const sql = `
@@ -64,28 +61,30 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((r) => {
-      const patientCount = buildCount(r);
+      const patientCount = dataBuilder.buildCount(r);
 
-      if (patientCount >= 0) {
-        res.status(200);
-        res.json({
-          patientCount,
-        });
-      } else {
-        res.status(404);
-        res.json({
-          patientCount,
-        });
-      }
+      if (patientCount > 0) res.status(200);
+      else res.status(404);
+      res.json({
+        patientCount,
+      });
     })
     .catch((err) => {
-      console.error(err);
       res.status(500);
       res.json({});
+      console.error(err);
     });
 }
 
 async function getMapPatients(req: Request, res: Response): Promise<void> {
+  const { startDate, endDate } = getStartAndEndDate(req);
+
+  if (startDate > endDate) {
+    res.status(400);
+    res.json([]);
+    return;
+  }
+
   let sql = `
     select distinct p.id, p.first_name, p.last_name, p.birthdate, p.created_at
     from patient p
@@ -96,9 +95,6 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
        or lower(c.condition_name) like '%cholesterol%'
        or lower(c.condition_name) like '%hypertension%';
   `;
-
-  const startDate = req.query.startDate;
-  const endDate = req.query.endDate;
 
   if (startDate && endDate) {
     sql = `
@@ -116,47 +112,30 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
 
   await dbRequest(sql)
     .then((patients) => {
-      const data = buildMapPatientsData(patients);
+      const data = dataBuilder.buildMapPatientsData(patients);
       if (data.length > 0) res.status(200);
       else res.status(404);
-
       res.json(data);
     })
     .catch((err) => {
-      console.error(err);
       res.status(500);
       res.json([]);
+      console.error(err);
     });
 }
 
-function buildCount(records: FieldList[]): number {
-  let patientCount = -1;
-  if (records.length === 1) {
-    const count = getFieldValue(records[0], 0);
-    if (count && typeof count === 'number' && count >= 0) {
-      patientCount = count;
-    }
+function getStartAndEndDate(req: Request) {
+  let startDate = req.query.startDate;
+  let endDate = req.query.endDate;
+
+  if (!startDate) {
+    startDate = new Date(0).toISOString();
   }
-  return patientCount;
+  if (!endDate) {
+    endDate = new Date('2500-01-01').toISOString();
+  }
+
+  return { startDate, endDate };
 }
 
-function buildMapPatientsData(records: FieldList[]): MapPatient[] {
-  return records.map((rec) => {
-    const id = getFieldValue(rec, 0) as number;
-    const firstName = getFieldValue(rec, 1) as string;
-    const lastName = getFieldValue(rec, 2) as string;
-    const birthdate = getFieldValue(rec, 3) as string;
-    const createdAt = getFieldValue(rec, 4) as string;
-
-    return {
-      id,
-      firstName,
-      lastName,
-      fullName: `${firstName} ${lastName}`,
-      birthdate,
-      createdAt,
-    };
-  });
-}
-
-export { buildCount, getMapPatients, getMapPatientCount, getPatientCount };
+export { getMapPatients, getMapPatientCount, getPatientCount };

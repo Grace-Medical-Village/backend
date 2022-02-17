@@ -1,49 +1,39 @@
 import { Request, Response } from 'express';
-import { dbRequest, getFieldValue, sqlParen } from '../../utils/db';
-import { FieldList } from 'aws-sdk/clients/rdsdataservice';
+import { dbRequest, sqlParen } from '../../utils/db';
 import {
-  Pat,
-  Patient,
   PatientAllergies,
   PatientCondition,
-  PatientListRecord,
   PatientMedication,
   PatientMetric,
   PatientNote,
 } from '../../types';
-import { validateMetric } from '../../utils';
+import { isIntegerGreaterThanZero, validate } from '../../utils';
+import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
+
+  if (!id || !isIntegerGreaterThanZero(id)) {
+    res.status(400);
+    res.json({
+      error: 'patient ID provided must be an integer and greater than 0',
+    });
+    return;
+  }
+
   const sql = `select *
                from patient
                where id = ${id}`;
 
-  const records = await dbRequest(sql)
-    .then((r) => r)
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
-      res.json({});
-    });
+  const records = await dbRequest(sql).then((r) => r);
 
   if (records && records.length === 1) {
-    const allergies = await getPatientAllergies(id)
-      .then((r) => r)
-      .catch((err) => console.error(err));
-    const conditions = await getPatientConditions(id)
-      .then((r) => r)
-      .catch((err) => console.error(err));
-    const medications = await getPatientMedications(id)
-      .then((r) => r)
-      .catch((err) => console.error(err));
-    const metrics = await getPatientMetrics(id)
-      .then((r) => r)
-      .catch((err) => console.error(err));
-    const notes = await getPatientNotes(id)
-      .then((r) => r)
-      .catch((err) => console.error(err));
-    const patient = buildPatientData(records[0]);
+    const allergies = await getPatientAllergies(id).then((r) => r);
+    const conditions = await getPatientConditions(id).then((r) => r);
+    const medications = await getPatientMedications(id).then((r) => r);
+    const metrics = await getPatientMetrics(id).then((r) => r);
+    const notes = await getPatientNotes(id).then((r) => r);
+    const patient = dataBuilder.buildPatientData(records[0]);
 
     res.status(200);
     res.json({
@@ -69,85 +59,87 @@ async function getPatientAllergies(
                where patient_id = ${id} limit 1;
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      if (r.length === 1) {
-        allergies = buildPatientAllergies(r[0]);
-      }
-    })
-    .catch((err) => console.error(err));
+  await dbRequest(sql).then((r) => {
+    if (r.length === 1) {
+      allergies = dataBuilder.buildPatientAllergies(r[0]);
+    }
+  });
 
   return allergies;
 }
 
 async function getPatientConditions(
-  id: string
+  patientId: string
 ): Promise<ArrayLike<PatientCondition>> {
   let conditions: ArrayLike<PatientCondition> = [];
+
+  if (!patientId) return conditions;
+
   const sql = `select pc.*, c.condition_name
                from patient_condition pc
                         inner join condition c on pc.condition_id = c.id
-               where patient_id = ${id};
+               where patient_id = ${patientId};
   `;
-  await dbRequest(sql)
-    .then((r) => {
-      conditions = buildPatientConditions(r);
-    })
-    .catch((err) => console.error(err));
+  await dbRequest(sql).then((r) => {
+    conditions = dataBuilder.buildPatientConditions(r);
+  });
 
   return conditions;
 }
 
 async function getPatientMedications(
-  id: string
+  patientId: string
 ): Promise<ArrayLike<PatientMedication>> {
   let medications: ArrayLike<PatientMedication> = [];
+
+  if (!patientId) return medications;
+
   const sql = `select *
                from patient_medication
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await dbRequest(sql)
-    .then((r) => {
-      medications = buildPatientMedications(r);
-    })
-    .catch((err) => console.error(err));
+  await dbRequest(sql).then((r) => {
+    medications = dataBuilder.buildPatientMedications(r);
+  });
 
   return medications;
 }
 
 async function getPatientMetrics(
-  id: string
+  patientId: string
 ): Promise<ArrayLike<PatientMetric>> {
   let metrics: ArrayLike<PatientMetric> = [];
+
+  if (!patientId) return metrics;
+
   const sql = `select *
                from patient_metric
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await dbRequest(sql)
-    .then((r) => {
-      metrics = buildPatientMetrics(r);
-    })
-    .catch((err) => console.error(err));
+  await dbRequest(sql).then((r) => {
+    metrics = dataBuilder.buildPatientMetrics(r);
+  });
 
   return metrics;
 }
 
-async function getPatientNotes(id: string): Promise<ArrayLike<PatientNote>> {
+async function getPatientNotes(
+  patientId: string
+): Promise<ArrayLike<PatientNote>> {
   let notes: ArrayLike<PatientNote> = [];
+
+  if (!patientId) return notes;
+
   const sql = `select *
                from patient_note
-               where patient_id = ${id}
+               where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await dbRequest(sql)
-    .then((r) => {
-      notes = buildPatientNotes(r);
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+  await dbRequest(sql).then((r) => {
+    notes = dataBuilder.buildPatientNotes(r);
+  });
 
   return notes;
 }
@@ -177,21 +169,26 @@ async function getPatients(req: Request, res: Response): Promise<void> {
     if (typeof birthdate === 'string') {
       sql += ` where birthdate = '${birthdate}'`;
     }
-  } else res.status(400).json([]);
+  } else {
+    // todo -> error message
+    res.status(400);
+    res.json([]);
+    return;
+  }
 
-  await dbRequest(sql)
-    .then((patients) => {
-      const data = buildPatientsData(patients);
-      if (data.length > 0) res.status(200);
-      else res.status(404);
+  await dbRequest(sql).then((patients) => {
+    const data = dataBuilder.buildPatientsData(patients);
+    if (data.length > 0) res.status(200);
+    else res.status(404);
 
-      res.json(data);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500);
-      res.json([]);
-    });
+    res.json(data);
+  });
+  // todo
+  // .catch((e) => {
+  //   res.status(e?.statusCode ?? 500);
+  //   res.json([]);
+  //   console.error(e);
+  // });
 }
 
 async function postPatient(req: Request, res: Response): Promise<void> {
@@ -251,32 +248,30 @@ async function postPatient(req: Request, res: Response): Promise<void> {
       }
     })
     .catch((e) => {
-      handlePostPatientError(e, res);
+      if (e.message.match(/already exists/i)) res.status(409);
+      else res.status(500);
+      res.json({});
+      console.error(e);
     });
 }
-
-const handlePostPatientError = (e: Error, res: Response): void => {
-  console.error(e);
-  if (e.message.match(/already exists/i)) res.status(409);
-  else res.status(400);
-  res.json({});
-};
 
 async function postPatientAllergies(
   req: Request,
   res: Response
 ): Promise<void> {
-  const patientId = req.body.patientId;
-  const allergies = req.body.allergies;
+  const patientId = req.body?.patientId ?? null;
+  const allergies = req.body.allergies ? req.body.allergies.trim() : null;
 
   if (!patientId) {
     res.status(400);
-    res.json({ message: "'patientId' required in request body" });
+    res.json({ error: "'patientId' required in request body" });
+    return;
   }
 
   if (!allergies) {
     res.status(400);
-    res.json({ message: "'allergies' required in request body" });
+    res.json({ error: "'allergies' required in request body" });
+    return;
   }
 
   const sql = `
@@ -304,25 +299,31 @@ async function postPatientCondition(
   const patientId = req.body.patientId;
   const conditionId = req.body.conditionId;
 
+  if (!patientId || !conditionId) {
+    res.status(400);
+    res.json({});
+    return;
+  }
+
   const sql = `
       insert into patient_condition (patient_id, condition_id)
       values (${patientId}, ${conditionId}) returning id;
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
-        res.status(201);
-        res.json({ id });
-      } else {
-        res.status(500);
-        res.json({});
-      }
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+  await dbRequest(sql).then((r) => {
+    if (r[0]) {
+      const id = r[0][0].longValue;
+      res.status(201);
+      res.json({ id });
+    } else {
+      res.status(400);
+      res.json({});
+    }
+  });
+  // todo
+  // .catch((e) => {
+  //   console.error(e);
+  // });
 }
 
 async function postPatientMedication(
@@ -331,6 +332,12 @@ async function postPatientMedication(
 ): Promise<void> {
   const patientId = req.body.patientId;
   const medicationId = req.body.medicationId;
+
+  if (!patientId || !medicationId) {
+    res.status(400);
+    res.json({});
+    return;
+  }
 
   const sql = `
       insert into patient_medication (patient_id, medication_id)
@@ -351,20 +358,19 @@ async function postPatientMedication(
       }
     })
     .catch((e) => {
-      console.error(e);
       res.status(500);
       res.json({});
+      console.error(e);
     });
 }
 
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
-  const value = req.body?.value.trim() ?? '';
-  const comment: string | null =
-    req.body.comment !== null ? req.body.comment.trim() : '';
+  const value = req.body.value ? req.body.value.trim() : ''; // todo what if not string?
+  const comment = req.body.comment ? req.body.comment.trim() : '';
 
-  const validMetric = await validateMetric(metricId, value);
+  const validMetric = await validate(metricId, value);
 
   if (validMetric.isValid && validMetric.metric) {
     const sql = `
@@ -386,9 +392,9 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
         }
       })
       .catch((e) => {
-        console.error(e);
-        res.status(500);
+        res.status(400);
         res.json({});
+        console.error(e);
       });
   } else {
     res.status(400);
@@ -399,12 +405,20 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
 }
 
 async function postPatientNote(req: Request, res: Response): Promise<void> {
-  const patientId = req.body.patientId;
-  const note = req.body.note.trim();
+  const patientId = req.body?.patientId ?? null;
+  const note = req.body.note ? req.body.note.trim() : '';
+
+  if (!patientId || !note) {
+    res.status(400);
+    res.json({
+      error: 'patientId and note required in request body to save patient note',
+    });
+    return;
+  }
 
   const sql = `
       insert into patient_note (patient_id, note)
-      values (${patientId}, '${note}') returning id, created_at, modified_at;
+      values (${patientId}, '${note}') returning id, note, created_at, modified_at;
   `;
 
   await dbRequest(sql)
@@ -414,20 +428,24 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
         const createdAt = r[0][1].stringValue;
         const modifiedAt = r[0][2].stringValue;
         res.status(201);
-        res.json({ id, createdAt, modifiedAt });
+        res.json({ id, note, createdAt, modifiedAt });
       } else {
         res.status(400);
         res.json({});
       }
     })
     .catch((e) => {
+      res.status(e?.statusCode ?? 500);
+      // todo -> error message
       console.error(e);
-      res.status(500);
     });
 }
 
 async function putPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
+
+  const zipCode5 = req.body.zipCode5 ? req.body.zipCode5 : '';
+
   const updates = `
     first_name = '${req.body.firstName}',
     last_name = '${req.body.lastName}',
@@ -437,7 +455,7 @@ async function putPatient(req: Request, res: Response): Promise<void> {
     mobile = '${req.body.mobile}',
     native_language = '${req.body.nativeLanguage}',
     native_literacy = ${req.body.nativeLiteracy},
-    zip_code_5 = '${req.body.zipCode5}',
+    zip_code_5 = '${zipCode5}',
     smoker = '${req.body.smoker}'
   `;
 
@@ -459,18 +477,18 @@ async function putPatient(req: Request, res: Response): Promise<void> {
 }
 
 async function putPatientAllergies(req: Request, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = req.params?.id ?? null;
   const allergies = req.body?.allergies ?? null;
 
   if (!id) {
     res.status(400);
-    res.json({ message: "'id' path parameter required" });
+    res.json({ error: "'id' path parameter required" });
     return;
   }
 
   if (!allergies) {
     res.status(400);
-    res.json({ message: "'allergies' required in request body" });
+    res.json({ error: "'allergies' required in request body" });
     return;
   }
 
@@ -486,339 +504,346 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
       res.json({});
     })
     .catch((e) => {
-      console.error(e);
-      res.status(500);
+      res.status(e?.statusCode ?? 500);
       res.json({});
+      console.error(e);
     });
 }
 
 async function putPatientArchive(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  const archive = req.body?.archive ?? false;
+  const id = req.params?.id ?? null;
+  const archive = req.body?.archive ?? null;
+
+  if (!id || !isIntegerGreaterThanZero(id)) {
+    res.status(400);
+    res.json({
+      error: 'patient ID provided must be an integer and greater than 0',
+    });
+    return;
+  }
+
+  if (archive === null) {
+    res.status(400);
+    res.json({
+      error: "'archive' not provided in request body",
+    });
+    return;
+  }
 
   const sql = `update patient
                set archive = ${archive}
                where id = ${id};`;
 
-  if (id) {
-    await dbRequest(sql)
-      .then((_) => {
-        res.status(200);
-      })
-      .catch((e) => {
-        res.status(500);
-        console.error(e);
-      });
-  } else res.status(400);
-
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({ archive });
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
-async function putPatientMetric(req: Request, res: Response): Promise<void> {
-  const id = req.body.id;
-  const value = req.body.value;
-
-  const sql = `update patient_metric
-               set value = ${value}
-               where id = ${id};`;
-
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      res.status(400);
-      console.error(e);
-    });
-
-  res.json({});
-}
+// async function putPatientMetric(req: Request, res: Response): Promise<void> {
+//   const metricId = req.params.id;
+//   const value = req.body.value;
+//
+//   const sql = `update patient_metric
+//                set value = ${value}
+//                where id = ${metricId};`;
+//
+//   await dbRequest(sql)
+//     .then((_) => {
+//       res.status(200);
+//     })
+//     .catch((e) => {
+//       res.status(400);
+//       console.error(e);
+//     });
+//
+//   res.json({});
+// }
 
 async function putPatientNote(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
-  const note = req.body.note.trim();
+  const noteId = req.params.noteId;
+  const note = req.body.note ? req.body.note.trim() : null;
+
+  if (!noteId || !isIntegerGreaterThanZero(noteId)) {
+    res.status(400);
+    res.json({ error: '"noteId" path parameter required' });
+    return;
+  }
+
+  if (!note) {
+    res.status(400);
+    res.json({
+      error:
+        '"note" must be provided in the request body and it cannot be empty',
+    });
+    return;
+  }
 
   const sql = `update patient_note
                set note = '${note}'
-               where id = ${id};`;
+               where id = ${noteId};`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      res.status(400);
-      console.error(e);
-    });
-
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+    // TODO return the updated note + trim
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(e?.statusCode ?? 500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
+// TODO
+// async function mergePatients(req: Request, res: Response): Promise<void> {
+//   const patientId: string | null = req.params?.patientId ?? null;
+//   const patientIdToArchive: string | null =
+//     req.params?.patientIdToArchive ?? null;
+//
+//   if (!patientId || !patientIdToArchive) {
+//     res.status(400);
+//     res.json({
+//       error: `patientId provided was ${patientId} and patientIdToArchive was ${patientIdToArchive}`,
+//     });
+//   }
+//
+//   const re = new RegExp(/^\d+$/);
+//   if (!re.test(patientId) || !re.test(patientIdToArchive)) {
+//     res.status(400);
+//     res.json({
+//       error: 'patientId or patientIdToArchive provided are not numbers',
+//     });
+//   }
+//
+//   const transactionId = await beginTransaction().then((id) => id);
+//
+//   if (transactionId) {
+//     const tables = [
+//       'patient_allergy',
+//       'patient_condition',
+//       'patient_medication',
+//       'patient_metric',
+//       'patient_note',
+//     ];
+//
+//     const patientTableUpdateSql = `
+//     update table patient
+//       set archived = true
+//       where id = ${patientIdToArchive};
+//   `;
+//
+//     const requests = [patientTableUpdateSql];
+//     for (const table of tables) {
+//       const sql = `
+//       update table ${table}
+//         set patient_id = ${patientId}
+//         where patient_id = ${patientIdToArchive};
+//       `;
+//       requests.push(sql);
+//     }
+//
+//     for (const request of requests) {
+//       await dbRequest(request, transactionId);
+//     }
+//
+//     await commitTransaction(transactionId)
+//       .then((r) => {
+//         if (r && r.transactionStatus) {
+//           res.status(200);
+//           res.json({});
+//         }
+//       })
+//       .catch((e) => {
+//         console.error(e);
+//         res.status(500);
+//         res.json({});
+//       });
+//   } else {
+//     res.status(500);
+//     res.json({});
+//   }
+// }
+
 async function deletePatient(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
+  const patientId = req.params.patientId;
+
+  if (!patientId || !isIntegerGreaterThanZero(patientId)) {
+    res.status(400);
+    res.json({
+      error: '"patientId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient
-               where id = ${id}`;
+               where id = ${patientId};
+               `;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  // todo -> return id? archive only?
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientAllergy(
   req: Request,
   res: Response
 ): Promise<void> {
-  const id = req.params.id;
+  const patientAllergyId = req.params.patientAllergyId;
+
+  if (!patientAllergyId || !isIntegerGreaterThanZero(patientAllergyId)) {
+    res.status(400);
+    res.json({
+      error: '"patientAllergyId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_allergy
-               where id = ${id}`;
+               where id = ${patientAllergyId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(500);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientCondition(
   req: Request,
   res: Response
 ): Promise<void> {
-  const id = req.params.id;
+  const patientConditionId = req.params.patientConditionId;
+
+  if (!patientConditionId || !isIntegerGreaterThanZero(patientConditionId)) {
+    res.status(400);
+    res.json({
+      error: '"patientConditionId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_condition
-               where id = ${id}`;
+               where id = ${patientConditionId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      console.log(sql);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+    console.log(sql);
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientMedication(
   req: Request,
   res: Response
 ): Promise<void> {
-  const id = req.params.id;
+  const patientMedicationId = req.params.patientMedicationId;
+
+  if (!patientMedicationId || !isIntegerGreaterThanZero(patientMedicationId)) {
+    res.status(400);
+    res.json({
+      error: '"patientMedicationId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_medication
-               where id = ${id}`;
+               where id = ${patientMedicationId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   console.error(e);
+  //   res.status(400);
+  //   res.json({});
+  // });
 }
 
 async function deletePatientMetric(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
+  const patientMetricId = req.params.patientMetricId;
+
+  if (!patientMetricId || !isIntegerGreaterThanZero(patientMetricId)) {
+    res.status(400);
+    res.json({
+      error: '"patientMetricId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_metric
-               where id = ${id}`;
+               where id = ${patientMetricId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 async function deletePatientNote(req: Request, res: Response): Promise<void> {
-  const id = req.params.id;
+  const patientNoteId = req.params.patientNoteId;
+
+  if (!patientNoteId || !isIntegerGreaterThanZero(patientNoteId)) {
+    res.status(400);
+    res.json({
+      error: '"patientNoteId" is a required path parameter',
+    });
+    return;
+  }
+
   const sql = `delete
                from patient_note
-               where id = ${id}`;
+               where id = ${patientNoteId}`;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(400);
-    });
-  res.json({});
-}
-
-function buildPatientAllergies(record: FieldList): PatientAllergies {
-  const id = getFieldValue(record, 0) as number;
-  const patientId = getFieldValue(record, 1) as number;
-  const allergies = getFieldValue(record, 2) as string;
-  const createdAt = getFieldValue(record, 3) as string;
-  const modifiedAt = getFieldValue(record, 4) as string;
-
-  return {
-    id,
-    allergies,
-    patientId,
-    createdAt,
-    modifiedAt,
-  };
-}
-
-function buildPatientConditions(
-  records: FieldList[]
-): ArrayLike<PatientCondition> {
-  return records?.map((pc: FieldList) => {
-    const id = getFieldValue(pc, 0) as number;
-    const conditionId = getFieldValue(pc, 1) as number;
-    const patientId = getFieldValue(pc, 2) as number;
-    const createdAt = getFieldValue(pc, 3) as string;
-    const modifiedAt = getFieldValue(pc, 4) as string;
-
-    const patientCondition: PatientCondition = {
-      id,
-      conditionId,
-      patientId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientCondition;
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
   });
-}
-
-function buildPatientMedications(
-  records: FieldList[]
-): ArrayLike<PatientMedication> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const patientId = getFieldValue(pm, 1) as number;
-    const medicationId = getFieldValue(pm, 2) as number;
-    const createdAt = getFieldValue(pm, 3) as string;
-    const modifiedAt = getFieldValue(pm, 4) as string;
-
-    const patientMedication: PatientMedication = {
-      id,
-      patientId,
-      medicationId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientMedication;
-  });
-}
-
-function buildPatientMetrics(records: FieldList[]): ArrayLike<PatientMetric> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const patientId = getFieldValue(pm, 1) as number;
-    const metricId = getFieldValue(pm, 2) as number;
-    const value = getFieldValue(pm, 3) as string;
-    const comment = getFieldValue(pm, 4) as string | null;
-    const createdAt = getFieldValue(pm, 5) as string;
-    const modifiedAt = getFieldValue(pm, 6) as string;
-
-    const patientMetric: PatientMetric = {
-      id,
-      metricId,
-      patientId,
-      value,
-      comment,
-      createdAt,
-      modifiedAt,
-    };
-    return patientMetric;
-  });
-}
-
-function buildPatientNotes(records: FieldList[]): ArrayLike<PatientNote> {
-  return records?.map((pm: FieldList) => {
-    const id = getFieldValue(pm, 0) as number;
-    const note = getFieldValue(pm, 1) as string;
-    const patientId = getFieldValue(pm, 2) as number;
-    const createdAt = getFieldValue(pm, 3) as string;
-    const modifiedAt = getFieldValue(pm, 4) as string;
-
-    const patientNote: PatientNote = {
-      id,
-      note,
-      patientId,
-      createdAt,
-      modifiedAt,
-    };
-    return patientNote;
-  });
-}
-
-function buildPatientData(p: FieldList): Patient {
-  const id = getFieldValue(p, Pat.ID) as number;
-  const firstName = getFieldValue(p, Pat.FIRST_NAME) as string;
-  const lastName = getFieldValue(p, Pat.LAST_NAME) as string;
-  const birthdate = getFieldValue(p, Pat.BIRTHDATE) as string;
-  const gender = getFieldValue(p, Pat.GENDER) as string;
-  const email = getFieldValue(p, Pat.EMAIL) as string;
-  const height = getFieldValue(p, Pat.HEIGHT) as string;
-  const mobile = getFieldValue(p, Pat.MOBILE) as string;
-  const country = getFieldValue(p, Pat.COUNTRY) as string;
-  const nativeLanguage = getFieldValue(p, Pat.NATIVE_LANGUAGE) as string;
-  const nativeLiteracy = getFieldValue(p, Pat.NATIVE_LITERACY) as string;
-  const smoker = getFieldValue(p, Pat.SMOKER) as boolean;
-  const zipCode5 = getFieldValue(p, Pat.ZIP_CODE) as string;
-
-  return {
-    id,
-    firstName,
-    lastName,
-    fullName: `${firstName} ${lastName}`,
-    birthdate,
-    gender,
-    email,
-    height,
-    mobile,
-    country,
-    nativeLanguage,
-    nativeLiteracy,
-    smoker,
-    zipCode5,
-  };
-}
-
-function buildPatientsData(records: FieldList[]): ArrayLike<PatientListRecord> {
-  return records?.map((p: FieldList) => {
-    const id = getFieldValue(p, 0) as number;
-    const firstName = getFieldValue(p, 1) as string;
-    const lastName = getFieldValue(p, 2) as string;
-    const fullName = getFieldValue(p, 3) as string;
-    const birthdate = getFieldValue(p, 4) as string;
-    const gender = getFieldValue(p, 5) as string;
-
-    const patientListRecord: PatientListRecord = {
-      id,
-      firstName,
-      lastName,
-      fullName,
-      birthdate,
-      gender,
-    };
-
-    return patientListRecord;
-  });
+  // TODO test catch
+  // .catch((e) => {
+  //   res.status(400);
+  //   res.json({});
+  //   console.error(e);
+  // });
 }
 
 export {
@@ -830,6 +855,11 @@ export {
   deletePatientNote,
   getPatient,
   getPatients,
+  getPatientAllergies,
+  getPatientConditions,
+  getPatientMedications,
+  getPatientMetrics,
+  getPatientNotes,
   postPatient,
   postPatientAllergies,
   postPatientCondition,
@@ -839,6 +869,5 @@ export {
   putPatient,
   putPatientAllergies,
   putPatientArchive,
-  putPatientMetric,
   putPatientNote,
 };

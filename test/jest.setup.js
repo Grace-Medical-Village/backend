@@ -1,2 +1,11 @@
-process.env.NODE_ENV = 'test';
-process.env.PORT = 0;
+module.exports = {
+  preset: "ts-jest",
+  rootDir: "src",
+  setupFilesAfterEnv:
+    [
+      require.resolve("./setup-console.js"),
+      require.resolve("./setup-env.js")
+    ],
+  testEnvironment: "node",
+  verbose: true
+};

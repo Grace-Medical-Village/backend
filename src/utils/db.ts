@@ -1,13 +1,23 @@
 import { RDSDataService } from 'aws-sdk';
 import {
+  BeginTransactionRequest,
   ExecuteStatementRequest,
   FieldList,
   SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
 import { DATA_API_TYPES } from '../types';
-import { isLocal } from './index';
+import { isLocal, isTest } from './index';
 
-type DbRequest = (sql: string) => Promise<FieldList[]>;
+type DbRequest = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<FieldList[]>;
+
+// type BeginTransaction = () => Promise<Id | null>;
+
+// type CommitTransaction = (
+//   transactionId: string
+// ) => Promise<CommitTransactionResponse | void>;
 
 type GetFieldValue = (
   fieldList: FieldList,
@@ -22,6 +32,7 @@ interface Overrides {
 
 type GetRdsParams = (
   sql: string,
+  transactionId: string | null,
   overrides: Overrides
 ) => ExecuteStatementRequest | void;
 
@@ -34,60 +45,139 @@ export const getRdsDataService: GetRdsDataService = () => {
     region: 'us-east-1',
     sslEnabled: true,
   };
-  if (isLocal()) {
+  if (isLocal() || isTest()) {
     config.endpoint = ENDPOINT;
   }
 
   return new RDSDataService(config);
 };
 
-export const getRdsParams: GetRdsParams = (sql, overrides) => {
-  if (DATABASE && RESOURCE_ARN && SECRET_ARN)
-    return {
+export const getRdsParams: GetRdsParams = (sql, transactionId, overrides) => {
+  if (DATABASE && RESOURCE_ARN && SECRET_ARN) {
+    const result: ExecuteStatementRequest = {
       continueAfterTimeout: false,
       database: DATABASE,
-      includeResultMetadata: isLocal() ?? false,
+      // includeResultMetadata: isLocal() ?? false,
+      includeResultMetadata: true,
       parameters: [],
       resourceArn: RESOURCE_ARN,
+      // TODO
+      // resultSetOptions: {
+      //   decimalReturnType: 'DOUBLE_OR_LONG',
+      // },
       secretArn: SECRET_ARN,
       sql,
       ...overrides,
     };
-  else {
+    if (transactionId) {
+      result.transactionId = transactionId;
+    }
+    return result;
+  } else {
     throw new Error(
       `Error: unable to build rdsParams with { DATABASE: ${DATABASE}, RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN} }`
     );
   }
 };
 
-export const dbRequest: DbRequest = async (sql) => {
+export const buildBeginTransactionRequest =
+  (): BeginTransactionRequest | void => {
+    if (DATABASE && RESOURCE_ARN && SECRET_ARN) {
+      return {
+        database: DATABASE,
+        resourceArn: RESOURCE_ARN,
+        secretArn: SECRET_ARN,
+      };
+    } else {
+      throw new Error(
+        `Error: unable to build buildBeginTransactionRequest with { DATABASE: ${DATABASE}, RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN} }`
+      );
+    }
+  };
+
+// export const buildCommitTransactionRequest = (
+//   transactionId: string
+// ): CommitTransactionRequest | void => {
+//   if (RESOURCE_ARN && SECRET_ARN && transactionId) {
+//     return {
+//       resourceArn: RESOURCE_ARN,
+//       secretArn: SECRET_ARN,
+//       transactionId,
+//     };
+//   } else {
+//     throw new Error(
+//       `Error: unable to build buildCommitTransactionRequest with { RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN}, transactionId: ${transactionId}`
+//     );
+//   }
+// };
+
+export const dbRequest: DbRequest = async (sql, transactionId = null) => {
   const rdsDataService = getRdsDataService();
-  const rdsParams: ExecuteStatementRequest | void = getRdsParams(sql, {});
+  const rdsParams: ExecuteStatementRequest | void = getRdsParams(
+    sql,
+    transactionId,
+    {}
+  );
 
   let data: FieldList[] = [];
 
   if (rdsDataService && rdsParams) {
     const response = await rdsDataService.executeStatement(rdsParams).promise();
 
-    if (response.records && response.records.length > 0)
+    // TODO -> use column metadata?
+    // const { columnMetadata, records } = response;
+    //
+    // for (const record of records) {
+    //   console.log(columnMetadata);
+    //   console.log(record);
+    // }
+    if (response.records && response.records.length > 0) {
       data = response.records;
+    }
   }
   return data;
 };
 
+// export const beginTransaction: BeginTransaction = async () => {
+//   const rdsDataService = getRdsDataService();
+//   const beginTransactionRequest: BeginTransactionRequest | void =
+//     buildBeginTransactionRequest();
+//
+//   let result: string | null = null;
+//
+//   if (rdsDataService && beginTransactionRequest) {
+//     const response = await rdsDataService
+//       .beginTransaction(beginTransactionRequest)
+//       .promise();
+//
+//     result = response?.transactionId ?? null;
+//   }
+//   return result;
+// };
+
+// export const commitTransaction: CommitTransaction = async (transactionId) => {
+//   const rdsDataService = getRdsDataService();
+//   const commitTransactionRequest: CommitTransactionRequest | void =
+//     buildCommitTransactionRequest(transactionId);
+//
+//   if (rdsDataService && commitTransactionRequest) {
+//     const response = await rdsDataService
+//       .commitTransaction(commitTransactionRequest)
+//       .promise();
+//
+//     return response;
+//   }
+// };
+
 export const getFieldValue: GetFieldValue = (fieldList, index) => {
-  const entry = Object.entries(fieldList[index])[0];
-  const key = entry[0] ?? null;
-  let value: string | number | boolean | null = entry[1] ?? null;
-  // if (indexOutOfBounds(index, fieldList)) {
-  //   throw new Error(
-  //     `getFieldValue - index ${index} out of bounds for fieldList ${fieldList}`
-  //   );
-  // }
-  if (key === DATA_API_TYPES.IS_NULL && value) {
-    value = null;
+  let result: string | number | boolean | null = null;
+  if (fieldList.length >= index + 1) {
+    const [key, value] = Object.entries(fieldList[index])[0];
+    if (key === DATA_API_TYPES.IS_NULL && value) {
+      result = null;
+    } else result = value;
   }
-  return value;
+  return result;
 };
 
 export const sqlParen = (x: string): string => `'${x}'`;

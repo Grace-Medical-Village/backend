@@ -27,7 +27,6 @@ import {
   putPatient,
   putPatientAllergies,
   putPatientArchive,
-  putPatientMetric,
   putPatientNote,
 } from './routes/patient';
 import { getHealthCheck } from './routes/health-check';
@@ -98,13 +97,12 @@ export const getPatientRouter = (): Router => {
   router.put('/:id', putPatient);
   router.put('/allergy/:id', putPatientAllergies);
   router.put('/archive/:id', putPatientArchive);
-  router.put('/metric/:id', putPatientMetric);
-  router.put('/note/:id', putPatientNote);
-  router.delete('/:id', deletePatient);
-  router.delete('/allergy/:id', deletePatientAllergy);
-  router.delete('/condition/:id', deletePatientCondition);
-  router.delete('/medication/:id', deletePatientMedication);
-  router.delete('/metric/:id', deletePatientMetric);
-  router.delete('/note/:id', deletePatientNote);
+  router.put('/note/:noteId', putPatientNote);
+  router.delete('/:patientId', deletePatient);
+  router.delete('/allergy/:patientAllergyId', deletePatientAllergy);
+  router.delete('/condition/:patientConditionId', deletePatientCondition);
+  router.delete('/medication/:patientMedicationId', deletePatientMedication);
+  router.delete('/metric/:patientMetricId', deletePatientMetric);
+  router.delete('/note/:patientNoteId', deletePatientNote);
   return router;
 };
