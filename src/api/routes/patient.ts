@@ -443,6 +443,9 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
 
 async function putPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
+
+  const zipCode5 = req.body.zipCode5 ? req.body.zipCode5 : '';
+
   const updates = `
     first_name = '${req.body.firstName}',
     last_name = '${req.body.lastName}',
@@ -452,7 +455,7 @@ async function putPatient(req: Request, res: Response): Promise<void> {
     mobile = '${req.body.mobile}',
     native_language = '${req.body.nativeLanguage}',
     native_literacy = ${req.body.nativeLiteracy},
-    zip_code_5 = '${req.body.zipCode5}',
+    zip_code_5 = '${zipCode5}',
     smoker = '${req.body.smoker}'
   `;
 

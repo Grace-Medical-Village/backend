@@ -122,6 +122,7 @@ const dataBuilder = {
       const pattern = getFieldValue(m, MetricDataIndex.PATTERN) as string;
       const minValue = getFieldValue(m, MetricDataIndex.MIN_VALUE) as number;
       const maxValue = getFieldValue(m, MetricDataIndex.MAX_VALUE) as number;
+      const archived = getFieldValue(m, MetricDataIndex.ARCHIVED) as boolean;
       const createdAt = getFieldValue(m, MetricDataIndex.CREATED_AT) as string;
       const modifiedAt = getFieldValue(
         m,
@@ -140,6 +141,7 @@ const dataBuilder = {
         maxValue,
         createdAt,
         modifiedAt,
+        archived,
       };
 
       return metric;

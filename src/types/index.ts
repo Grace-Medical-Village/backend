@@ -31,6 +31,7 @@ export type Metric = {
   pattern?: string;
   minValue?: number;
   maxValue?: number;
+  archived?: boolean;
   createdAt: string;
   modifiedAt: string;
 };
@@ -158,6 +159,7 @@ export enum MetricDataIndex {
   MAX_VALUE,
   FORMAT,
   PATTERN,
+  ARCHIVED,
   CREATED_AT,
   MODIFIED_AT,
 }
@@ -184,12 +186,16 @@ export enum Pat {
   GENDER,
   EMAIL,
   HEIGHT,
+  MAP,
   MOBILE,
   COUNTRY,
   NATIVE_LANGUAGE,
   NATIVE_LITERACY,
   SMOKER,
   ZIP_CODE,
+  ARCHIVED,
+  CREATED_AT,
+  MODIFIED_AT,
 }
 
 export type MetricFormat = {
