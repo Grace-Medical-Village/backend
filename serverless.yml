@@ -1,4 +1,4 @@
-frameworkVersion: v2.51.2
+#frameworkVersion: v2.51.2
 service: backend
 useDotenv: true
 
