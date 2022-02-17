@@ -1,7 +1,7 @@
 {
-  "name": "gmvc-api",
+  "name": "gvmc-api",
   "version": "1.0.0",
-  "description": "API for Grace Medical Village Clinic",
+  "description": "API for Grace Village Medical Clinic",
   "scripts": {
     "prepare": "husky install",
     "debug": "SLS_DEBUG=* && node --inspect && npm run local",
