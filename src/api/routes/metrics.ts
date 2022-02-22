@@ -4,7 +4,22 @@ import { Metric, MetricFormat } from '../../types';
 import { dataBuilder } from '../../utils/data-builder';
 
 async function getMetrics(req: Request, res: Response): Promise<void> {
-  const sql = 'select * from metric;';
+  const sql = `
+    select id,
+      id,
+      metric_name,
+      unit_of_measure,
+      uom,
+      map,
+      min_value,
+      max_value,
+      format,
+      pattern,
+      archived,
+      created_at,
+      modified_at
+    from metric;
+  `;
 
   await dbRequest(sql)
     .then((r) => {
