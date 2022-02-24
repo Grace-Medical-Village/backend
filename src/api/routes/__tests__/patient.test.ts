@@ -185,7 +185,7 @@ describe('patient', () => {
   });
 
   describe('getPatientMetrics', () => {
-    it.todo('retrieves patient metric data', async () => {
+    it('retrieves patient metric data', async () => {
       expect.assertions(13);
       const patientId = await createPatient().then((r) => r);
       const metricId0 = await getRandomMetricId().then((r) => r);
