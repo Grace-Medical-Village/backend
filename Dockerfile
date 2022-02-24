@@ -38,4 +38,6 @@ ENV POSTGRES_PASSWORD=gmvc \
 
 FROM db as test-db
 
-COPY ./db/index.sql /docker-entrypoint-initdb.d/
+#COPY ./db/index.sql /docker-entrypoint-initdb.d/
+COPY ./db/01-schema.sql /docker-entrypoint-initdb.d/
+COPY ./db/02-data.sql /docker-entrypoint-initdb.d/

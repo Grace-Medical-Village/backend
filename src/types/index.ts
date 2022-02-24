@@ -159,9 +159,9 @@ export enum MetricDataIndex {
   MAX_VALUE,
   FORMAT,
   PATTERN,
-  ARCHIVED,
   CREATED_AT,
   MODIFIED_AT,
+  ARCHIVED,
 }
 
 export enum MetricFormatDataIndex {

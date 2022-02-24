@@ -226,8 +226,6 @@ insert
 into metric (metric_name, unit_of_measure, uom, format, pattern, map, min_value, max_value, archived)
 values ('Blood Pressure', 'millimeters of mercury', 'mm/Hg', '120/80', '^([1-9]|[1-9]\d+)/([1-9]|[1-9]\d+)$', true, 1, 500, false),
        ('Blood Sugar', 'milligrams per deciliter', 'mg/dL', '120', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 20, 400, true),
-       ('Blood Sugar (Fasting)', 'milligrams per deciliter', 'mg/dL', '120', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 20, 400, false),
-       ('Blood Sugar (Nonfasting)', 'milligrams per deciliter', 'mg/dL', '120', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 20, 400, false),
        ('Cholesterol (Total)', 'milligrams per deciliter', 'mg/dL', '240', '^([1-9]|[1-9][0-9]{1,2})$', true, 20, 300, false),
        ('Heart Rate', 'beats per minute', 'bpm', '55', '^([1-9]|[1-9][0-9]{1,2})$', false, 1, 500, false),
        ('Height', 'inches', 'in', '63', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 4, 96, false),
@@ -239,4 +237,6 @@ values ('Blood Pressure', 'millimeters of mercury', 'mm/Hg', '120/80', '^([1-9]|
        ('Respiration Rate', 'breaths per minute', 'bpm', '20', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 1, 240, false),
        ('Temperature', 'degrees fahrenheit', '°F', '101.5', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 60, 120, false),
        ('Waist Size', 'inches', 'in', '38', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 4, 100, false),
-       ('Weight', 'pounds', 'lb', '195', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 4, 800, false);
+       ('Weight', 'pounds', 'lb', '195', '^([1-9]|[1-9]\d+)(\.\d+)?$', false, 4, 800, false),
+       ('Blood Sugar (Fasting)', 'milligrams per deciliter', 'mg/dL', '120', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 20, 400, false),
+       ('Blood Sugar (Nonfasting)', 'milligrams per deciliter', 'mg/dL', '120', '^([1-9]|[1-9]\d+)(\.\d+)?$', true, 20, 400, false);

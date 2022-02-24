@@ -170,7 +170,6 @@ async function getPatients(req: Request, res: Response): Promise<void> {
       sql += ` where birthdate = '${birthdate}'`;
     }
   } else {
-    // todo -> error message
     res.status(400);
     res.json([]);
     return;
@@ -183,12 +182,6 @@ async function getPatients(req: Request, res: Response): Promise<void> {
 
     res.json(data);
   });
-  // todo
-  // .catch((e) => {
-  //   res.status(e?.statusCode ?? 500);
-  //   res.json([]);
-  //   console.error(e);
-  // });
 }
 
 async function postPatient(req: Request, res: Response): Promise<void> {
@@ -310,20 +303,22 @@ async function postPatientCondition(
       values (${patientId}, ${conditionId}) returning id;
   `;
 
-  await dbRequest(sql).then((r) => {
-    if (r[0]) {
-      const id = r[0][0].longValue;
-      res.status(201);
-      res.json({ id });
-    } else {
-      res.status(400);
+  await dbRequest(sql)
+    .then((r) => {
+      if (r[0]) {
+        const id = r[0][0].longValue;
+        res.status(201);
+        res.json({ id });
+      } else {
+        res.status(400);
+        res.json({});
+      }
+    })
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json({});
-    }
-  });
-  // todo
-  // .catch((e) => {
-  //   console.error(e);
-  // });
+      console.error(e);
+    });
 }
 
 async function postPatientMedication(
@@ -358,7 +353,7 @@ async function postPatientMedication(
       }
     })
     .catch((e) => {
-      res.status(500);
+      res.status(e?.statusCode ?? 500);
       res.json({});
       console.error(e);
     });
@@ -367,7 +362,7 @@ async function postPatientMedication(
 async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const patientId = req.body.patientId;
   const metricId = req.body.metricId;
-  const value = req.body.value ? req.body.value.trim() : ''; // todo what if not string?
+  const value = req.body?.value ?? '';
   const comment = req.body.comment ? req.body.comment.trim() : '';
 
   const validMetric = await validate(metricId, value);
@@ -421,24 +416,18 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
       values (${patientId}, '${note}') returning id, note, created_at, modified_at;
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
-        const createdAt = r[0][1].stringValue;
-        const modifiedAt = r[0][2].stringValue;
-        res.status(201);
-        res.json({ id, note, createdAt, modifiedAt });
-      } else {
-        res.status(400);
-        res.json({});
-      }
-    })
-    .catch((e) => {
-      res.status(e?.statusCode ?? 500);
-      // todo -> error message
-      console.error(e);
-    });
+  await dbRequest(sql).then((r) => {
+    if (r[0]) {
+      const id = r[0][0].longValue;
+      const createdAt = r[0][1].stringValue;
+      const modifiedAt = r[0][2].stringValue;
+      res.status(201);
+      res.json({ id, note, createdAt, modifiedAt });
+    } else {
+      res.status(400);
+      res.json({});
+    }
+  });
 }
 
 async function putPatient(req: Request, res: Response): Promise<void> {
@@ -463,17 +452,17 @@ async function putPatient(req: Request, res: Response): Promise<void> {
                set ${updates}
                where id = ${id};`;
 
-  // TODO 409 if patient already exists
+  // TODO - 409 if patient already exists
   await dbRequest(sql)
     .then((_) => {
       res.status(200);
+      res.json({});
     })
     .catch((e) => {
-      res.status(400);
+      res.status(e?.statusCode ?? 400);
+      res.json({});
       console.error(e);
     });
-
-  res.json({});
 }
 
 async function putPatientAllergies(req: Request, res: Response): Promise<void> {
@@ -498,16 +487,10 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
       where id = ${id};
   `;
 
-  await dbRequest(sql)
-    .then((_) => {
-      res.status(200);
-      res.json({});
-    })
-    .catch((e) => {
-      res.status(e?.statusCode ?? 500);
-      res.json({});
-      console.error(e);
-    });
+  await dbRequest(sql).then((_) => {
+    res.status(200);
+    res.json({});
+  });
 }
 
 async function putPatientArchive(req: Request, res: Response): Promise<void> {
@@ -538,12 +521,6 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
     res.status(200);
     res.json({ archive });
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(500);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 // async function putPatientMetric(req: Request, res: Response): Promise<void> {
@@ -594,15 +571,8 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
     res.json({});
     // TODO return the updated note + trim
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(e?.statusCode ?? 500);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
-// TODO
 // async function mergePatients(req: Request, res: Response): Promise<void> {
 //   const patientId: string | null = req.params?.patientId ?? null;
 //   const patientIdToArchive: string | null =
@@ -688,17 +658,10 @@ async function deletePatient(req: Request, res: Response): Promise<void> {
                where id = ${patientId};
                `;
 
-  // todo -> return id? archive only?
   await dbRequest(sql).then((_) => {
     res.status(200);
     res.json({});
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(500);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 async function deletePatientAllergy(
@@ -723,12 +686,6 @@ async function deletePatientAllergy(
     res.status(200);
     res.json({});
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(500);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 async function deletePatientCondition(
@@ -754,12 +711,6 @@ async function deletePatientCondition(
     res.json({});
     console.log(sql);
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(400);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 async function deletePatientMedication(
@@ -784,12 +735,6 @@ async function deletePatientMedication(
     res.status(200);
     res.json({});
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   console.error(e);
-  //   res.status(400);
-  //   res.json({});
-  // });
 }
 
 async function deletePatientMetric(req: Request, res: Response): Promise<void> {
@@ -811,12 +756,6 @@ async function deletePatientMetric(req: Request, res: Response): Promise<void> {
     res.status(200);
     res.json({});
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(400);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 async function deletePatientNote(req: Request, res: Response): Promise<void> {
@@ -838,12 +777,6 @@ async function deletePatientNote(req: Request, res: Response): Promise<void> {
     res.status(200);
     res.json({});
   });
-  // TODO test catch
-  // .catch((e) => {
-  //   res.status(400);
-  //   res.json({});
-  //   console.error(e);
-  // });
 }
 
 export {

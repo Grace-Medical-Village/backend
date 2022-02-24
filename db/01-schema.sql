@@ -11,6 +11,7 @@ begin
 end;
 $$;
 
+-- patient tables
 drop table if exists patient_allergy;
 drop table if exists patient_condition;
 drop table if exists patient_metric;
@@ -18,6 +19,7 @@ drop table if exists patient_medication;
 drop table if exists patient_note;
 drop table if exists patient;
 
+-- base tables
 drop table if exists condition;
 drop table if exists metric;
 drop table if exists medication;
@@ -126,10 +128,12 @@ create table metric
     max_value       smallint,
     format          varchar(30),
     pattern         varchar(255),
-    archived        boolean   default false not null,
     created_at      timestamp default now() not null,
     modified_at     timestamp default now() not null
 );
+
+alter table metric
+    add column archived boolean default false not null;
 
 create trigger set_timestamp
     before update

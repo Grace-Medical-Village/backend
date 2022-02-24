@@ -61,10 +61,6 @@ export const getRdsParams: GetRdsParams = (sql, transactionId, overrides) => {
       includeResultMetadata: true,
       parameters: [],
       resourceArn: RESOURCE_ARN,
-      // TODO
-      // resultSetOptions: {
-      //   decimalReturnType: 'DOUBLE_OR_LONG',
-      // },
       secretArn: SECRET_ARN,
       sql,
       ...overrides,
@@ -112,30 +108,35 @@ export const buildBeginTransactionRequest =
 // };
 
 export const dbRequest: DbRequest = async (sql, transactionId = null) => {
-  const rdsDataService = getRdsDataService();
-  const rdsParams: ExecuteStatementRequest | void = getRdsParams(
-    sql,
-    transactionId,
-    {}
-  );
+  let result: FieldList[] = [];
 
-  let data: FieldList[] = [];
+  try {
+    const rdsDataService = getRdsDataService();
+    const rdsParams: ExecuteStatementRequest | void = getRdsParams(
+      sql,
+      transactionId,
+      {}
+    );
 
-  if (rdsDataService && rdsParams) {
-    const response = await rdsDataService.executeStatement(rdsParams).promise();
+    if (rdsDataService && rdsParams) {
+      const response = await rdsDataService
+        .executeStatement(rdsParams)
+        .promise();
 
-    // TODO -> use column metadata?
-    // const { columnMetadata, records } = response;
-    //
-    // for (const record of records) {
-    //   console.log(columnMetadata);
-    //   console.log(record);
-    // }
-    if (response.records && response.records.length > 0) {
-      data = response.records;
+      // const { columnMetadata, records } = response;
+      //
+      // for (const record of records) {
+      //   console.log(columnMetadata);
+      //   console.log(record);
+      // }
+      if (response.records && response.records.length > 0) {
+        result = response.records;
+      }
     }
+  } catch (e) {
+    console.error(e);
   }
-  return data;
+  return result;
 };
 
 // export const beginTransaction: BeginTransaction = async () => {

@@ -74,7 +74,7 @@ const dataBuilder = {
       const createdAt = getFieldValue(med, Med.CREATED_AT) as string;
       const modifiedAt = getFieldValue(med, Med.MODIFIED_AT) as string;
 
-      const medication: Medication = {
+      const result: Medication = {
         id,
         name,
         strength,
@@ -85,7 +85,7 @@ const dataBuilder = {
         modifiedAt,
       };
 
-      return medication;
+      return result;
     });
   },
   buildMedicationCategoryData(records: FieldList[]): MedicationCategory[] {
@@ -95,14 +95,14 @@ const dataBuilder = {
       const createdAt = getFieldValue(med, MedCat.CREATED_AT) as string;
       const modifiedAt = getFieldValue(med, MedCat.MODIFIED_AT) as string;
 
-      const medicationCategory: MedicationCategory = {
+      const result: MedicationCategory = {
         id,
         name,
         createdAt,
         modifiedAt,
       };
 
-      return medicationCategory;
+      return result;
     });
   },
   buildMetricData: (records: FieldList[]): Metric[] => {
@@ -139,9 +139,9 @@ const dataBuilder = {
         pattern,
         minValue,
         maxValue,
+        archived,
         createdAt,
         modifiedAt,
-        archived,
       };
 
       return metric;
@@ -170,7 +170,6 @@ const dataBuilder = {
       return metricFormatData;
     });
   },
-  // TODO
   buildPatientAllergies: (record: FieldList): PatientAllergies => {
     const id = getFieldValue(record, 0) as number;
     const patientId = getFieldValue(record, 1) as number;
@@ -186,7 +185,6 @@ const dataBuilder = {
       modifiedAt,
     };
   },
-  // TODO
   buildPatientConditions: (
     records: FieldList[]
   ): ArrayLike<PatientCondition> => {
@@ -207,7 +205,6 @@ const dataBuilder = {
       return patientCondition;
     });
   },
-  // TODO
   buildPatientMedications: (
     records: FieldList[]
   ): ArrayLike<PatientMedication> => {
@@ -228,7 +225,6 @@ const dataBuilder = {
       return patientMedication;
     });
   },
-  // TODO
   buildPatientMetrics: (records: FieldList[]): ArrayLike<PatientMetric> => {
     return records?.map((pm: FieldList) => {
       const id = getFieldValue(pm, 0) as number;
@@ -251,7 +247,6 @@ const dataBuilder = {
       return patientMetric;
     });
   },
-  // TODO
   buildPatientNotes: (records: FieldList[]): ArrayLike<PatientNote> => {
     return records?.map((pm: FieldList) => {
       const id = getFieldValue(pm, 0) as number;
@@ -270,7 +265,6 @@ const dataBuilder = {
       return patientNote;
     });
   },
-  // TODO
   buildPatientData: (p: FieldList): Patient => {
     const id = getFieldValue(p, Pat.ID) as number;
     const firstName = getFieldValue(p, Pat.FIRST_NAME) as string;
@@ -303,7 +297,6 @@ const dataBuilder = {
       zipCode5,
     };
   },
-  // TODO
   buildPatientsData: (records: FieldList[]): ArrayLike<PatientListRecord> => {
     return records?.map((p: FieldList) => {
       const id = getFieldValue(p, 0) as number;

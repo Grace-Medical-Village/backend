@@ -227,6 +227,9 @@ describe('data-builder', () => {
           {
             stringValue: '2022-01-05 15:25:05.806837',
           },
+          {
+            booleanValue: false,
+          },
         ],
       ];
 
@@ -242,6 +245,7 @@ describe('data-builder', () => {
           pattern: '^([1-9]|[1-9]\\d+)(\\.\\d+)?$',
           minValue: 4,
           maxValue: 800,
+          archived: false,
           createdAt: '2022-01-05 15:25:05.806837',
           modifiedAt: '2022-01-05 15:25:05.806837',
         },
