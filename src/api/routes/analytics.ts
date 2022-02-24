@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { dbRequest } from '../../utils/db';
+import { db } from '../../utils/db';
 import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatientCount(req: Request, res: Response): Promise<void> {
@@ -20,7 +20,8 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
     );
   }
 
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((r) => {
       const patientCount = dataBuilder.buildCount(r);
 
@@ -59,14 +60,15 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
         or lower(condition_name) like '%hypertension%');
   `;
 
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((r) => {
       const patientCount = dataBuilder.buildCount(r);
 
       if (patientCount > 0) res.status(200);
       else res.status(404);
       res.json({
-        patientCount,
+        patientCoun,
       });
     })
     .catch((err) => {
@@ -102,15 +104,16 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
         from patient p
                  left join patient_condition pc on p.id = pc.patient_id
                  left join condition c on pc.condition_id = c.id
-        where (lower(c.condition_name) like '%asthma%'
-            or lower(c.condition_name) like '%diabetes%'
-            or lower(c.condition_name) like '%cholesterol%'
-            or lower(c.condition_name) like '%hypertension%')
-          and (p.created_at >= '${startDate}' and p.created_at <= '${endDate}');
+      where (lower(c.condition_name) like '%asthma%'
+          or lower(c.condition_name) like '%diabetes%'
+          or lower(c.condition_name) like '%cholesterol%'
+          or lower(c.condition_name) like '%hypertension%')
+        and (p.created_at >= '${startDate}' and p.created_at <= '${endDate}');
     `;
   }
 
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((patients) => {
       const data = dataBuilder.buildMapPatientsData(patients);
       if (data.length > 0) res.status(200);

@@ -188,7 +188,7 @@ describe('medications', () => {
       expect(response.body.error).toMatch(/categoryId and name required/g);
     });
 
-    it.todo('throws error category id does not exist', async () => {
+    it('throws error category id does not exist', async () => {
       expect.assertions(2);
 
       const body = {
@@ -203,9 +203,7 @@ describe('medications', () => {
         .set('Accept', 'application/json');
 
       expect(response.statusCode).toStrictEqual(400);
-      expect(response.body.error).toMatch(
-        'Database error code: 0. Message: is not present in table "medication_category".'
-      );
+      expect(response.body).toStrictEqual({});
     });
   });
 

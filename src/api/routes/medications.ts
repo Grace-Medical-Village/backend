@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { dbRequest, sqlParen } from '../../utils/db';
+import { db, sqlParen } from '../../utils/db';
 import { dataBuilder } from '../../utils/data-builder';
 import { isNumber } from '../../utils';
 
@@ -12,7 +12,7 @@ async function getMedication(req: Request, res: Response): Promise<void> {
    where m.id = ${id};
   `;
 
-  await dbRequest(sql).then((r) => {
+  await db.executeStatement(sql).then((r) => {
     const data = dataBuilder.buildMedicationData(r);
     if (data.length === 1) {
       res.status(200);
@@ -26,13 +26,14 @@ async function getMedication(req: Request, res: Response): Promise<void> {
 
 async function getMedications(req: Request, res: Response): Promise<void> {
   const sql = `
-    select m.*, mc.name category_name 
-    from medication m 
-    join medication_category mc on m.category_id = mc.id
-    order by category_name, m.name, m.strength;
+      select m.*, mc.name category_name
+      from medication m
+               join medication_category mc on m.category_id = mc.id
+      order by category_name, m.name, m.strength;
   `;
 
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((r) => {
       const data = dataBuilder.buildMedicationData(r);
       if (data.length > 0) {
@@ -56,7 +57,7 @@ async function getMedicationCategories(
 ): Promise<void> {
   const sql = 'select * from medication_category';
 
-  await dbRequest(sql).then((r) => {
+  await db.executeStatement(sql).then((r) => {
     const data = dataBuilder.buildMedicationCategoryData(r);
     if (data.length > 0) res.status(200);
     else res.status(404);
@@ -89,7 +90,7 @@ async function postMedication(req: Request, res: Response): Promise<void> {
     returning id;
   `;
 
-  await dbRequest(sql).then((r) => {
+  await db.executeStatement(sql).then((r) => {
     if (r && r[0]) {
       const id = r[0][0].longValue;
       res.status(201);
@@ -116,6 +117,7 @@ async function putMedication(req: Request, res: Response): Promise<void> {
     });
   }
 
+  // todo -> what if strength or archived missing?
   let sql = `
     update medication 
     set category_id = ${categoryId}, 
@@ -141,7 +143,7 @@ async function putMedication(req: Request, res: Response): Promise<void> {
   sql += `where id = ${id};`;
 
   // todo -> failure?
-  await dbRequest(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -163,7 +165,7 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
   `;
 
   // todo -> db failure?
-  await dbRequest(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });

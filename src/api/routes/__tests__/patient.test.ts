@@ -197,17 +197,18 @@ describe('patient', () => {
         metricId1.toString()
       ).then((r) => r);
 
-      await savePatientMetric(
-        patientId.toString(),
-        metricId0.toString(),
-        metricValue0
-      );
-
-      await savePatientMetric(
-        patientId.toString(),
-        metricId1.toString(),
-        metricValue1
-      );
+      await Promise.all([
+        savePatientMetric(
+          patientId.toString(),
+          metricId0.toString(),
+          metricValue0
+        ).then((r) => r),
+        savePatientMetric(
+          patientId.toString(),
+          metricId1.toString(),
+          metricValue1
+        ).then((r) => r),
+      ]);
 
       const patientMetrics = await getPatientMetrics(patientId.toString()).then(
         (r) => r

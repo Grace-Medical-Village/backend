@@ -1,6 +1,5 @@
 import { RDSDataService } from 'aws-sdk';
 import {
-  BeginTransactionRequest,
   ExecuteStatementRequest,
   FieldList,
   SqlParametersList,
@@ -8,7 +7,13 @@ import {
 import { DATA_API_TYPES } from '../types';
 import { isLocal, isTest } from './index';
 
-type DbRequest = (
+type DB = {
+  beginTransaction: () => void;
+  commitTransaction: () => void;
+  executeStatement: ExecuteStatement;
+};
+
+type ExecuteStatement = (
   sql: string,
   transactionId?: string | null
 ) => Promise<FieldList[]>;
@@ -76,20 +81,60 @@ export const getRdsParams: GetRdsParams = (sql, transactionId, overrides) => {
   }
 };
 
-export const buildBeginTransactionRequest =
-  (): BeginTransactionRequest | void => {
-    if (DATABASE && RESOURCE_ARN && SECRET_ARN) {
-      return {
-        database: DATABASE,
-        resourceArn: RESOURCE_ARN,
-        secretArn: SECRET_ARN,
-      };
-    } else {
-      throw new Error(
-        `Error: unable to build buildBeginTransactionRequest with { DATABASE: ${DATABASE}, RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN} }`
+export const db: DB = {
+  beginTransaction: (): void => {
+    return;
+  },
+  commitTransaction: (): void => {
+    return;
+  },
+  executeStatement: async (sql, transactionId = null) => {
+    let result: FieldList[] = [];
+
+    try {
+      const rdsDataService = getRdsDataService();
+      const rdsParams: ExecuteStatementRequest | void = getRdsParams(
+        sql,
+        transactionId,
+        {}
       );
+
+      if (rdsDataService && rdsParams) {
+        const response = await rdsDataService
+          .executeStatement(rdsParams)
+          .promise();
+
+        // const { columnMetadata, records } = response;
+        //
+        // for (const record of records) {
+        //   console.log(columnMetadata);
+        //   console.log(record);
+        // }
+        if (response.records && response.records.length > 0) {
+          result = response.records;
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
-  };
+    return result;
+  },
+};
+
+// export const buildBeginTransactionRequest =
+//   (): BeginTransactionRequest | void => {
+//     if (DATABASE && RESOURCE_ARN && SECRET_ARN) {
+//       return {
+//         database: DATABASE,
+//         resourceArn: RESOURCE_ARN,
+//         secretArn: SECRET_ARN,
+//       };
+//     } else {
+//       throw new Error(
+//         `Error: unable to build buildBeginTransactionRequest with { DATABASE: ${DATABASE}, RESOURCE_ARN: ${RESOURCE_ARN}, SECRET_ARN: ${SECRET_ARN} }`
+//       );
+//     }
+//   };
 
 // export const buildCommitTransactionRequest = (
 //   transactionId: string
@@ -106,39 +151,6 @@ export const buildBeginTransactionRequest =
 //     );
 //   }
 // };
-
-export const dbRequest: DbRequest = async (sql, transactionId = null) => {
-  let result: FieldList[] = [];
-
-  try {
-    const rdsDataService = getRdsDataService();
-    const rdsParams: ExecuteStatementRequest | void = getRdsParams(
-      sql,
-      transactionId,
-      {}
-    );
-
-    if (rdsDataService && rdsParams) {
-      const response = await rdsDataService
-        .executeStatement(rdsParams)
-        .promise();
-
-      // const { columnMetadata, records } = response;
-      //
-      // for (const record of records) {
-      //   console.log(columnMetadata);
-      //   console.log(record);
-      // }
-      if (response.records && response.records.length > 0) {
-        result = response.records;
-      }
-    }
-  } catch (e) {
-    console.error(e);
-  }
-  return result;
-};
-
 // export const beginTransaction: BeginTransaction = async () => {
 //   const rdsDataService = getRdsDataService();
 //   const beginTransactionRequest: BeginTransactionRequest | void =

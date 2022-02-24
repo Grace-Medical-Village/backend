@@ -1,27 +1,28 @@
 import { Request, Response } from 'express';
-import { dbRequest } from '../../utils/db';
+import { db } from '../../utils/db';
 import { Metric, MetricFormat } from '../../types';
 import { dataBuilder } from '../../utils/data-builder';
 
 async function getMetrics(req: Request, res: Response): Promise<void> {
   const sql = `
     select id,
-      id,
-      metric_name,
-      unit_of_measure,
-      uom,
-      map,
-      min_value,
-      max_value,
-      format,
-      pattern,
-      archived,
-      created_at,
-      modified_at
+           id,
+           metric_name,
+           unit_of_measure,
+           uom,
+           map,
+           min_value,
+           max_value,
+           format,
+           pattern,
+           archived,
+           created_at,
+           modified_at
     from metric;
   `;
 
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((r) => {
       const data = dataBuilder.buildMetricData(r);
       if (data.length > 0) {
@@ -43,7 +44,8 @@ async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
   const sql = 'select id, pattern, min_value, max_value from metric;';
 
   let result: Array<Partial<Metric>> = [];
-  await dbRequest(sql)
+  await db
+    .executeStatement(sql)
     .then((r) => {
       if (r && r.length > 0) {
         result = dataBuilder.buildMetricFormatData(r);
@@ -63,7 +65,7 @@ async function getMetricFormat(
 
   let result: Partial<MetricFormat> = {};
 
-  await dbRequest(sql).then((r) => {
+  await db.executeStatement(sql).then((r) => {
     if (r && r.length === 1) {
       result = dataBuilder.buildMetricFormatData(r)[0];
     }
