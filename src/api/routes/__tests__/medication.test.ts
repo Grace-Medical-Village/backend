@@ -1,8 +1,16 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { CreateMedicationRequestBody, Medication } from '../../../types';
+import {
+  CreateMedicationRequestBody,
+  Medication,
+  MedicationCategory,
+} from '../../../types';
 import { dataBuilder } from '../../../utils/data-builder';
-import { getRandomMedicationCategoryId } from '../../../utils/test-utils';
+import {
+  getMaxSerialValue,
+  getRandomMedicationCategoryId,
+  getRandomMedicationId,
+} from '../../../utils/test-utils';
 
 describe('medications', () => {
   describe('getMedications', () => {
@@ -55,11 +63,7 @@ describe('medications', () => {
     it('retrieves a single medication', async () => {
       expect.assertions(3);
 
-      const medicationData = await request(app)
-        .get('/medications/')
-        .then((response) => response.body);
-
-      const { id = -1 } = medicationData[0];
+      const id = await getRandomMedicationId().then((r) => r);
 
       const response = await request(app).get(`/medications/${id}`);
 
@@ -71,7 +75,7 @@ describe('medications', () => {
     it('returns 404 if no medication is found', async () => {
       expect.assertions(3);
 
-      const id = 1000000;
+      const id = getMaxSerialValue();
       const response = await request(app).get(`/medications/${id}`);
 
       expect(response.statusCode).toStrictEqual(404);
@@ -98,7 +102,35 @@ describe('medications', () => {
   });
 
   describe('getMedicationCategories', () => {
-    it.todo;
+    it('retrieves medication categories', async () => {
+      expect.assertions(3);
+
+      const response = await request(app)
+        .get('/medications/categories')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('handles db errors', async () => {
+      expect.assertions(3);
+
+      const spy = jest
+        .spyOn(dataBuilder, 'buildMedicationCategoryData')
+        .mockImplementationOnce(() => [] as unknown as MedicationCategory[]);
+
+      const response = await request(app)
+        .get('/medications/categories')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toStrictEqual([]);
+
+      spy.mockRestore();
+    });
   });
 
   describe('postMedication', () => {

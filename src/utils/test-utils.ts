@@ -14,23 +14,6 @@ async function createPatient(): Promise<number> {
   try {
     const requestBody = buildPatient();
 
-    // TODO
-    // if (zeroOrOne()) requestBody.mobile = faker.phone.phoneNumber(); if (zeroOrOne()) requestBody.email =
-    // faker.internet.email();
-    // if (zeroOrOne()) requestBody.zipCode5 = faker.address.zipCode();
-    // if (zeroOrOne()) {
-    //   // max native literacy: 5; min native literacy: 1
-    //   requestBody.nativeLiteracy = Math.floor(
-    //     Math.random() * (5 - 1 + 1) + 1
-    //   ).toString();
-    // }
-    // if (zeroOrOne()) {
-    //   // max height 84"; min height 12"
-    //   requestBody.height = Math.floor(
-    //     Math.random() * (84 - 12 + 1) + 12
-    //   ).toString();
-    // }
-
     const response = await request(app)
       .post('/patients')
       .send(requestBody)
@@ -279,11 +262,15 @@ async function getSampleMetricValue(metricId: string): Promise<string> {
   return result;
 }
 
+// max serial value - https://www.postgresql.org/docs/9.1/datatype-numeric.html
+const getMaxSerialValue = (): number => 2147483647;
+
 const zeroOrOne = (): number => Math.round(Math.random());
 
 export {
   buildPatient,
   createPatient,
+  getMaxSerialValue,
   getRandomConditionId,
   getRandomMedicationCategoryId,
   getRandomMedicationId,

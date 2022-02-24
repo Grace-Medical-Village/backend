@@ -62,15 +62,12 @@ async function getMetricFormat(
                where id = ${metricId};`;
 
   let result: Partial<MetricFormat> = {};
-  await dbRequest(sql)
-    .then((r) => {
-      if (r && r.length === 1) {
-        result = dataBuilder.buildMetricFormatData(r)[0];
-      }
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+
+  await dbRequest(sql).then((r) => {
+    if (r && r.length === 1) {
+      result = dataBuilder.buildMetricFormatData(r)[0];
+    }
+  });
 
   return result;
 }

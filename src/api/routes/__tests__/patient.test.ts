@@ -10,6 +10,7 @@ import {
 import {
   buildPatient,
   createPatient,
+  getMaxSerialValue,
   getRandomConditionId,
   getRandomMedicationId,
   getRandomMetricId,
@@ -220,8 +221,8 @@ describe('patient', () => {
       // ordered descending
       expect(patientMetrics[1].metricId).toStrictEqual(metricId0);
       expect(patientMetrics[0].metricId).toStrictEqual(metricId1);
-      expect(patientMetrics[1].value).toStrictEqual(metricValue0);
-      expect(patientMetrics[0].value).toStrictEqual(metricValue1);
+      expect(patientMetrics[1].value).toStrictEqual(metricValue0.toString());
+      expect(patientMetrics[0].value).toStrictEqual(metricValue1.toString());
       expect(patientMetrics[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
       expect(patientMetrics[0].modifiedAt).toMatch(
         /[0-9]{4}-[0-9]{2}-[0-9]{2}/
@@ -416,7 +417,7 @@ describe('patient', () => {
       const conditionId = await getRandomConditionId().then((r) => r);
 
       const requestBody = {
-        patientId: Number.MAX_SAFE_INTEGER,
+        patientId: getMaxSerialValue(),
         conditionId,
       };
 
@@ -490,12 +491,12 @@ describe('patient', () => {
     });
 
     it('returns an error if the patient does not exist', async () => {
-      expect.assertions(4);
+      expect.assertions(2);
 
       const medicationId = await getRandomMedicationId().then((r) => r);
 
       const requestBody = {
-        patientId: Number.MAX_SAFE_INTEGER,
+        patientId: getMaxSerialValue(),
         medicationId,
       };
 
@@ -631,16 +632,9 @@ describe('patient', () => {
         'patientId and note required in request body to save patient note'
       );
     });
-
-    it.todo('modifies an existing patient note');
-    it.todo('fails if path param for note id is missing');
-    it.todo('fails if note is not provided in request body');
-    it.todo('returns the note value and modified value');
-    it.todo('handles a failed update to the database');
-    it.todo('fieldlist is empty');
-    it.todo('internal error');
   });
 
+  // TODO
   describe('putPatient', () => {
     it.todo;
   });
@@ -956,7 +950,8 @@ describe('patient', () => {
 
       const patientId = await createPatient().then((r) => r);
       const metricId = await getRandomMetricId().then((r) => r);
-      const value = 100; // todo -> get valid test value
+      // TODO -> get valid test value
+      const value = 100;
       const patientMetricId = await savePatientMetric(
         patientId.toString(),
         metricId.toString(),

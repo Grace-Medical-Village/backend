@@ -217,16 +217,14 @@ describe('utils', () => {
     });
   });
 
-  // todo
   describe('buildCachedMetrics', () => {
-    it('finds cached metrics', () => {
+    it.todo('finds cached metrics', () => {
       expect.assertions(0);
     });
   });
 
-  // todo
   describe('getMetricFormat', () => {
-    it('tbd', async () => {
+    it.todo('tbd', async () => {
       expect.assertions(0);
     });
   });

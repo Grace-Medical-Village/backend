@@ -1,11 +1,14 @@
 import request from 'supertest';
 import { app } from '../../../app';
 import { dataBuilder } from '../../../utils/data-builder';
+import { createPatient } from '../../../utils/test-utils';
 
 describe('analytics', () => {
   describe('getPatientCount', () => {
     it('returns a patient count', async () => {
       expect.assertions(3);
+
+      await createPatient().then((r) => r);
 
       const response = await request(app).get('/analytics/patients/count');
 
@@ -54,7 +57,7 @@ describe('analytics', () => {
       expect.assertions(3);
 
       const startDate = '2021-01-31';
-      const endDate = '2021-12-31';
+      const endDate = '2100-12-31';
       const response = await request(app).get(
         `/analytics/patients/count?startDate=${startDate}&endDate=${endDate}`
       );
