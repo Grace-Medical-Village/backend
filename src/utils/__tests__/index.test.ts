@@ -218,15 +218,11 @@ describe('utils', () => {
   });
 
   describe('buildCachedMetrics', () => {
-    it.todo('finds cached metrics', () => {
-      expect.assertions(0);
-    });
+    it.todo;
   });
 
   describe('getMetricFormat', () => {
-    it.todo('tbd', async () => {
-      expect.assertions(0);
-    });
+    it.todo;
   });
 
   describe('isBloodPressureMetric', () => {

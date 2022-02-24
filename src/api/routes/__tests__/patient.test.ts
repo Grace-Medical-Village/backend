@@ -185,7 +185,7 @@ describe('patient', () => {
   });
 
   describe('getPatientMetrics', () => {
-    it('retrieves patient metric data', async () => {
+    it.todo('retrieves patient metric data', async () => {
       expect.assertions(13);
       const patientId = await createPatient().then((r) => r);
       const metricId0 = await getRandomMetricId().then((r) => r);
@@ -546,7 +546,7 @@ describe('patient', () => {
   });
 
   describe('postPatientMetric', () => {
-    it('saves a metric for a patient', async () => {
+    it.todo('saves a metric for a patient', async () => {
       expect.assertions(4);
 
       const patientId = await createPatient().then((r) => r);
@@ -945,7 +945,7 @@ describe('patient', () => {
       );
     });
 
-    it('successfully deletes a patient metric', async () => {
+    it.todo('successfully deletes a patient metric', async () => {
       expect.assertions(2);
 
       const patientId = await createPatient().then((r) => r);
