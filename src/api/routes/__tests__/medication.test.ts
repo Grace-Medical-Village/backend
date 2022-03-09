@@ -1,12 +1,9 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import {
-  CreateMedicationRequestBody,
-  Medication,
-  MedicationCategory,
-} from '../../../types';
+import { Medication, MedicationCategory } from '../../../types';
 import { dataBuilder } from '../../../utils/data-builder';
 import {
+  createMedication,
   getMaxSerialValue,
   getRandomMedicationCategoryId,
   getRandomMedicationId,
@@ -269,38 +266,8 @@ describe('medications', () => {
       expect(response.statusCode).toStrictEqual(200);
       expect(response.body).toStrictEqual({});
     });
-
-    it.todo('failure');
   });
 });
-
-async function createMedication(
-  name: string,
-  categoryId: number,
-  strength: string | null = null
-): Promise<number> {
-  let result = -1;
-
-  const requestBody: CreateMedicationRequestBody = {
-    categoryId,
-    name,
-  };
-
-  if (strength) requestBody.strength = strength;
-
-  try {
-    const response = await request(app)
-      .post('/medications')
-      .send(requestBody)
-      .set('Accept', 'application/json');
-
-    result = response?.body?.id ?? -1;
-  } catch (e) {
-    console.error(e);
-  }
-
-  return result;
-}
 
 // async function getRandomMedicationCategoryId() {
 //   let result = -1;

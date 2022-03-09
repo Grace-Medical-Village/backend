@@ -7,9 +7,6 @@ import {
   MedCat,
   Medication,
   MedicationCategory,
-  Metric,
-  MetricDataIndex,
-  MetricFormatDataIndex,
   Pat,
   Patient,
   PatientAllergies,
@@ -103,71 +100,6 @@ const dataBuilder = {
       };
 
       return result;
-    });
-  },
-  buildMetricData: (records: FieldList[]): Metric[] => {
-    return records?.map((m: FieldList) => {
-      const id = getFieldValue(m, MetricDataIndex.ID) as number;
-      const metricName = getFieldValue(
-        m,
-        MetricDataIndex.METRIC_NAME
-      ) as string;
-      const unitOfMeasure = getFieldValue(
-        m,
-        MetricDataIndex.UNIT_OF_MEASURE
-      ) as string;
-      const uom = getFieldValue(m, MetricDataIndex.UOM) as string;
-      const map = getFieldValue(m, MetricDataIndex.MAP) as boolean;
-      const format = getFieldValue(m, MetricDataIndex.FORMAT) as string;
-      const pattern = getFieldValue(m, MetricDataIndex.PATTERN) as string;
-      const minValue = getFieldValue(m, MetricDataIndex.MIN_VALUE) as number;
-      const maxValue = getFieldValue(m, MetricDataIndex.MAX_VALUE) as number;
-      const archived = getFieldValue(m, MetricDataIndex.ARCHIVED) as boolean;
-      const createdAt = getFieldValue(m, MetricDataIndex.CREATED_AT) as string;
-      const modifiedAt = getFieldValue(
-        m,
-        MetricDataIndex.MODIFIED_AT
-      ) as string;
-
-      const metric: Metric = {
-        id,
-        metricName,
-        unitOfMeasure,
-        uom,
-        map,
-        format,
-        pattern,
-        minValue,
-        maxValue,
-        archived,
-        createdAt,
-        modifiedAt,
-      };
-
-      return metric;
-    });
-  },
-  buildMetricFormatData: (records: FieldList[]): Array<Partial<Metric>> => {
-    return records?.map((m: FieldList) => {
-      const id = getFieldValue(m, MetricFormatDataIndex.ID) as number;
-      const pattern = getFieldValue(m, MetricFormatDataIndex.PATTERN) as string;
-      const minValue = getFieldValue(
-        m,
-        MetricFormatDataIndex.MIN_VALUE
-      ) as number;
-      const maxValue = getFieldValue(
-        m,
-        MetricFormatDataIndex.MAX_VALUE
-      ) as number;
-
-      const metricFormatData: Partial<Metric> = {
-        id,
-        pattern,
-        minValue,
-        maxValue,
-      };
-
-      return metricFormatData;
     });
   },
   buildPatientAllergies: (record: FieldList): PatientAllergies => {

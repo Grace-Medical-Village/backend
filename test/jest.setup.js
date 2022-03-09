@@ -1,4 +1,6 @@
 module.exports = {
+  collectCoverage: true,
+  collectCoverageFrom: ['src/**/*.{js,ts}'],
   preset: "ts-jest",
   rootDir: "src",
   setupFilesAfterEnv:

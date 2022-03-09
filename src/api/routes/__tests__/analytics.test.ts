@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../../app';
 import { dataBuilder } from '../../../utils/data-builder';
 import { createPatient } from '../../../utils/test-utils';
+import { db } from '../../../utils/db';
 
 describe('analytics', () => {
   describe('getPatientCount', () => {
@@ -20,9 +21,13 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => 0);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => {
+        return [
+          {
+            count: 0,
+          },
+        ];
+      });
 
       const response = await request(app).get('/analytics/patients/count');
 
@@ -30,25 +35,6 @@ describe('analytics', () => {
       expect(response.statusCode).toStrictEqual(404);
       expect(response.headers['content-type']).toMatch(/application\/json/);
       expect(response.body.patientCount).toStrictEqual(0);
-
-      spy.mockRestore();
-    });
-
-    it('returns 500 if an error occurs', async () => {
-      expect.assertions(4);
-
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
-
-      const response = await request(app).get('/analytics/patients/count');
-
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toStrictEqual(500);
-      expect(response.headers['content-type']).toMatch(/application\/json/);
-      expect(response.body).toStrictEqual({});
 
       spy.mockRestore();
     });

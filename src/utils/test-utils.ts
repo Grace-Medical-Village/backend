@@ -3,11 +3,39 @@ import { sample } from 'lodash';
 import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
-import { Metric, Patient } from '../types';
+import { CreateMedicationRequestBody, Metric, Patient } from '../types';
 
 const resetEnv = (): void => {
   process.env.NODE_ENV = 'test';
 };
+
+async function createMedication(
+  name: string,
+  categoryId: number,
+  strength: string | null = null
+): Promise<number> {
+  let result = -1;
+
+  const requestBody: CreateMedicationRequestBody = {
+    categoryId,
+    name,
+  };
+
+  if (strength) requestBody.strength = strength;
+
+  try {
+    const response = await request(app)
+      .post('/medications')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+
+  return result;
+}
 
 async function createPatient(): Promise<number> {
   let result = -1;
@@ -20,6 +48,8 @@ async function createPatient(): Promise<number> {
       .set('Accept', 'application/json');
 
     result = response?.body?.id ?? -1;
+    // TODO -> delete: for testing purposes
+    if (result === -1) return result;
   } catch (e) {
     console.error(e);
   }
@@ -269,6 +299,7 @@ const zeroOrOne = (): number => Math.round(Math.random());
 
 export {
   buildPatient,
+  createMedication,
   createPatient,
   getMaxSerialValue,
   getRandomConditionId,

@@ -2,44 +2,17 @@ import { RDSDataService } from 'aws-sdk';
 import {
   ExecuteStatementRequest,
   FieldList,
-  SqlParametersList,
 } from 'aws-sdk/clients/rdsdataservice';
-import { DATA_API_TYPES } from '../types';
+import {
+  DATA_API_TYPES,
+  UnknownObject,
+  GetRdsDataService,
+  GetRdsParams,
+  DB,
+  GetFieldValue,
+} from '../types';
 import { isLocal, isTest } from './index';
-
-type DB = {
-  beginTransaction: () => void;
-  commitTransaction: () => void;
-  executeStatement: ExecuteStatement;
-};
-
-type ExecuteStatement = (
-  sql: string,
-  transactionId?: string | null
-) => Promise<FieldList[]>;
-
-// type BeginTransaction = () => Promise<Id | null>;
-
-// type CommitTransaction = (
-//   transactionId: string
-// ) => Promise<CommitTransactionResponse | void>;
-
-type GetFieldValue = (
-  fieldList: FieldList,
-  index: number
-) => string | number | boolean | null;
-
-type GetRdsDataService = () => RDSDataService | void;
-
-interface Overrides {
-  parameters?: SqlParametersList | undefined;
-}
-
-type GetRdsParams = (
-  sql: string,
-  transactionId: string | null,
-  overrides: Overrides
-) => ExecuteStatementRequest | void;
+import { camelCase } from 'lodash';
 
 const { DATABASE, ENDPOINT, RESOURCE_ARN, SECRET_ARN } = process.env;
 
@@ -85,6 +58,40 @@ export const db: DB = {
   beginTransaction: (): void => {
     return;
   },
+  buildData: (response) => {
+    const result: UnknownObject[] = [];
+    const { columnMetadata, records } = response;
+    if (columnMetadata && records && records.length > 0) {
+      records.map((fieldList) => {
+        let object: UnknownObject = {};
+        fieldList.map((field, idx) => {
+          const key = camelCase(columnMetadata[idx].name);
+
+          let value = null;
+          if ('longValue' in field) {
+            value = field.longValue;
+          } else if ('stringValue' in field) {
+            value = field.stringValue;
+          } else if ('booleanValue' in field) {
+            value = field.booleanValue;
+          } else if ('doubleValue' in field) {
+            value = field.doubleValue;
+          } else if ('isNull' in field) {
+            value = field.isNull ? null : undefined;
+          }
+
+          if (key && value !== undefined) {
+            object = {
+              ...object,
+              [key]: value,
+            };
+          }
+        });
+        result.push(object);
+      });
+    }
+    return result;
+  },
   commitTransaction: (): void => {
     return;
   },
@@ -104,14 +111,33 @@ export const db: DB = {
           .executeStatement(rdsParams)
           .promise();
 
-        // const { columnMetadata, records } = response;
-        //
-        // for (const record of records) {
-        //   console.log(columnMetadata);
-        //   console.log(record);
-        // }
         if (response.records && response.records.length > 0) {
           result = response.records;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return result;
+  },
+  executeStatementRefactor: async (sql, transactionId = null) => {
+    let result: unknown[] = [];
+
+    try {
+      const rdsDataService = getRdsDataService();
+      const rdsParams: ExecuteStatementRequest | void = getRdsParams(
+        sql,
+        transactionId,
+        {}
+      );
+
+      if (rdsDataService && rdsParams) {
+        const response = await rdsDataService
+          .executeStatement(rdsParams)
+          .promise();
+
+        if (response.records && response.records.length > 0) {
+          result = db.buildData(response);
         }
       }
     } catch (e) {

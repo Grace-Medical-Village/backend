@@ -1,12 +1,6 @@
 import { FieldList } from 'aws-sdk/clients/rdsdataservice';
 import { dataBuilder } from '../data-builder';
-import {
-  Condition,
-  Medication,
-  MedicationCategory,
-  Metric,
-  MetricFormat,
-} from '../../types';
+import { Condition, Medication, MedicationCategory } from '../../types';
 
 describe('data-builder', () => {
   describe('buildConditionData', () => {
@@ -182,142 +176,6 @@ describe('data-builder', () => {
     });
   });
 
-  describe('buildMetricData', () => {
-    it('returns an empty list if field list is empty', () => {
-      expect.assertions(1);
-      const emptyArray: FieldList[] = [];
-      const actual = dataBuilder.buildMetricData(emptyArray);
-      expect(actual).toStrictEqual([]);
-    });
-
-    it('builds a list of metrics', () => {
-      expect.assertions(1);
-      const metricList: FieldList[] = [
-        [
-          {
-            longValue: 10001,
-          },
-          {
-            stringValue: 'Weight',
-          },
-          {
-            stringValue: 'pounds',
-          },
-          {
-            stringValue: 'lb',
-          },
-          {
-            booleanValue: false,
-          },
-          {
-            longValue: 4,
-          },
-          {
-            longValue: 800,
-          },
-          {
-            stringValue: '195',
-          },
-          {
-            stringValue: '^([1-9]|[1-9]\\d+)(\\.\\d+)?$',
-          },
-          {
-            stringValue: '2022-01-05 15:25:05.806837',
-          },
-          {
-            stringValue: '2022-01-05 15:25:05.806837',
-          },
-          {
-            booleanValue: false,
-          },
-        ],
-      ];
-
-      const actual = dataBuilder.buildMetricData(metricList);
-      const expected: Metric[] = [
-        {
-          id: 10001,
-          metricName: 'Weight',
-          unitOfMeasure: 'pounds',
-          uom: 'lb',
-          map: false,
-          format: '195',
-          pattern: '^([1-9]|[1-9]\\d+)(\\.\\d+)?$',
-          minValue: 4,
-          maxValue: 800,
-          archived: false,
-          createdAt: '2022-01-05 15:25:05.806837',
-          modifiedAt: '2022-01-05 15:25:05.806837',
-        },
-      ];
-      expect(actual).toStrictEqual(expected);
-    });
-  });
-
-  describe('buildMetricFormatData', () => {
-    it('returns an empty list if field list is empty', () => {
-      expect.assertions(1);
-      const emptyArray: FieldList[] = [];
-      const actual = dataBuilder.buildMetricFormatData(emptyArray);
-      expect(actual).toStrictEqual([]);
-    });
-
-    it('builds a list of metric formats', () => {
-      expect.assertions(1);
-      const metricList: FieldList[] = [
-        [
-          {
-            longValue: 1,
-          },
-          {
-            stringValue: "'^([1-9]|[1-9]\\d+)(\\.\\d+)?$'",
-          },
-          {
-            longValue: 10,
-          },
-          {
-            longValue: 500,
-          },
-        ],
-        [
-          {
-            longValue: 6,
-          },
-          {
-            stringValue: '(d{4})-(d{2})-(d{2})',
-          },
-          {
-            isNull: true,
-          },
-          {
-            isNull: true,
-          },
-        ],
-      ];
-
-      const actual = dataBuilder.buildMetricFormatData(metricList);
-      const expected: MetricFormat[] = [
-        {
-          id: 1,
-          minValue: 10,
-          maxValue: 500,
-          pattern: "'^([1-9]|[1-9]\\d+)(\\.\\d+)?$'",
-        },
-        {
-          id: 6,
-          minValue: null,
-          maxValue: null,
-          pattern: '(d{4})-(d{2})-(d{2})',
-        },
-      ];
-      expect(actual).toStrictEqual(expected);
-    });
-  });
-
-  describe('buildPatientAllergies', () => {
-    it.todo;
-  });
-
   describe('buildPatientConditions', () => {
     it('returns an empty list if field list is empty', () => {
       expect.assertions(1);
@@ -352,10 +210,6 @@ describe('data-builder', () => {
       const actual = dataBuilder.buildPatientNotes(emptyArray);
       expect(actual).toStrictEqual([]);
     });
-  });
-
-  describe('buildPatientData', () => {
-    it.todo;
   });
 
   describe('buildPatientsData', () => {

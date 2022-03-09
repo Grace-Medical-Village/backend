@@ -1,3 +1,11 @@
+import {
+  ExecuteStatementRequest,
+  ExecuteStatementResponse,
+  FieldList,
+  SqlParametersList,
+} from 'aws-sdk/clients/rdsdataservice';
+import { RDSDataService } from 'aws-sdk';
+
 export type Condition = {
   id: number;
   conditionName: string;
@@ -65,6 +73,10 @@ export type Patient = {
   nativeLiteracy?: string;
   smoker: boolean;
   zipCode5?: string;
+};
+
+export type AnalyticsCount = {
+  count: number;
 };
 
 export type PatientListRecord = {
@@ -216,3 +228,50 @@ export type CreateMedicationRequestBody = {
   name: string;
   strength?: string;
 };
+
+export type ExecuteStatement = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<FieldList[]>;
+
+export type ExecuteStatementRefactor = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<unknown[]>;
+
+export type BuildData = (response: ExecuteStatementResponse) => unknown[];
+
+export interface UnknownObject {
+  [key: string]: string | number | boolean | null;
+}
+
+export type DB = {
+  beginTransaction: () => void;
+  buildData: BuildData;
+  commitTransaction: () => void;
+  executeStatement: ExecuteStatement;
+  executeStatementRefactor: ExecuteStatementRefactor;
+};
+
+// type BeginTransaction = () => Promise<Id | null>;
+
+// type CommitTransaction = (
+//   transactionId: string
+// ) => Promise<CommitTransactionResponse | void>;
+
+export type GetFieldValue = (
+  fieldList: FieldList,
+  index: number
+) => string | number | boolean | null;
+
+export type GetRdsDataService = () => RDSDataService | void;
+
+interface Overrides {
+  parameters?: SqlParametersList | undefined;
+}
+
+export type GetRdsParams = (
+  sql: string,
+  transactionId: string | null,
+  overrides: Overrides
+) => ExecuteStatementRequest | void;

@@ -8,7 +8,9 @@ const app = express();
 const router = buildRouter();
 
 app.use(cors());
-app.use(morgan('tiny'));
+app.use(
+  morgan('tiny', { skip: (req, res) => process.env.NODE_ENV === 'test' })
+);
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
