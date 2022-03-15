@@ -32,7 +32,6 @@ describe('conditions', () => {
       spy.mockRestore();
     });
 
-    // TODO
     it('500 if an error occurs', async () => {
       expect.assertions(4);
 

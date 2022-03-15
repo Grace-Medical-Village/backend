@@ -48,7 +48,6 @@ async function createPatient(): Promise<number> {
       .set('Accept', 'application/json');
 
     result = response?.body?.id ?? -1;
-    // TODO -> delete: for testing purposes
     if (result === -1) return result;
   } catch (e) {
     console.error(e);

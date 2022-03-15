@@ -244,6 +244,7 @@ async function postPatient(req: Request, res: Response): Promise<void> {
       } else {
         res.status(400);
         res.json({});
+        console.log(values);
       }
     })
     .catch((e) => {
@@ -462,7 +463,6 @@ async function putPatient(req: Request, res: Response): Promise<void> {
                set ${updates}
                where id = ${id};`;
 
-  // TODO - 409 if patient already exists
   await db
     .executeStatementRefactor(sql)
     .then((_) => {
@@ -494,7 +494,7 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
 
   const sql = `
       update patient_allergy
-      set allergy = '${allergies}'
+      set allergies = '${allergies}'
       where id = ${id};
   `;
 
@@ -580,7 +580,6 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
   await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
-    // TODO return the updated note + trim
   });
 }
 

@@ -122,33 +122,34 @@ async function putMedication(req: Request, res: Response): Promise<void> {
     });
   }
 
-  // todo -> what if strength or archived missing?
-  let sql = `
-      update medication
-      set category_id = ${categoryId},
-          name        = ${name},
-  `;
+  const sql = [
+    'update medication',
+    `set category_id = ${categoryId},`,
+    `name = ${name},`,
+  ];
 
   if (strength && archived) {
     const clause = `
-      strength = ${strength},
-      archived = ${archived}
-    `;
-    sql += clause;
+    strength = ${strength},
+    archived = ${archived}
+      `;
+    sql.push(clause);
   } else if (strength) {
-    sql += `
-      strength = ${strength}
-    `;
+    const clause = `
+    strength = ${strength}
+      `;
+    sql.push(clause);
   } else if (archived) {
-    sql += `
-      archived = ${archived}
-    `;
+    const clause = `
+    archived = ${archived}
+      `;
+    sql.push(clause);
   }
 
-  sql += `where id = ${id};`;
+  const whereClause = `where id = ${id};`;
+  sql.push(whereClause);
 
-  // todo -> failure?
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatementRefactor(sql.join(' ')).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -163,13 +164,14 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const sql = `
-      delete
-      from medication
-      where id = ${id};
+  const sql = `;
+  delete
+    from;
+  medication;
+  where;
+  id = ${id};
   `;
 
-  // todo -> db failure?
   await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
