@@ -1,14 +1,16 @@
 import { Request, Response } from 'express';
 import { db, sqlParen } from '../../utils/db';
+import { isIntegerGreaterThanZero, validate } from '../../utils';
 import {
+  DBValues,
+  Id,
   PatientAllergies,
   PatientCondition,
   PatientMedication,
   PatientMetric,
   PatientNote,
+  PostNoteReturnValues,
 } from '../../types';
-import { isIntegerGreaterThanZero, validate } from '../../utils';
-import { dataBuilder } from '../../utils/data-builder';
 
 async function getPatient(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
@@ -25,15 +27,14 @@ async function getPatient(req: Request, res: Response): Promise<void> {
                from patient
                where id = ${id}`;
 
-  const records = await db.executeStatement(sql).then((r) => r);
+  const data = await db.executeStatementRefactor(sql).then((r) => r);
 
-  if (records && records.length === 1) {
+  if (data && data.length === 1) {
     const allergies = await getPatientAllergies(id).then((r) => r);
     const conditions = await getPatientConditions(id).then((r) => r);
     const medications = await getPatientMedications(id).then((r) => r);
     const metrics = await getPatientMetrics(id).then((r) => r);
     const notes = await getPatientNotes(id).then((r) => r);
-    const patient = dataBuilder.buildPatientData(records[0]);
 
     res.status(200);
     res.json({
@@ -42,7 +43,7 @@ async function getPatient(req: Request, res: Response): Promise<void> {
       medications,
       metrics,
       notes,
-      patient,
+      patient: data[0],
     });
   } else {
     res.status(404);
@@ -53,19 +54,23 @@ async function getPatient(req: Request, res: Response): Promise<void> {
 async function getPatientAllergies(
   id: string
 ): Promise<Partial<PatientAllergies>> {
-  let allergies: Partial<PatientAllergies> = {};
+  let result: Partial<PatientAllergies> = {};
   const sql = `select pa.*
                from patient_allergy pa
-               where patient_id = ${id} limit 1;
+               where patient_id = ${id}
+               limit 1;
   `;
 
-  await db.executeStatement(sql).then((r) => {
-    if (r.length === 1) {
-      allergies = dataBuilder.buildPatientAllergies(r[0]);
+  await db.executeStatementRefactor(sql).then((data) => {
+    if (data.length === 1) {
+      const record = data[0] as PatientAllergies;
+      result = {
+        ...record,
+      };
     }
   });
 
-  return allergies;
+  return result;
 }
 
 async function getPatientConditions(
@@ -80,8 +85,8 @@ async function getPatientConditions(
                         inner join condition c on pc.condition_id = c.id
                where patient_id = ${patientId};
   `;
-  await db.executeStatement(sql).then((r) => {
-    conditions = dataBuilder.buildPatientConditions(r);
+  await db.executeStatementRefactor(sql).then((data) => {
+    conditions = data as ArrayLike<PatientCondition>;
   });
 
   return conditions;
@@ -99,8 +104,8 @@ async function getPatientMedications(
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatement(sql).then((r) => {
-    medications = dataBuilder.buildPatientMedications(r);
+  await db.executeStatementRefactor(sql).then((data) => {
+    medications = data as ArrayLike<PatientMedication>;
   });
 
   return medications;
@@ -118,8 +123,8 @@ async function getPatientMetrics(
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatement(sql).then((r) => {
-    metrics = dataBuilder.buildPatientMetrics(r);
+  await db.executeStatementRefactor(sql).then((data) => {
+    metrics = data as ArrayLike<PatientMetric>;
   });
 
   return metrics;
@@ -137,8 +142,8 @@ async function getPatientNotes(
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatement(sql).then((r) => {
-    notes = dataBuilder.buildPatientNotes(r);
+  await db.executeStatementRefactor(sql).then((data) => {
+    notes = data as ArrayLike<PatientNote>;
   });
 
   return notes;
@@ -175,8 +180,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  await db.executeStatement(sql).then((patients) => {
-    const data = dataBuilder.buildPatientsData(patients);
+  await db.executeStatementRefactor(sql).then((data) => {
     if (data.length > 0) res.status(200);
     else res.status(404);
 
@@ -231,10 +235,10 @@ async function postPatient(req: Request, res: Response): Promise<void> {
                returning id`;
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      if (r && r[0]) {
-        const id = r[0][0].longValue;
+    .executeStatementRefactor(sql)
+    .then((data) => {
+      if (data && data[0]) {
+        const { id } = data[0] as Id;
         res.status(201);
         res.json({ id });
       } else {
@@ -270,15 +274,15 @@ async function postPatientAllergies(
   }
 
   const sql = `
-      insert into patient_allergy (patient_id, allergy)
+      insert into patient_allergy (patient_id, allergies)
       values (${patientId}, '${allergies}')
       returning id;
   `;
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      const id = r[0][0].longValue;
+    .executeStatementRefactor(sql)
+    .then((data) => {
+      const { id } = data[0] as Id;
       res.status(201);
       res.json({ id });
     })
@@ -309,10 +313,10 @@ async function postPatientCondition(
   `;
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
+    .executeStatementRefactor(sql)
+    .then((data) => {
+      if (data && data.length === 1) {
+        const { id } = data[0] as Id;
         res.status(201);
         res.json({ id });
       } else {
@@ -347,12 +351,10 @@ async function postPatientMedication(
   `;
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      if (r[0]) {
-        const id = r[0][0].longValue;
-        const createdAt = r[0][1].stringValue;
-        const modifiedAt = r[0][2].stringValue;
+    .executeStatementRefactor(sql)
+    .then((data) => {
+      if (data && data.length === 1) {
+        const { id, createdAt, modifiedAt } = data[0] as DBValues;
         res.status(201);
         res.json({ id, createdAt, modifiedAt });
       } else {
@@ -383,12 +385,10 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
     `;
 
     await db
-      .executeStatement(sql)
-      .then((r) => {
-        if (r[0]) {
-          const id = r[0][0].longValue;
-          const createdAt = r[0][1].stringValue;
-          const modifiedAt = r[0][2].stringValue;
+      .executeStatementRefactor(sql)
+      .then((data) => {
+        if (data && data.length === 1) {
+          const { id, createdAt, modifiedAt } = data[0] as DBValues;
           res.status(201);
           res.json({ id, createdAt, modifiedAt });
         } else {
@@ -423,14 +423,14 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
 
   const sql = `
       insert into patient_note (patient_id, note)
-      values (${patientId}, '${note}') returning id, note, created_at, modified_at;
+      values (${patientId}, '${note}')
+      returning id, note, created_at, modified_at;
   `;
 
-  await db.executeStatement(sql).then((r) => {
-    if (r[0]) {
-      const id = r[0][0].longValue;
-      const createdAt = r[0][1].stringValue;
-      const modifiedAt = r[0][2].stringValue;
+  await db.executeStatementRefactor(sql).then((data) => {
+    if (data && data.length === 1) {
+      const { id, note, createdAt, modifiedAt } =
+        data[0] as PostNoteReturnValues;
       res.status(201);
       res.json({ id, note, createdAt, modifiedAt });
     } else {
@@ -464,7 +464,7 @@ async function putPatient(req: Request, res: Response): Promise<void> {
 
   // TODO - 409 if patient already exists
   await db
-    .executeStatement(sql)
+    .executeStatementRefactor(sql)
     .then((_) => {
       res.status(200);
       res.json({});
@@ -498,7 +498,7 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
       where id = ${id};
   `;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -528,7 +528,7 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
                set archive = ${archive}
                where id = ${id};`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({ archive });
   });
@@ -542,7 +542,7 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
 //                set value = ${value}
 //                where id = ${metricId};`;
 //
-//   await db.executeStatement(sql)
+//   await db.executeStatementRefactor(sql)
 //     .then((_) => {
 //       res.status(200);
 //     })
@@ -577,7 +577,7 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
                set note = '${note}'
                where id = ${noteId};`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
     // TODO return the updated note + trim
@@ -632,7 +632,7 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
 //     }
 //
 //     for (const request of requests) {
-//       await db.executeStatement(request, transactionId);
+//       await db.executeStatementRefactor(request, transactionId);
 //     }
 //
 //     await commitTransaction(transactionId)
@@ -667,9 +667,9 @@ async function deletePatient(req: Request, res: Response): Promise<void> {
   const sql = `delete
                from patient
                where id = ${patientId};
-               `;
+  `;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -693,7 +693,7 @@ async function deletePatientAllergy(
                from patient_allergy
                where id = ${patientAllergyId}`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -717,7 +717,7 @@ async function deletePatientCondition(
                from patient_condition
                where id = ${patientConditionId}`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
     console.log(sql);
@@ -742,7 +742,7 @@ async function deletePatientMedication(
                from patient_medication
                where id = ${patientMedicationId}`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -763,7 +763,7 @@ async function deletePatientMetric(req: Request, res: Response): Promise<void> {
                from patient_metric
                where id = ${patientMetricId}`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -784,7 +784,7 @@ async function deletePatientNote(req: Request, res: Response): Promise<void> {
                from patient_note
                where id = ${patientNoteId}`;
 
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });

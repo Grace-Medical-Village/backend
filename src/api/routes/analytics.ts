@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { db } from '../../utils/db';
-import { dataBuilder } from '../../utils/data-builder';
 import { AnalyticsCount } from '../../types';
 
 async function getPatientCount(req: Request, res: Response): Promise<void> {
@@ -65,17 +64,20 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
         or lower(condition_name) like '%hypertension%');
   `;
 
-  // TODO
   await db
     .executeStatementRefactor(sql)
     .then((queryResult) => {
       const data = queryResult as AnalyticsCount[];
 
-      if (data.length > 0) res.status(200);
-      else res.status(404);
-      res.json({
-        data,
-      });
+      if (data.length > 0) {
+        res.status(200);
+        res.json({
+          patientCount: data[0].count,
+        });
+      } else {
+        res.status(404);
+        res.json({ patientCount: 0 });
+      }
     })
     .catch((err) => {
       res.status(500);
@@ -119,9 +121,8 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
   }
 
   await db
-    .executeStatement(sql)
-    .then((patients) => {
-      const data = dataBuilder.buildMapPatientsData(patients);
+    .executeStatementRefactor(sql)
+    .then((data) => {
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);

@@ -1,7 +1,6 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { dataBuilder } from '../../../utils/data-builder';
-import { Condition } from '../../../types';
+import { db } from '../../../utils/db';
 
 describe('conditions', () => {
   describe('getConditions', () => {
@@ -21,9 +20,7 @@ describe('conditions', () => {
     it('404 if no conditions found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildConditionData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/conditions/');
 
@@ -35,12 +32,13 @@ describe('conditions', () => {
       spy.mockRestore();
     });
 
+    // TODO
     it('500 if an error occurs', async () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildConditionData')
-        .mockImplementationOnce(() => undefined as unknown as Condition[]);
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
 
       const response = await request(app).get('/conditions/');
 

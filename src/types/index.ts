@@ -88,14 +88,6 @@ export type PatientListRecord = {
   gender: string;
 };
 
-export type PatientAllergies = {
-  id: number;
-  allergies: string;
-  patientId: number;
-  createdAt: string;
-  modifiedAt: string;
-};
-
 export type PatientCondition = {
   id: number;
   conditionId: number;
@@ -275,3 +267,28 @@ export type GetRdsParams = (
   transactionId: string | null,
   overrides: Overrides
 ) => ExecuteStatementRequest | void;
+
+export interface Id {
+  id: number;
+}
+
+export interface Timestamps {
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export type DBValues = Id & Timestamps;
+
+export interface Note {
+  note: string | null;
+}
+
+export type PostNoteReturnValues = DBValues & Note;
+
+export type PatientAllergies = {
+  id: number;
+  patientId: number;
+  allergies: string | null;
+  createdAt: string;
+  modifiedAt: string;
+};

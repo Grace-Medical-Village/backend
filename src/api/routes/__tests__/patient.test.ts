@@ -121,7 +121,6 @@ describe('patient', () => {
         (r) => r
       );
 
-      // [{ id, patientId, allergies, createdAt, modifiedAt}]
       expect(actual.length).toBeGreaterThan(0);
       expect(actual).toHaveLength(2);
       expect(actual[0].patientId).toStrictEqual(patientId);
@@ -575,7 +574,7 @@ describe('patient', () => {
     it('creates a note', async () => {
       expect.assertions(8);
       const note = 'Lorem ipsum dolor ';
-      const patientId = 1;
+      const patientId = await createPatient().then((r) => r);
       const requestBody = {
         note,
         patientId,
@@ -672,6 +671,7 @@ describe('patient', () => {
         "'allergies' required in request body"
       );
     });
+
     it.todo('fails if request body of allergies is not provided');
     it.todo('handles a failed update to the database');
   });

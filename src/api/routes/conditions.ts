@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 import { db } from '../../utils/db';
-import { dataBuilder } from '../../utils/data-builder';
 
 async function getConditions(req: Request, res: Response): Promise<void> {
   const sql =
     'select id, condition_name from condition order by condition_name;';
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      const data = dataBuilder.buildConditionData(r);
+    .executeStatementRefactor(sql)
+    .then((data) => {
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);

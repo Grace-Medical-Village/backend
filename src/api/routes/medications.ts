@@ -1,27 +1,34 @@
 import { Request, Response } from 'express';
 import { db, sqlParen } from '../../utils/db';
-import { dataBuilder } from '../../utils/data-builder';
 import { isNumber } from '../../utils';
+import { Id } from '../../types';
 
 async function getMedication(req: Request, res: Response): Promise<void> {
   const id = req.params.id;
 
   const sql = `
-   select m.*, mc.name category_name from medication m 
-   join medication_category mc on m.category_id = mc.id 
-   where m.id = ${id};
+      select m.*, mc.name category_name
+      from medication m
+               join medication_category mc on m.category_id = mc.id
+      where m.id = ${id};
   `;
 
-  await db.executeStatement(sql).then((r) => {
-    const data = dataBuilder.buildMedicationData(r);
-    if (data.length === 1) {
-      res.status(200);
-      res.json(data[0]);
-    } else {
-      res.status(404);
+  await db
+    .executeStatementRefactor(sql)
+    .then((data) => {
+      if (data.length === 1) {
+        res.status(200);
+        res.json(data[0]);
+      } else {
+        res.status(404);
+        res.json({});
+      }
+    })
+    .catch((e) => {
+      res.status(e?.statusCode ?? 500);
       res.json({});
-    }
-  });
+      console.error(e);
+    });
 }
 
 async function getMedications(req: Request, res: Response): Promise<void> {
@@ -33,9 +40,8 @@ async function getMedications(req: Request, res: Response): Promise<void> {
   `;
 
   await db
-    .executeStatement(sql)
-    .then((r) => {
-      const data = dataBuilder.buildMedicationData(r);
+    .executeStatementRefactor(sql)
+    .then((data) => {
       if (data.length > 0) {
         res.status(200);
         res.json(data);
@@ -57,8 +63,7 @@ async function getMedicationCategories(
 ): Promise<void> {
   const sql = 'select * from medication_category';
 
-  await db.executeStatement(sql).then((r) => {
-    const data = dataBuilder.buildMedicationCategoryData(r);
+  await db.executeStatementRefactor(sql).then((data) => {
     if (data.length > 0) res.status(200);
     else res.status(404);
     res.json(data);
@@ -85,14 +90,14 @@ async function postMedication(req: Request, res: Response): Promise<void> {
   }
 
   const sql = `
-    insert into medication (${columns})
-    values (${values})
-    returning id;
+      insert into medication (${columns})
+      values (${values})
+      returning id;
   `;
 
-  await db.executeStatement(sql).then((r) => {
-    if (r && r[0]) {
-      const id = r[0][0].longValue;
+  await db.executeStatementRefactor(sql).then((data) => {
+    if (data && data.length === 1) {
+      const { id } = data[0] as Id;
       res.status(201);
       res.json({ id });
     } else {
@@ -119,9 +124,9 @@ async function putMedication(req: Request, res: Response): Promise<void> {
 
   // todo -> what if strength or archived missing?
   let sql = `
-    update medication 
-    set category_id = ${categoryId}, 
-      name = ${name},
+      update medication
+      set category_id = ${categoryId},
+          name        = ${name},
   `;
 
   if (strength && archived) {
@@ -143,7 +148,7 @@ async function putMedication(req: Request, res: Response): Promise<void> {
   sql += `where id = ${id};`;
 
   // todo -> failure?
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -159,13 +164,13 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
   }
 
   const sql = `
-    delete from
-    medication
-    where id = ${id};
+      delete
+      from medication
+      where id = ${id};
   `;
 
   // todo -> db failure?
-  await db.executeStatement(sql).then((_) => {
+  await db.executeStatementRefactor(sql).then((_) => {
     res.status(200);
     res.json({});
   });

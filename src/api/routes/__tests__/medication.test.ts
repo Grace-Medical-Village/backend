@@ -1,13 +1,13 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { Medication, MedicationCategory } from '../../../types';
-import { dataBuilder } from '../../../utils/data-builder';
+import { db } from '../../../utils/db';
 import {
   createMedication,
   getMaxSerialValue,
   getRandomMedicationCategoryId,
   getRandomMedicationId,
 } from '../../../utils/test-utils';
+import { Medication, MedicationCategory } from '../../../types';
 
 describe('medications', () => {
   describe('getMedications', () => {
@@ -24,9 +24,7 @@ describe('medications', () => {
     it('returns 404 if no medications found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/medications/');
 
@@ -42,7 +40,7 @@ describe('medications', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => undefined as unknown as Medication[]);
 
       const response = await request(app).get('/medications/');
@@ -80,19 +78,21 @@ describe('medications', () => {
       expect(response.body).toStrictEqual({});
     });
 
-    it('handles errors from processing data from db', async () => {
+    it('returns 500 if an error occurs', async () => {
       expect.assertions(4);
 
+      const id = await getRandomMedicationId().then((r) => r);
+
       const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => undefined as unknown as Medication[]);
 
-      const response = await request(app).get('/medications/');
+      const response = await request(app).get(`/medications/${id}`);
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toStrictEqual(500);
       expect(response.headers['content-type']).toMatch(/application\/json/);
-      expect(response.body).toStrictEqual([]);
+      expect(response.body).toStrictEqual({});
 
       spy.mockRestore();
     });
@@ -115,7 +115,7 @@ describe('medications', () => {
       expect.assertions(3);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationCategoryData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => [] as unknown as MedicationCategory[]);
 
       const response = await request(app)
@@ -268,22 +268,3 @@ describe('medications', () => {
     });
   });
 });
-
-// async function getRandomMedicationCategoryId() {
-//   let result = -1;
-//
-//   try {
-//     const response = await request(app)
-//       .get('/medications/categories')
-//       .set('Accept', 'application/json');
-//
-//     if (response.body.length > 0) {
-//       const { id } = sample(response.body);
-//       result = id;
-//     }
-//   } catch (e) {
-//     console.error(e);
-//   }
-//
-//   return result;
-// }

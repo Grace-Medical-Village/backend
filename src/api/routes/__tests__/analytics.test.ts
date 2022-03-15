@@ -1,8 +1,7 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { dataBuilder } from '../../../utils/data-builder';
-import { createPatient } from '../../../utils/test-utils';
 import { db } from '../../../utils/db';
+import { createPatient } from '../../../utils/test-utils';
 
 describe('analytics', () => {
   describe('getPatientCount', () => {
@@ -82,9 +81,7 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => 0);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/analytics/patients/map/count');
 
@@ -100,13 +97,10 @@ describe('analytics', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
 
       const response = await request(app).get('/analytics/patients/map/count');
-
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toStrictEqual(500);
       expect(response.headers['content-type']).toMatch(/application\/json/);
@@ -144,9 +138,7 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMapPatientsData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/analytics/patients/map');
 
@@ -162,10 +154,8 @@ describe('analytics', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMapPatientsData')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
 
       const response = await request(app).get('/analytics/patients/map');
 
