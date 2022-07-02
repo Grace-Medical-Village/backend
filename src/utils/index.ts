@@ -30,8 +30,6 @@ const oneYearAgo = (): Date => {
   return result;
 };
 
-// TODO - refactor using pattern from DB?
-// doesn't really test what we need
 const isBloodPressureMetric = (
   value: string,
   metricFormat: MetricFormat
@@ -160,7 +158,6 @@ const validate = async (
     result.error = `Metric value of ${value} is not a number`;
     return result;
   }
-  // TODO check date value
   if (metricFormat.maxValue && Number(value) > metricFormat.maxValue) {
     result.isValid = false;
     result.error = `Metric value ${value} exceeds maximum of ${metricFormat.maxValue}`;

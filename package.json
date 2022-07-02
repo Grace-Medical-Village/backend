@@ -11,7 +11,7 @@
     "lint:watch": "eslint . --ext .ts",
     "test": "jest --maxWorkers=50%",
     "test:ci": "jest --run-in-band",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --runInBand --detectOpenHandles ",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js jest --run-in-band --watch",
     "test:docker": "docker compose --file docker-compose.test.yml up --build",
     "test:watch": "jest --watch",

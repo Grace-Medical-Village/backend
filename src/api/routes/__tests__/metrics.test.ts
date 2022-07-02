@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { dataBuilder } from '../../../utils/data-builder';
 import { getMetricFormats } from '../metrics';
 import { Metric } from '../../../types';
+import { db } from '../../../utils/db';
 
 describe('metrics', () => {
   describe('getMetrics', () => {
@@ -21,9 +21,7 @@ describe('metrics', () => {
     it('404 if no metrics found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMetricData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/metrics/');
 
@@ -39,7 +37,7 @@ describe('metrics', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMetricData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => undefined as unknown as Metric[]);
 
       const response = await request(app).get('/metrics/');
@@ -67,9 +65,7 @@ describe('metrics', () => {
     it('returns an empty array if no metrics found', async () => {
       expect.assertions(2);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMetricFormatData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const actual = await getMetricFormats().then((r) => r);
 
@@ -82,11 +78,9 @@ describe('metrics', () => {
     it('returns an empty array if an error occurs', async () => {
       expect.assertions(2);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMetricFormatData')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => {
+        throw new Error();
+      });
 
       const actual = await getMetricFormats().then((r) => r);
 

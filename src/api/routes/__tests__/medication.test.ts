@@ -1,8 +1,13 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { CreateMedicationRequestBody, Medication } from '../../../types';
-import { dataBuilder } from '../../../utils/data-builder';
-import { getRandomMedicationCategoryId } from '../../../utils/test-utils';
+import { db } from '../../../utils/db';
+import {
+  createMedication,
+  getMaxSerialValue,
+  getRandomMedicationCategoryId,
+  getRandomMedicationId,
+} from '../../../utils/test-utils';
+import { Medication, MedicationCategory } from '../../../types';
 
 describe('medications', () => {
   describe('getMedications', () => {
@@ -19,9 +24,7 @@ describe('medications', () => {
     it('returns 404 if no medications found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/medications/');
 
@@ -37,7 +40,7 @@ describe('medications', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => undefined as unknown as Medication[]);
 
       const response = await request(app).get('/medications/');
@@ -55,11 +58,7 @@ describe('medications', () => {
     it('retrieves a single medication', async () => {
       expect.assertions(3);
 
-      const medicationData = await request(app)
-        .get('/medications/')
-        .then((response) => response.body);
-
-      const { id = -1 } = medicationData[0];
+      const id = await getRandomMedicationId().then((r) => r);
 
       const response = await request(app).get(`/medications/${id}`);
 
@@ -71,7 +70,7 @@ describe('medications', () => {
     it('returns 404 if no medication is found', async () => {
       expect.assertions(3);
 
-      const id = 1000000;
+      const id = getMaxSerialValue();
       const response = await request(app).get(`/medications/${id}`);
 
       expect(response.statusCode).toStrictEqual(404);
@@ -79,26 +78,56 @@ describe('medications', () => {
       expect(response.body).toStrictEqual({});
     });
 
-    it('handles errors from processing data from db', async () => {
+    it('returns 500 if an error occurs', async () => {
       expect.assertions(4);
 
+      const id = await getRandomMedicationId().then((r) => r);
+
       const spy = jest
-        .spyOn(dataBuilder, 'buildMedicationData')
+        .spyOn(db, 'buildData')
         .mockImplementationOnce(() => undefined as unknown as Medication[]);
 
-      const response = await request(app).get('/medications/');
+      const response = await request(app).get(`/medications/${id}`);
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toStrictEqual(500);
       expect(response.headers['content-type']).toMatch(/application\/json/);
-      expect(response.body).toStrictEqual([]);
+      expect(response.body).toStrictEqual({});
 
       spy.mockRestore();
     });
   });
 
   describe('getMedicationCategories', () => {
-    it.todo;
+    it('retrieves medication categories', async () => {
+      expect.assertions(3);
+
+      const response = await request(app)
+        .get('/medications/categories')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body.length).toBeGreaterThan(0);
+    });
+
+    it('handles db errors', async () => {
+      expect.assertions(3);
+
+      const spy = jest
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => [] as unknown as MedicationCategory[]);
+
+      const response = await request(app)
+        .get('/medications/categories')
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(404);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body).toStrictEqual([]);
+
+      spy.mockRestore();
+    });
   });
 
   describe('postMedication', () => {
@@ -171,9 +200,7 @@ describe('medications', () => {
         .set('Accept', 'application/json');
 
       expect(response.statusCode).toStrictEqual(400);
-      expect(response.body.error).toMatch(
-        'Database error code: 0. Message: is not present in table "medication_category".'
-      );
+      expect(response.body).toStrictEqual({});
     });
   });
 
@@ -239,54 +266,5 @@ describe('medications', () => {
       expect(response.statusCode).toStrictEqual(200);
       expect(response.body).toStrictEqual({});
     });
-
-    it.todo('failure');
   });
 });
-
-async function createMedication(
-  name: string,
-  categoryId: number,
-  strength: string | null = null
-): Promise<number> {
-  let result = -1;
-
-  const requestBody: CreateMedicationRequestBody = {
-    categoryId,
-    name,
-  };
-
-  if (strength) requestBody.strength = strength;
-
-  try {
-    const response = await request(app)
-      .post('/medications')
-      .send(requestBody)
-      .set('Accept', 'application/json');
-
-    result = response?.body?.id ?? -1;
-  } catch (e) {
-    console.error(e);
-  }
-
-  return result;
-}
-
-// async function getRandomMedicationCategoryId() {
-//   let result = -1;
-//
-//   try {
-//     const response = await request(app)
-//       .get('/medications/categories')
-//       .set('Accept', 'application/json');
-//
-//     if (response.body.length > 0) {
-//       const { id } = sample(response.body);
-//       result = id;
-//     }
-//   } catch (e) {
-//     console.error(e);
-//   }
-//
-//   return result;
-// }

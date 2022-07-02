@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { dbRequest } from '../../utils/db';
-import { dataBuilder } from '../../utils/data-builder';
+import { db } from '../../utils/db';
+import { AnalyticsCount } from '../../types';
 
 async function getPatientCount(req: Request, res: Response): Promise<void> {
   const { startDate, endDate } = getStartAndEndDate(req);
@@ -20,9 +20,14 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
     );
   }
 
-  await dbRequest(sql)
-    .then((r) => {
-      const patientCount = dataBuilder.buildCount(r);
+  await db
+    .executeStatementRefactor(sql)
+    .then((queryResult) => {
+      const data = queryResult as AnalyticsCount[];
+      let patientCount = 0;
+      if (data.length === 1 && data[0].count) {
+        patientCount = data[0].count;
+      }
 
       if (patientCount > 0) res.status(200);
       else res.status(404);
@@ -59,15 +64,20 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
         or lower(condition_name) like '%hypertension%');
   `;
 
-  await dbRequest(sql)
-    .then((r) => {
-      const patientCount = dataBuilder.buildCount(r);
+  await db
+    .executeStatementRefactor(sql)
+    .then((queryResult) => {
+      const data = queryResult as AnalyticsCount[];
 
-      if (patientCount > 0) res.status(200);
-      else res.status(404);
-      res.json({
-        patientCount,
-      });
+      if (data.length > 0) {
+        res.status(200);
+        res.json({
+          patientCount: data[0].count,
+        });
+      } else {
+        res.status(404);
+        res.json({ patientCount: 0 });
+      }
     })
     .catch((err) => {
       res.status(500);
@@ -102,17 +112,17 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
         from patient p
                  left join patient_condition pc on p.id = pc.patient_id
                  left join condition c on pc.condition_id = c.id
-        where (lower(c.condition_name) like '%asthma%'
-            or lower(c.condition_name) like '%diabetes%'
-            or lower(c.condition_name) like '%cholesterol%'
-            or lower(c.condition_name) like '%hypertension%')
-          and (p.created_at >= '${startDate}' and p.created_at <= '${endDate}');
+      where (lower(c.condition_name) like '%asthma%'
+          or lower(c.condition_name) like '%diabetes%'
+          or lower(c.condition_name) like '%cholesterol%'
+          or lower(c.condition_name) like '%hypertension%')
+        and (p.created_at >= '${startDate}' and p.created_at <= '${endDate}');
     `;
   }
 
-  await dbRequest(sql)
-    .then((patients) => {
-      const data = dataBuilder.buildMapPatientsData(patients);
+  await db
+    .executeStatementRefactor(sql)
+    .then((data) => {
       if (data.length > 0) res.status(200);
       else res.status(404);
       res.json(data);
@@ -138,4 +148,4 @@ function getStartAndEndDate(req: Request) {
   return { startDate, endDate };
 }
 
-export { getMapPatients, getMapPatientCount, getPatientCount };
+export { getMapPatientCount, getMapPatients, getPatientCount };

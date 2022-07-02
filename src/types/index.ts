@@ -1,3 +1,11 @@
+import {
+  ExecuteStatementRequest,
+  ExecuteStatementResponse,
+  FieldList,
+  SqlParametersList,
+} from 'aws-sdk/clients/rdsdataservice';
+import { RDSDataService } from 'aws-sdk';
+
 export type Condition = {
   id: number;
   conditionName: string;
@@ -67,6 +75,10 @@ export type Patient = {
   zipCode5?: string;
 };
 
+export type AnalyticsCount = {
+  count: number;
+};
+
 export type PatientListRecord = {
   id: number;
   firstName: string;
@@ -74,14 +86,6 @@ export type PatientListRecord = {
   fullName?: string;
   birthdate: string;
   gender: string;
-};
-
-export type PatientAllergies = {
-  id: number;
-  allergies: string;
-  patientId: number;
-  createdAt: string;
-  modifiedAt: string;
 };
 
 export type PatientCondition = {
@@ -159,9 +163,9 @@ export enum MetricDataIndex {
   MAX_VALUE,
   FORMAT,
   PATTERN,
-  ARCHIVED,
   CREATED_AT,
   MODIFIED_AT,
+  ARCHIVED,
 }
 
 export enum MetricFormatDataIndex {
@@ -215,4 +219,76 @@ export type CreateMedicationRequestBody = {
   categoryId: number;
   name: string;
   strength?: string;
+};
+
+export type ExecuteStatement = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<FieldList[]>;
+
+export type ExecuteStatementRefactor = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<unknown[]>;
+
+export type BuildData = (response: ExecuteStatementResponse) => unknown[];
+
+export interface UnknownObject {
+  [key: string]: string | number | boolean | null;
+}
+
+export type DB = {
+  beginTransaction: () => void;
+  buildData: BuildData;
+  commitTransaction: () => void;
+  executeStatement: ExecuteStatement;
+  executeStatementRefactor: ExecuteStatementRefactor;
+};
+
+// type BeginTransaction = () => Promise<Id | null>;
+
+// type CommitTransaction = (
+//   transactionId: string
+// ) => Promise<CommitTransactionResponse | void>;
+
+export type GetFieldValue = (
+  fieldList: FieldList,
+  index: number
+) => string | number | boolean | null;
+
+export type GetRdsDataService = () => RDSDataService | void;
+
+interface Overrides {
+  parameters?: SqlParametersList | undefined;
+}
+
+export type GetRdsParams = (
+  sql: string,
+  transactionId: string | null,
+  overrides: Overrides
+) => ExecuteStatementRequest | void;
+
+export interface Id {
+  id: number;
+}
+
+export interface Timestamps {
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export type DBValues = Id & Timestamps;
+
+export interface Note {
+  note: string | null;
+}
+
+export type PostNoteReturnValues = DBValues & Note;
+
+export type PatientAllergies = {
+  id: number;
+  patientId: number;
+  allergies: string | null;
+  createdAt: string;
+  modifiedAt: string;
 };

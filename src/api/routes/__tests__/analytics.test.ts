@@ -1,11 +1,14 @@
 import request from 'supertest';
 import { app } from '../../../app';
-import { dataBuilder } from '../../../utils/data-builder';
+import { db } from '../../../utils/db';
+import { createPatient } from '../../../utils/test-utils';
 
 describe('analytics', () => {
   describe('getPatientCount', () => {
     it('returns a patient count', async () => {
       expect.assertions(3);
+
+      await createPatient().then((r) => r);
 
       const response = await request(app).get('/analytics/patients/count');
 
@@ -17,9 +20,13 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => 0);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => {
+        return [
+          {
+            count: 0,
+          },
+        ];
+      });
 
       const response = await request(app).get('/analytics/patients/count');
 
@@ -31,30 +38,11 @@ describe('analytics', () => {
       spy.mockRestore();
     });
 
-    it('returns 500 if an error occurs', async () => {
-      expect.assertions(4);
-
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
-
-      const response = await request(app).get('/analytics/patients/count');
-
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toStrictEqual(500);
-      expect(response.headers['content-type']).toMatch(/application\/json/);
-      expect(response.body).toStrictEqual({});
-
-      spy.mockRestore();
-    });
-
     it('returns patient count if start and end date range provided', async () => {
       expect.assertions(3);
 
       const startDate = '2021-01-31';
-      const endDate = '2021-12-31';
+      const endDate = '2100-12-31';
       const response = await request(app).get(
         `/analytics/patients/count?startDate=${startDate}&endDate=${endDate}`
       );
@@ -93,9 +81,7 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => 0);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/analytics/patients/map/count');
 
@@ -111,13 +97,10 @@ describe('analytics', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildCount')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
 
       const response = await request(app).get('/analytics/patients/map/count');
-
       expect(spy).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toStrictEqual(500);
       expect(response.headers['content-type']).toMatch(/application\/json/);
@@ -155,9 +138,7 @@ describe('analytics', () => {
     it('returns 0 if no patients found', async () => {
       expect.assertions(4);
 
-      const spy = jest
-        .spyOn(dataBuilder, 'buildMapPatientsData')
-        .mockImplementationOnce(() => []);
+      const spy = jest.spyOn(db, 'buildData').mockImplementationOnce(() => []);
 
       const response = await request(app).get('/analytics/patients/map');
 
@@ -173,10 +154,8 @@ describe('analytics', () => {
       expect.assertions(4);
 
       const spy = jest
-        .spyOn(dataBuilder, 'buildMapPatientsData')
-        .mockImplementationOnce(() => {
-          throw new Error();
-        });
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
 
       const response = await request(app).get('/analytics/patients/map');
 

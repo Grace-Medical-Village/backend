@@ -11,6 +11,7 @@ begin
 end;
 $$;
 
+-- patient tables
 drop table if exists patient_allergy;
 drop table if exists patient_condition;
 drop table if exists patient_metric;
@@ -18,6 +19,7 @@ drop table if exists patient_medication;
 drop table if exists patient_note;
 drop table if exists patient;
 
+-- base tables
 drop table if exists condition;
 drop table if exists metric;
 drop table if exists medication;
@@ -38,7 +40,7 @@ create trigger set_timestamp
     before update
     on condition
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- patient --
 drop table if exists patient;
@@ -71,7 +73,7 @@ create trigger set_timestamp
     before update
     on patient
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- condition --
 drop table if exists patient_condition;
@@ -92,7 +94,7 @@ create trigger set_timestamp
     before update
     on patient_condition
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- patient_note --
 drop table if exists patient_note;
@@ -110,7 +112,7 @@ create trigger set_timestamp
     before update
     on patient_note
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- metric --
 drop table if exists metric;
@@ -126,16 +128,18 @@ create table metric
     max_value       smallint,
     format          varchar(30),
     pattern         varchar(255),
-    archived        boolean   default false not null,
     created_at      timestamp default now() not null,
     modified_at     timestamp default now() not null
 );
+
+alter table metric
+    add column archived boolean default false not null;
 
 create trigger set_timestamp
     before update
     on metric
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- patient_metric --
 drop table if exists patient_metric;
@@ -155,7 +159,7 @@ create trigger set_timestamp
     before update
     on patient_metric
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- medication_category --
 drop table if exists medication_category;
@@ -172,7 +176,7 @@ create trigger set_timestamp
     before update
     on medication_category
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- medication --
 drop table if exists medication;
@@ -192,7 +196,7 @@ create trigger set_timestamp
     before update
     on medication
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- patient_medication --
 drop table if exists patient_medication;
@@ -210,7 +214,7 @@ create trigger set_timestamp
     before update
     on patient_medication
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
 
 -- patient_allergy --
 drop table if exists patient_allergy;
@@ -228,4 +232,7 @@ create trigger set_timestamp
     before update
     on patient_allergy
     for each row
-    execute procedure update_timestamp();
+execute procedure update_timestamp();
+
+alter table patient_allergy
+    rename column allergy to allergies;

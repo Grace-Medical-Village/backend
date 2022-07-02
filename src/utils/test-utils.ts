@@ -3,33 +3,44 @@ import { sample } from 'lodash';
 import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
-import { Metric, Patient } from '../types';
+import { CreateMedicationRequestBody, Metric, Patient } from '../types';
 
 const resetEnv = (): void => {
   process.env.NODE_ENV = 'test';
 };
 
+async function createMedication(
+  name: string,
+  categoryId: number,
+  strength: string | null = null
+): Promise<number> {
+  let result = -1;
+
+  const requestBody: CreateMedicationRequestBody = {
+    categoryId,
+    name,
+  };
+
+  if (strength) requestBody.strength = strength;
+
+  try {
+    const response = await request(app)
+      .post('/medications')
+      .send(requestBody)
+      .set('Accept', 'application/json');
+
+    result = response?.body?.id ?? -1;
+  } catch (e) {
+    console.error(e);
+  }
+
+  return result;
+}
+
 async function createPatient(): Promise<number> {
   let result = -1;
   try {
     const requestBody = buildPatient();
-
-    // TODO
-    // if (zeroOrOne()) requestBody.mobile = faker.phone.phoneNumber(); if (zeroOrOne()) requestBody.email =
-    // faker.internet.email();
-    // if (zeroOrOne()) requestBody.zipCode5 = faker.address.zipCode();
-    // if (zeroOrOne()) {
-    //   // max native literacy: 5; min native literacy: 1
-    //   requestBody.nativeLiteracy = Math.floor(
-    //     Math.random() * (5 - 1 + 1) + 1
-    //   ).toString();
-    // }
-    // if (zeroOrOne()) {
-    //   // max height 84"; min height 12"
-    //   requestBody.height = Math.floor(
-    //     Math.random() * (84 - 12 + 1) + 12
-    //   ).toString();
-    // }
 
     const response = await request(app)
       .post('/patients')
@@ -37,6 +48,7 @@ async function createPatient(): Promise<number> {
       .set('Accept', 'application/json');
 
     result = response?.body?.id ?? -1;
+    if (result === -1) return result;
   } catch (e) {
     console.error(e);
   }
@@ -279,11 +291,16 @@ async function getSampleMetricValue(metricId: string): Promise<string> {
   return result;
 }
 
+// max serial value - https://www.postgresql.org/docs/9.1/datatype-numeric.html
+const getMaxSerialValue = (): number => 2147483647;
+
 const zeroOrOne = (): number => Math.round(Math.random());
 
 export {
   buildPatient,
+  createMedication,
   createPatient,
+  getMaxSerialValue,
   getRandomConditionId,
   getRandomMedicationCategoryId,
   getRandomMedicationId,

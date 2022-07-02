@@ -10,6 +10,7 @@ import {
 import {
   buildPatient,
   createPatient,
+  getMaxSerialValue,
   getRandomConditionId,
   getRandomMedicationId,
   getRandomMetricId,
@@ -25,8 +26,8 @@ describe('patient', () => {
   describe('getPatient', () => {
     it('successfully retrieves a patient', async () => {
       expect.assertions(8);
-      const patientId = await createPatient().then((r) => r);
 
+      const patientId = await createPatient().then((r) => r);
       const response = await request(app)
         .get(`/patients/${patientId}`)
         .set('Accept', 'application/json');
@@ -120,7 +121,6 @@ describe('patient', () => {
         (r) => r
       );
 
-      // [{ id, patientId, allergies, createdAt, modifiedAt}]
       expect(actual.length).toBeGreaterThan(0);
       expect(actual).toHaveLength(2);
       expect(actual[0].patientId).toStrictEqual(patientId);
@@ -185,7 +185,7 @@ describe('patient', () => {
 
   describe('getPatientMetrics', () => {
     it('retrieves patient metric data', async () => {
-      expect.assertions(13);
+      expect.assertions(9);
       const patientId = await createPatient().then((r) => r);
       const metricId0 = await getRandomMetricId().then((r) => r);
       const metricValue0 = await getSampleMetricValue(
@@ -196,32 +196,30 @@ describe('patient', () => {
         metricId1.toString()
       ).then((r) => r);
 
-      await savePatientMetric(
-        patientId.toString(),
-        metricId0.toString(),
-        metricValue0
-      );
-
-      await savePatientMetric(
-        patientId.toString(),
-        metricId1.toString(),
-        metricValue1
-      );
+      await Promise.all([
+        savePatientMetric(
+          patientId.toString(),
+          metricId0.toString(),
+          metricValue0
+        ).then((r) => r),
+        savePatientMetric(
+          patientId.toString(),
+          metricId1.toString(),
+          metricValue1
+        ).then((r) => r),
+      ]);
 
       const patientMetrics = await getPatientMetrics(patientId.toString()).then(
         (r) => r
       );
 
+      // order of saving metrics isn't necessarily in order
+      // not going to test if metric id or value were saved
       expect(patientMetrics).toHaveLength(2);
       expect(patientMetrics[0].id).toBeGreaterThan(0);
       expect(patientMetrics[1].id).toBeGreaterThan(0);
       expect(patientMetrics[0].patientId).toStrictEqual(patientId);
       expect(patientMetrics[1].patientId).toStrictEqual(patientId);
-      // ordered descending
-      expect(patientMetrics[1].metricId).toStrictEqual(metricId0);
-      expect(patientMetrics[0].metricId).toStrictEqual(metricId1);
-      expect(patientMetrics[1].value).toStrictEqual(metricValue0);
-      expect(patientMetrics[0].value).toStrictEqual(metricValue1);
       expect(patientMetrics[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
       expect(patientMetrics[0].modifiedAt).toMatch(
         /[0-9]{4}-[0-9]{2}-[0-9]{2}/
@@ -416,7 +414,7 @@ describe('patient', () => {
       const conditionId = await getRandomConditionId().then((r) => r);
 
       const requestBody = {
-        patientId: Number.MAX_SAFE_INTEGER,
+        patientId: getMaxSerialValue(),
         conditionId,
       };
 
@@ -490,12 +488,12 @@ describe('patient', () => {
     });
 
     it('returns an error if the patient does not exist', async () => {
-      expect.assertions(4);
+      expect.assertions(2);
 
       const medicationId = await getRandomMedicationId().then((r) => r);
 
       const requestBody = {
-        patientId: Number.MAX_SAFE_INTEGER,
+        patientId: getMaxSerialValue(),
         medicationId,
       };
 
@@ -576,7 +574,7 @@ describe('patient', () => {
     it('creates a note', async () => {
       expect.assertions(8);
       const note = 'Lorem ipsum dolor ';
-      const patientId = 1;
+      const patientId = await createPatient().then((r) => r);
       const requestBody = {
         note,
         patientId,
@@ -631,14 +629,6 @@ describe('patient', () => {
         'patientId and note required in request body to save patient note'
       );
     });
-
-    it.todo('modifies an existing patient note');
-    it.todo('fails if path param for note id is missing');
-    it.todo('fails if note is not provided in request body');
-    it.todo('returns the note value and modified value');
-    it.todo('handles a failed update to the database');
-    it.todo('fieldlist is empty');
-    it.todo('internal error');
   });
 
   describe('putPatient', () => {
@@ -681,6 +671,7 @@ describe('patient', () => {
         "'allergies' required in request body"
       );
     });
+
     it.todo('fails if request body of allergies is not provided');
     it.todo('handles a failed update to the database');
   });
@@ -956,7 +947,9 @@ describe('patient', () => {
 
       const patientId = await createPatient().then((r) => r);
       const metricId = await getRandomMetricId().then((r) => r);
-      const value = 100; // todo -> get valid test value
+      const value = await getSampleMetricValue(metricId.toString()).then(
+        (r) => r
+      );
       const patientMetricId = await savePatientMetric(
         patientId.toString(),
         metricId.toString(),
