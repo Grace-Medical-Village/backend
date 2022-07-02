@@ -1,3 +1,11 @@
+import {
+  ExecuteStatementRequest,
+  ExecuteStatementResponse,
+  FieldList,
+  SqlParametersList,
+} from 'aws-sdk/clients/rdsdataservice';
+import { RDSDataService } from 'aws-sdk';
+
 export type Condition = {
   id: number;
   conditionName: string;
@@ -31,15 +39,14 @@ export type Metric = {
   pattern?: string;
   minValue?: number;
   maxValue?: number;
+  archived?: boolean;
   createdAt: string;
   modifiedAt: string;
 };
 
 export enum DATA_API_TYPES {
   IS_NULL = 'isNull',
-  BOOLEAN = 'booleanValue',
   NUMBER = 'longValue',
-  STRING = 'stringValue',
 }
 
 export type MapPatient = {
@@ -61,11 +68,15 @@ export type Patient = {
   email?: string;
   height?: string;
   mobile?: string;
-  country?: string;
+  country: string;
   nativeLanguage?: string;
   nativeLiteracy?: string;
   smoker: boolean;
   zipCode5?: string;
+};
+
+export type AnalyticsCount = {
+  count: number;
 };
 
 export type PatientListRecord = {
@@ -75,14 +86,6 @@ export type PatientListRecord = {
   fullName?: string;
   birthdate: string;
   gender: string;
-};
-
-export type PatientAllergies = {
-  id: number;
-  allergies: string;
-  patientId: number;
-  createdAt: string;
-  modifiedAt: string;
 };
 
 export type PatientCondition = {
@@ -162,6 +165,7 @@ export enum MetricDataIndex {
   PATTERN,
   CREATED_AT,
   MODIFIED_AT,
+  ARCHIVED,
 }
 
 export enum MetricFormatDataIndex {
@@ -169,7 +173,6 @@ export enum MetricFormatDataIndex {
   PATTERN,
   MIN_VALUE,
   MAX_VALUE,
-  METRIC_TYPE,
 }
 
 // Condition
@@ -188,11 +191,15 @@ export enum Pat {
   EMAIL,
   HEIGHT,
   MOBILE,
+  MAP,
   COUNTRY,
   NATIVE_LANGUAGE,
   NATIVE_LITERACY,
   SMOKER,
   ZIP_CODE,
+  ARCHIVED,
+  CREATED_AT,
+  MODIFIED_AT,
 }
 
 export type MetricFormat = {
@@ -202,12 +209,86 @@ export type MetricFormat = {
   pattern?: string | null;
 };
 
-export type CachedMetric = {
-  [metricId: number]: MetricFormat;
-};
-
 export type ValidMetric = {
   isValid: boolean;
   metric?: string;
   error?: string;
+};
+
+export type CreateMedicationRequestBody = {
+  categoryId: number;
+  name: string;
+  strength?: string;
+};
+
+export type ExecuteStatement = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<FieldList[]>;
+
+export type ExecuteStatementRefactor = (
+  sql: string,
+  transactionId?: string | null
+) => Promise<unknown[]>;
+
+export type BuildData = (response: ExecuteStatementResponse) => unknown[];
+
+export interface UnknownObject {
+  [key: string]: string | number | boolean | null;
+}
+
+export type DB = {
+  beginTransaction: () => void;
+  buildData: BuildData;
+  commitTransaction: () => void;
+  executeStatement: ExecuteStatement;
+  executeStatementRefactor: ExecuteStatementRefactor;
+};
+
+// type BeginTransaction = () => Promise<Id | null>;
+
+// type CommitTransaction = (
+//   transactionId: string
+// ) => Promise<CommitTransactionResponse | void>;
+
+export type GetFieldValue = (
+  fieldList: FieldList,
+  index: number
+) => string | number | boolean | null;
+
+export type GetRdsDataService = () => RDSDataService | void;
+
+interface Overrides {
+  parameters?: SqlParametersList | undefined;
+}
+
+export type GetRdsParams = (
+  sql: string,
+  transactionId: string | null,
+  overrides: Overrides
+) => ExecuteStatementRequest | void;
+
+export interface Id {
+  id: number;
+}
+
+export interface Timestamps {
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export type DBValues = Id & Timestamps;
+
+export interface Note {
+  note: string | null;
+}
+
+export type PostNoteReturnValues = DBValues & Note;
+
+export type PatientAllergies = {
+  id: number;
+  patientId: number;
+  allergies: string | null;
+  createdAt: string;
+  modifiedAt: string;
 };
