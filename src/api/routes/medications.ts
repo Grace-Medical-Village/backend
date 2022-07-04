@@ -14,7 +14,7 @@ async function getMedication(req: Request, res: Response): Promise<void> {
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data.length === 1) {
         res.status(200);
@@ -40,7 +40,7 @@ async function getMedications(req: Request, res: Response): Promise<void> {
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data.length > 0) {
         res.status(200);
@@ -63,7 +63,7 @@ async function getMedicationCategories(
 ): Promise<void> {
   const sql = 'select * from medication_category';
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data.length > 0) res.status(200);
     else res.status(404);
     res.json(data);
@@ -95,7 +95,7 @@ async function postMedication(req: Request, res: Response): Promise<void> {
       returning id;
   `;
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data && data.length === 1) {
       const { id } = data[0] as Id;
       res.status(201);
@@ -149,7 +149,7 @@ async function putMedication(req: Request, res: Response): Promise<void> {
   const whereClause = `where id = ${id};`;
   sql.push(whereClause);
 
-  await db.executeStatementRefactor(sql.join(' ')).then((_) => {
+  await db.executeStatement(sql.join(' ')).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -172,7 +172,7 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
   id = ${id};
   `;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });

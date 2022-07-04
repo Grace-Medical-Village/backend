@@ -7,7 +7,7 @@ async function getMetrics(req: Request, res: Response): Promise<void> {
                from metric;`;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data.length > 0) {
         res.status(200);
@@ -29,7 +29,7 @@ async function getMetricFormats(): Promise<Array<Partial<MetricFormat>>> {
 
   let result: Array<Partial<Metric>> = [];
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data && data.length > 0) {
         result = data as Array<Partial<Metric>>;
@@ -50,7 +50,7 @@ async function getMetricFormat(
 
   let result: Partial<MetricFormat> = {};
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data && data.length === 1) {
       result = data as Partial<MetricFormat>;
     }

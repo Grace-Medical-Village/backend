@@ -21,7 +21,7 @@ async function getPatientCount(req: Request, res: Response): Promise<void> {
   }
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((queryResult) => {
       const data = queryResult as AnalyticsCount[];
       let patientCount = 0;
@@ -65,7 +65,7 @@ async function getMapPatientCount(req: Request, res: Response): Promise<void> {
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((queryResult) => {
       const data = queryResult as AnalyticsCount[];
 
@@ -121,7 +121,7 @@ async function getMapPatients(req: Request, res: Response): Promise<void> {
   }
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data.length > 0) res.status(200);
       else res.status(404);

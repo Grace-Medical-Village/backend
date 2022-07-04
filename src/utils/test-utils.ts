@@ -3,7 +3,12 @@ import { sample } from 'lodash';
 import * as faker from 'faker';
 import { app } from '../app';
 import { toIso8601 } from './index';
-import { CreateMedicationRequestBody, Metric, Patient } from '../types';
+import {
+  CreateMedicationRequestBody,
+  Metric,
+  Patient,
+  TestMetric,
+} from '../types';
 
 const resetEnv = (): void => {
   process.env.NODE_ENV = 'test';
@@ -291,6 +296,31 @@ async function getSampleMetricValue(metricId: string): Promise<string> {
   return result;
 }
 
+async function getTestMetrics(): Promise<Array<TestMetric>> {
+  const result: Array<TestMetric> = [];
+
+  try {
+    const response = await request(app)
+      .get('/metrics')
+      .set('Accept', 'application/json');
+
+    if (response.body.length > 0) {
+      const metrics: Array<unknown> = response.body;
+      for (const metric of metrics as Metric[]) {
+        const testMetric: TestMetric = {
+          id: metric.id,
+          format: metric?.format ?? '',
+        };
+        result.push(testMetric);
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  return result;
+}
+
 // max serial value - https://www.postgresql.org/docs/9.1/datatype-numeric.html
 const getMaxSerialValue = (): number => 2147483647;
 
@@ -306,6 +336,7 @@ export {
   getRandomMedicationId,
   getRandomMetricId,
   getSampleMetricValue,
+  getTestMetrics,
   resetEnv,
   savePatientAllergies,
   savePatientConditions,
