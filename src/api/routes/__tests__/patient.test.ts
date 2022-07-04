@@ -21,6 +21,7 @@ import {
   savePatientMetric,
   savePatientNote,
 } from '../../../utils/test-utils';
+import { db } from '../../../utils/db';
 
 describe('patient', () => {
   describe('getPatient', () => {
@@ -92,8 +93,8 @@ describe('patient', () => {
       expect(actual.patientId).toStrictEqual(patientId);
       expect(actual.allergies).toStrictEqual(allergies);
       expect(actual.id).toBeGreaterThan(0);
-      expect(actual.createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(actual.modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(actual.createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(actual.modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
   });
 
@@ -126,8 +127,8 @@ describe('patient', () => {
       expect(actual[0].patientId).toStrictEqual(patientId);
       expect(actual[0].id).toBeGreaterThan(0);
       expect(conditionIds).toContain(actual[0].conditionId);
-      expect(actual[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(actual[0].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(actual[0].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(actual[0].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
   });
 
@@ -159,18 +160,10 @@ describe('patient', () => {
       expect(patientMedications[1].medicationId).toStrictEqual(medicationId0);
       expect(patientMedications[0].id).toBeGreaterThan(0);
       expect(patientMedications[1].id).toBeGreaterThan(0);
-      expect(patientMedications[0].createdAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
-      expect(patientMedications[0].modifiedAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
-      expect(patientMedications[1].createdAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
-      expect(patientMedications[1].modifiedAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
+      expect(patientMedications[0].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMedications[0].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMedications[1].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMedications[1].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
 
     it('returns empty array if patientId is not provided', async () => {
@@ -220,14 +213,10 @@ describe('patient', () => {
       expect(patientMetrics[1].id).toBeGreaterThan(0);
       expect(patientMetrics[0].patientId).toStrictEqual(patientId);
       expect(patientMetrics[1].patientId).toStrictEqual(patientId);
-      expect(patientMetrics[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(patientMetrics[0].modifiedAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
-      expect(patientMetrics[1].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(patientMetrics[1].modifiedAt).toMatch(
-        /[0-9]{4}-[0-9]{2}-[0-9]{2}/
-      );
+      expect(patientMetrics[0].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMetrics[0].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMetrics[1].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientMetrics[1].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
 
     it('returns empty array if patientId is not provided', async () => {
@@ -259,10 +248,10 @@ describe('patient', () => {
       expect(patientNotes[1].patientId).toStrictEqual(patientId);
       expect(patientNotes[0].note).toStrictEqual(note1);
       expect(patientNotes[1].note).toStrictEqual(note0);
-      expect(patientNotes[0].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(patientNotes[0].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(patientNotes[1].createdAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
-      expect(patientNotes[1].modifiedAt).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(patientNotes[0].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientNotes[0].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientNotes[1].createdAt).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(patientNotes[1].modifiedAt).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
 
     it('returns empty notes array if patientId is not provided', async () => {
@@ -631,8 +620,44 @@ describe('patient', () => {
     });
   });
 
+  // TODO -> validate with db -> get?
   describe('putPatient', () => {
-    it.todo;
+    it('successfully modifies patient name', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const requestBody = buildPatient();
+
+      const response = await request(app)
+        .put(`/patients/${patientId}`)
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(200);
+      expect(response.body).toStrictEqual({});
+    });
+
+    it('handles failure of put request', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+      const requestBody = buildPatient();
+
+      const spy = jest
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => undefined as unknown as unknown[]);
+
+      const response = await request(app)
+        .put(`/patients/${patientId}`)
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body).toStrictEqual({});
+
+      spy.mockRestore();
+    });
   });
 
   describe('putPatientAllergies', () => {
@@ -672,7 +697,27 @@ describe('patient', () => {
       );
     });
 
-    it.todo('fails if request body of allergies is not provided');
+    it('fails if request body of allergies is not provided', async () => {
+      expect.assertions(2);
+
+      const patientId = await createPatient().then((r) => r);
+
+      const requestBody = {
+        allergy: 'incorrect key',
+      };
+
+      const response = await request(app)
+        .put(`/patients/allergy/${patientId}`)
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body.error).toStrictEqual(
+        "'allergies' required in request body"
+      );
+    });
+
+    // try out of range id?
     it.todo('handles a failed update to the database');
   });
 

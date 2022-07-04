@@ -3,6 +3,7 @@ import {
   indexOutOfBounds,
   isBloodPressureMetric,
   isIntegerGreaterThanZero,
+  isDate,
   isLocal,
   isNumber,
   isProduction,
@@ -11,8 +12,15 @@ import {
   regexTest,
   toIso8601,
   tomorrow,
+  validate,
+  validateMaximum,
+  validateMinimum,
+  validateNumber,
+  validatePattern,
+  validateValuesProvided,
 } from '../index';
 import { EnvironmentTestObject, MetricFormat } from '../../types';
+import { getTestMetrics } from '../test-utils';
 
 const environmentTests: EnvironmentTestObject[] = [
   {
@@ -262,6 +270,273 @@ describe('utils', () => {
         '120/80'
       );
       expect(actual).toStrictEqual(true);
+    });
+  });
+
+  describe('validateValuesProvided', () => {
+    it('fails if an empty array is provided', () => {
+      expect.assertions(2);
+
+      const actual = validateValuesProvided([]);
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toStrictEqual('No metric values provided');
+    });
+  });
+
+  describe('validateNumber', () => {
+    it('confirms if a value is a number', () => {
+      expect.assertions(1);
+
+      const actual = validateNumber(['123', '456']);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('succeeds if a negative number is provided', () => {
+      expect.assertions(1);
+
+      const actual = validateNumber(['-1777.1']);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('fails if a blood pressure metric is provided', () => {
+      expect.assertions(2);
+
+      const actual = validateNumber(['90', '120/100']);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toStrictEqual(
+        'Metric value of 120/100 is not a number'
+      );
+    });
+
+    it('fails if letters are provided', () => {
+      expect.assertions(2);
+
+      const actual = validateNumber(['b120', '80']);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toStrictEqual(
+        'Metric value of b120 is not a number'
+      );
+    });
+  });
+
+  describe('validateMaximum', () => {
+    it('succeeds if maxValue is null', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validateMaximum([], metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('validates that values are within the maximum allowed value', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: 500,
+        pattern: null,
+      };
+
+      const actual = validateMaximum(['123', '500', '0'], metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('fails if single value exceeds the maxValue', () => {
+      expect.assertions(2);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: 500,
+        pattern: null,
+      };
+
+      const actual = validateMaximum(['1000'], metricFormat);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toMatch(/exceeds maximum/gi);
+    });
+
+    it('fails if intermittent exceeds maxValue', () => {
+      expect.assertions(2);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: 120,
+        pattern: null,
+      };
+
+      const actual = validateMaximum(['100', '121', '80'], metricFormat);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toMatch(/exceeds maximum/gi);
+    });
+  });
+
+  describe('validateMinimum', () => {
+    it('succeeds if minValue is null', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validateMinimum([], metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('validates that values are within the minimum allowed value', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: -100,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validateMinimum(['-100', '-10', '0', '100'], metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('fails if single value exceeds the maxValue', () => {
+      expect.assertions(2);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: -10,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validateMinimum(['-10.01'], metricFormat);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toMatch(/exceeds minimum/gi);
+    });
+
+    it('fails if intermittent exceeds maxValue', () => {
+      expect.assertions(2);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: 1000,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validateMinimum(['1000', '10000', '100'], metricFormat);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toMatch(/exceeds minimum/gi);
+    });
+  });
+
+  describe('validatePattern', () => {
+    it('succeeds for pattern does not exist on metric format', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: null,
+      };
+
+      const actual = validatePattern('', metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('succeeds if pattern is matched - blood pressure', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: '^([1-9]|[1-9]\\d+)/([1-9]|[1-9]\\d+)$',
+      };
+
+      const actual = validatePattern('144/121', metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('succeeds if pattern is matched - pain', () => {
+      expect.assertions(1);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: '^\\b([0-9]|10)\\b$',
+      };
+
+      const actual = validatePattern('0', metricFormat);
+
+      expect(actual).toStrictEqual({});
+    });
+
+    it('fails if pattern is not matched - blood pressure', () => {
+      expect.assertions(2);
+
+      const metricFormat: MetricFormat = {
+        id: 1,
+        minValue: null,
+        maxValue: null,
+        pattern: '^([1-9]|[1-9]\\d+)/([1-9]|[1-9]\\d+)$',
+      };
+
+      const actual = validatePattern('144/', metricFormat);
+
+      expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toMatch(/does not match required format/gi);
+    });
+  });
+
+  // TODO -> test min and max
+  describe('validate', () => {
+    it('successfully validates all metrics', async () => {
+      expect.hasAssertions();
+      const metrics = await getTestMetrics().then((r) => r);
+      expect.assertions(metrics.length * 2);
+
+      for (const metric of metrics) {
+        const { id, format } = metric;
+
+        const result = await validate(id, format).then((r) => r);
+        expect(result.isValid).toStrictEqual(true);
+        expect(result.metric).toStrictEqual(metric.format);
+      }
+    });
+  });
+
+  describe('isDate', () => {
+    it('validates an iso8601 date', () => {
+      expect.assertions(3);
+      expect(isDate('1900-01-15')).toStrictEqual(true);
+      expect(isDate('2000-12-31')).toStrictEqual(true);
+      expect(isDate('2500-07-03')).toStrictEqual(true);
     });
   });
 });
