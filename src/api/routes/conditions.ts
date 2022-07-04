@@ -6,7 +6,7 @@ async function getConditions(req: Request, res: Response): Promise<void> {
     'select id, condition_name from condition order by condition_name;';
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data.length > 0) res.status(200);
       else res.status(404);

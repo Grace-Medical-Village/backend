@@ -224,11 +224,6 @@ export type CreateMedicationRequestBody = {
 export type ExecuteStatement = (
   sql: string,
   transactionId?: string | null
-) => Promise<FieldList[]>;
-
-export type ExecuteStatementRefactor = (
-  sql: string,
-  transactionId?: string | null
 ) => Promise<unknown[]>;
 
 export type BuildData = (response: ExecuteStatementResponse) => unknown[];
@@ -242,7 +237,6 @@ export type DB = {
   buildData: BuildData;
   commitTransaction: () => void;
   executeStatement: ExecuteStatement;
-  executeStatementRefactor: ExecuteStatementRefactor;
 };
 
 // type BeginTransaction = () => Promise<Id | null>;
@@ -291,4 +285,9 @@ export type PatientAllergies = {
   allergies: string | null;
   createdAt: string;
   modifiedAt: string;
+};
+
+export type TestMetric = {
+  id: number;
+  format: string;
 };

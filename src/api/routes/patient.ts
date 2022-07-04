@@ -27,7 +27,7 @@ async function getPatient(req: Request, res: Response): Promise<void> {
                from patient
                where id = ${id}`;
 
-  const data = await db.executeStatementRefactor(sql).then((r) => r);
+  const data = await db.executeStatement(sql).then((r) => r);
 
   if (data && data.length === 1) {
     const allergies = await getPatientAllergies(id).then((r) => r);
@@ -61,7 +61,7 @@ async function getPatientAllergies(
                limit 1;
   `;
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data.length === 1) {
       const record = data[0] as PatientAllergies;
       result = {
@@ -76,58 +76,58 @@ async function getPatientAllergies(
 async function getPatientConditions(
   patientId: string
 ): Promise<ArrayLike<PatientCondition>> {
-  let conditions: ArrayLike<PatientCondition> = [];
+  let result: ArrayLike<PatientCondition> = [];
 
-  if (!patientId) return conditions;
+  if (!patientId) return result;
 
   const sql = `select pc.*, c.condition_name
                from patient_condition pc
                         inner join condition c on pc.condition_id = c.id
                where patient_id = ${patientId};
   `;
-  await db.executeStatementRefactor(sql).then((data) => {
-    conditions = data as ArrayLike<PatientCondition>;
+  await db.executeStatement(sql).then((data) => {
+    result = data as ArrayLike<PatientCondition>;
   });
 
-  return conditions;
+  return result;
 }
 
 async function getPatientMedications(
   patientId: string
 ): Promise<ArrayLike<PatientMedication>> {
-  let medications: ArrayLike<PatientMedication> = [];
+  let result: ArrayLike<PatientMedication> = [];
 
-  if (!patientId) return medications;
+  if (!patientId) return result;
 
   const sql = `select *
                from patient_medication
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatementRefactor(sql).then((data) => {
-    medications = data as ArrayLike<PatientMedication>;
+  await db.executeStatement(sql).then((data) => {
+    result = data as ArrayLike<PatientMedication>;
   });
 
-  return medications;
+  return result;
 }
 
 async function getPatientMetrics(
   patientId: string
 ): Promise<ArrayLike<PatientMetric>> {
-  let metrics: ArrayLike<PatientMetric> = [];
+  let result: ArrayLike<PatientMetric> = [];
 
-  if (!patientId) return metrics;
+  if (!patientId) return result;
 
   const sql = `select *
                from patient_metric
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatementRefactor(sql).then((data) => {
-    metrics = data as ArrayLike<PatientMetric>;
+  await db.executeStatement(sql).then((data) => {
+    result = data as ArrayLike<PatientMetric>;
   });
 
-  return metrics;
+  return result;
 }
 
 async function getPatientNotes(
@@ -142,7 +142,7 @@ async function getPatientNotes(
                where patient_id = ${patientId}
                order by created_at desc;`;
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     notes = data as ArrayLike<PatientNote>;
   });
 
@@ -180,7 +180,7 @@ async function getPatients(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data.length > 0) res.status(200);
     else res.status(404);
 
@@ -235,7 +235,7 @@ async function postPatient(req: Request, res: Response): Promise<void> {
                returning id`;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data && data[0]) {
         const { id } = data[0] as Id;
@@ -281,7 +281,7 @@ async function postPatientAllergies(
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       const { id } = data[0] as Id;
       res.status(201);
@@ -314,7 +314,7 @@ async function postPatientCondition(
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data && data.length === 1) {
         const { id } = data[0] as Id;
@@ -352,7 +352,7 @@ async function postPatientMedication(
   `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((data) => {
       if (data && data.length === 1) {
         const { id, createdAt, modifiedAt } = data[0] as DBValues;
@@ -375,18 +375,30 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
   const metricId = req.body.metricId;
   const value = req.body?.value ?? '';
   const comment = req.body.comment ? req.body.comment.trim() : '';
+  const date = req.body.date
+    ? req.body.date.substring(0, 10).concat(' 12:00:00.000000')
+    : null;
 
   const validMetric = await validate(metricId, value);
 
   if (validMetric.isValid && validMetric.metric) {
+    const columns = date
+      ? '(patient_id, metric_id, value, comment, created_at)'
+      : '(patient_id, metric_id, value, comment)';
+
+    const values = date
+      ? `(${patientId}, ${metricId}, '${validMetric.metric}', '${comment}', '${date}')`
+      : `(${patientId}, ${metricId}, '${validMetric.metric}', '${comment}')`;
+
     const sql = `
-        insert into patient_metric (patient_id, metric_id, value, comment)
-        values (${patientId}, ${metricId}, '${validMetric.metric}', '${comment}')
+        insert into patient_metric ${columns}
+        values
+        ${values}
         returning id, created_at, modified_at;
     `;
 
     await db
-      .executeStatementRefactor(sql)
+      .executeStatement(sql)
       .then((data) => {
         if (data && data.length === 1) {
           const { id, createdAt, modifiedAt } = data[0] as DBValues;
@@ -428,7 +440,7 @@ async function postPatientNote(req: Request, res: Response): Promise<void> {
       returning id, note, created_at, modified_at;
   `;
 
-  await db.executeStatementRefactor(sql).then((data) => {
+  await db.executeStatement(sql).then((data) => {
     if (data && data.length === 1) {
       const { id, note, createdAt, modifiedAt } =
         data[0] as PostNoteReturnValues;
@@ -459,12 +471,14 @@ async function putPatient(req: Request, res: Response): Promise<void> {
     smoker = '${req.body.smoker}'
   `;
 
-  const sql = `update patient
-               set ${updates}
-               where id = ${id};`;
+  const sql = `
+      update patient
+      set ${updates}
+      where id = ${id};
+  `;
 
   await db
-    .executeStatementRefactor(sql)
+    .executeStatement(sql)
     .then((_) => {
       res.status(200);
       res.json({});
@@ -498,7 +512,7 @@ async function putPatientAllergies(req: Request, res: Response): Promise<void> {
       where id = ${id};
   `;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -528,7 +542,7 @@ async function putPatientArchive(req: Request, res: Response): Promise<void> {
                set archive = ${archive}
                where id = ${id};`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({ archive });
   });
@@ -577,7 +591,7 @@ async function putPatientNote(req: Request, res: Response): Promise<void> {
                set note = '${note}'
                where id = ${noteId};`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -668,7 +682,7 @@ async function deletePatient(req: Request, res: Response): Promise<void> {
                where id = ${patientId};
   `;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -692,7 +706,7 @@ async function deletePatientAllergy(
                from patient_allergy
                where id = ${patientAllergyId}`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -716,7 +730,7 @@ async function deletePatientCondition(
                from patient_condition
                where id = ${patientConditionId}`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
     console.log(sql);
@@ -741,7 +755,7 @@ async function deletePatientMedication(
                from patient_medication
                where id = ${patientMedicationId}`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -762,7 +776,7 @@ async function deletePatientMetric(req: Request, res: Response): Promise<void> {
                from patient_metric
                where id = ${patientMetricId}`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
@@ -783,7 +797,7 @@ async function deletePatientNote(req: Request, res: Response): Promise<void> {
                from patient_note
                where id = ${patientNoteId}`;
 
-  await db.executeStatementRefactor(sql).then((_) => {
+  await db.executeStatement(sql).then((_) => {
     res.status(200);
     res.json({});
   });
