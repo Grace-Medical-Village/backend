@@ -48,135 +48,152 @@ const regexTest = (pattern: string | null, value: string): boolean => {
   return re.test(value);
 };
 
-// function validateMinimum(
-//   value: string,
-//   metricFormat: MetricFormat,
-//   result: ValidMetric
-// ) {
-//   if (metricFormat.pattern === ISO_8601) {
-//     const dateValue = new Date(value);
-//     const minimumDate = oneYearAgo();
-//
-//     if (dateValue < minimumDate) {
-//       result = {
-//         isValid: false,
-//         error: `Metric value of ${toIso8601(
-//           dateValue
-//         )} exceeds minimum threshold of ${toIso8601(minimumDate)}`,
-//       };
-//     }
-//   } else if (isBloodPressureMetric(value, metricFormat)) {
-//     const values: Array<string> = value.split('/');
-//     values.forEach((v) => {
-//       if (!isNumber(v)) {
-//         result = {
-//           isValid: false,
-//           error: `Metric value of ${value} is not a number`,
-//         };
-//         return result;
-//       }
-//       if (metricFormat.minValue && Number(v) < metricFormat.minValue) {
-//         result = {
-//           isValid: false,
-//           error: `Metric value ${value} exceeds minimum of ${metricFormat.minValue}`,
-//         };
-//         return result;
-//       }
-//     });
-//   }
-//   return result;
-// }
-
-// function validateMaximum(
-//   value: string,
-//   metricFormat: MetricFormat,
-//   result: ValidMetric
-// ) {
-//   if (metricFormat.pattern === ISO_8601) {
-//     const dateValue = new Date(value);
-//     const maximumDate = tomorrow();
-//
-//     if (dateValue > maximumDate) {
-//       result = {
-//         isValid: false,
-//         error: `Metric value of ${toIso8601(
-//           dateValue
-//         )} exceeds maximum threshold of ${toIso8601(maximumDate)}`
-//       };
-//     }
-//   } else if (isBloodPressureMetric(value, metricFormat)) {
-//     const values: Array<string> = value.split("/");
-//     values.forEach((v) => {
-//       if (!isNumber(v)) {
-//         result = {
-//           isValid: false,
-//           error: `Metric value of ${value} is not a number`
-//         };
-//         return result;
-//       }
-//       if (metricFormat.maxValue && Number(v) > metricFormat.maxValue) {
-//         result = {
-//           isValid: false,
-//           error: `Metric value ${value} exceeds maximum of ${metricFormat.maxValue}`
-//         };
-//         return result;
-//       }
-//     });
-//   } else {
-//     if (!isNumber(value)) {
-//       result = {
-//         isValid: false,
-//         error: `Metric value of ${value} is not a number`
-//       };
-//       return result;
-//     }
-//     if (metricFormat.maxValue && Number(value) > metricFormat.maxValue) {
-//       result = {
-//         isValid: false,
-//         error: `Metric value ${value} exceeds maximum of ${metricFormat.maxValue}`
-//       };
-//       return result;
-//     }
-//   }
-//   return result;
-// }
-
 const validate = async (
   metricId: number,
   value: string
 ): Promise<ValidMetric> => {
-  const metricFormat: Partial<MetricFormat> | MetricFormat =
-    await getMetricFormat(metricId.toString()).then((r) => r);
-
-  const result: ValidMetric = {
-    isValid: true, // save faulty data in case getMetricFormat fails
-    metric: value,
+  let result: ValidMetric = {
+    isValid: true,
+    metric: value.trim(),
   };
 
-  if (!isNumber(value)) {
-    result.isValid = false;
-    result.error = `Metric value of ${value} is not a number`;
-    return result;
-  }
-  if (metricFormat.maxValue && Number(value) > metricFormat.maxValue) {
-    result.isValid = false;
-    result.error = `Metric value ${value} exceeds maximum of ${metricFormat.maxValue}`;
-    return result;
-  }
-  if (metricFormat.minValue && Number(value) < metricFormat.minValue) {
-    result.isValid = false;
-    result.error = `Metric value ${value} exceeds minimum of ${metricFormat.minValue}`;
-    return result;
-  }
-  if (
-    metricFormat.pattern &&
-    !regexTest(metricFormat?.pattern ?? null, value)
-  ) {
-    result.isValid = false;
-    result.error = `Metric provided '${value}' does not match required format`;
+  const values: Array<string> = value.trim().split('/');
+
+  const metricFormat: Partial<MetricFormat> | null = await getMetricFormat(
+    metricId.toString()
+  )
+    .then((r) => r)
+    .catch((e) => {
+      console.error(e);
+      return null;
+    });
+
+  if (isDate(value)) {
     return result;
   }
 
+  const valuesProvidedResult = validateValuesProvided(values);
+  result = {
+    ...result,
+    ...valuesProvidedResult,
+  };
+
+  const numberValidationResult = validateNumber(values);
+  result = {
+    ...result,
+    ...numberValidationResult,
+  };
+
+  if (!result.isValid) return result;
+
+  // save faulty data in case getMetricFormat fails
+  if (!metricFormat) return result;
+
+  const maxValidationResult = validateMaximum(values, metricFormat);
+  result = {
+    ...result,
+    ...maxValidationResult,
+  };
+  if (!result.isValid) return result;
+
+  const minValidationResult = validateMinimum(values, metricFormat);
+  result = {
+    ...result,
+    ...minValidationResult,
+  };
+  if (!result.isValid) return result;
+
+  const patternValidationResult = validatePattern(value, metricFormat);
+  result = {
+    ...result,
+    ...patternValidationResult,
+  };
+
+  return result;
+};
+
+const validateValuesProvided = (
+  values: Array<string>
+): Partial<ValidMetric> => {
+  const result: Partial<ValidMetric> = {};
+
+  if (values.length === 0) {
+    result.isValid = false;
+    result.error = 'No metric values provided';
+  }
+
+  return result;
+};
+
+const validateNumber = (values: Array<string>): Partial<ValidMetric> => {
+  const result: Partial<ValidMetric> = {};
+
+  values.forEach((value) => {
+    if (!isNumber(value)) {
+      result.isValid = false;
+      result.error = `Metric value of ${value} is not a number`;
+    }
+  });
+
+  return result;
+};
+
+const validateMaximum = (
+  values: Array<string>,
+  metricFormat: Partial<MetricFormat>
+): Partial<ValidMetric> => {
+  const result: Partial<ValidMetric> = {};
+
+  values.forEach((value) => {
+    if (metricFormat.maxValue && Number(value) > metricFormat.maxValue) {
+      result.isValid = false;
+      result.error = `Metric value ${value} exceeds maximum of ${metricFormat.maxValue}`;
+    }
+  });
+
+  return result;
+};
+
+const validateMinimum = (
+  values: Array<string>,
+  metricFormat: Partial<MetricFormat>
+): Partial<ValidMetric> => {
+  const result: Partial<ValidMetric> = {};
+
+  values.forEach((value) => {
+    if (metricFormat.minValue && Number(value) < metricFormat.minValue) {
+      result.isValid = false;
+      result.error = `Metric value ${value} exceeds minimum of ${metricFormat.minValue}`;
+    }
+  });
+
+  return result;
+};
+
+const validatePattern = (
+  value: string,
+  metricFormat: Partial<MetricFormat>
+): Partial<ValidMetric> => {
+  const result: Partial<ValidMetric> = {};
+
+  if (metricFormat.pattern && !regexTest(metricFormat.pattern, value)) {
+    result.isValid = false;
+    result.error = `Metric provided '${value}' does not match required format`;
+  }
+
+  return result;
+};
+
+const isDate = (value: string): boolean => {
+  let result = false;
+
+  const datePatterns = {
+    iso8601: /(\d{4})-(\d{2})-(\d{2})/,
+  };
+
+  for (const datePattern of Object.values(datePatterns)) {
+    if (datePattern.test(value)) result = true;
+  }
   return result;
 };
 
@@ -186,6 +203,7 @@ export {
   isBloodPressureMetric,
   isLocal,
   isIntegerGreaterThanZero,
+  isDate,
   isNumber,
   isTest,
   isProduction,
@@ -194,4 +212,9 @@ export {
   tomorrow,
   toIso8601,
   validate,
+  validateMaximum,
+  validateMinimum,
+  validateNumber,
+  validatePattern,
+  validateValuesProvided,
 };
