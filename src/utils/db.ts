@@ -1,8 +1,5 @@
 import { RDSDataService } from 'aws-sdk';
-import {
-  ExecuteStatementRequest,
-  FieldList,
-} from 'aws-sdk/clients/rdsdataservice';
+import { ExecuteStatementRequest } from 'aws-sdk/clients/rdsdataservice';
 import {
   DATA_API_TYPES,
   UnknownObject,
@@ -96,31 +93,6 @@ export const db: DB = {
     return;
   },
   executeStatement: async (sql, transactionId = null) => {
-    let result: FieldList[] = [];
-
-    try {
-      const rdsDataService = getRdsDataService();
-      const rdsParams: ExecuteStatementRequest | void = getRdsParams(
-        sql,
-        transactionId,
-        {}
-      );
-
-      if (rdsDataService && rdsParams) {
-        const response = await rdsDataService
-          .executeStatement(rdsParams)
-          .promise();
-
-        if (response.records && response.records.length > 0) {
-          result = response.records;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return result;
-  },
-  executeStatementRefactor: async (sql, transactionId = null) => {
     let result: unknown[] = [];
 
     try {
