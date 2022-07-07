@@ -305,11 +305,17 @@ async function getTestMetrics(): Promise<Array<TestMetric>> {
       .set('Accept', 'application/json');
 
     if (response.body.length > 0) {
-      const metrics: Array<unknown> = response.body;
+      const metrics: Array<Metric> = response.body.filter(
+        (m: Metric) => !m.archived
+      );
       for (const metric of metrics as Metric[]) {
         const testMetric: TestMetric = {
           id: metric.id,
+          name: metric.metricName,
           format: metric?.format ?? '',
+          maxValue: metric?.maxValue ?? null,
+          minValue: metric?.minValue ?? null,
+          pattern: metric?.pattern ?? '',
         };
         result.push(testMetric);
       }
