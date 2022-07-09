@@ -19,7 +19,7 @@ import {
   validatePattern,
   validateValuesProvided,
 } from '../index';
-import { EnvironmentTestObject, MetricFormat } from '../../types';
+import { EnvironmentTestObject, MetricFormat, TestMetric } from '../../types';
 import { getTestMetrics } from '../test-utils';
 
 const environmentTests: EnvironmentTestObject[] = [
@@ -514,20 +514,36 @@ describe('utils', () => {
     });
   });
 
-  // TODO -> test min and max
   describe('validate', () => {
-    it('successfully validates all metrics', async () => {
+    it('successfully validates all generic metrics', async () => {
       expect.hasAssertions();
-      const metrics = await getTestMetrics().then((r) => r);
-      expect.assertions(metrics.length * 2);
 
-      for (const metric of metrics) {
+      const testMetrics = await getTestMetrics().then((r) => r);
+
+      for (const metric of testMetrics) {
         const { id, format } = metric;
 
         const result = await validate(id, format).then((r) => r);
         expect(result.isValid).toStrictEqual(true);
         expect(result.metric).toStrictEqual(metric.format);
       }
+    });
+
+    // TODO 7/7/2022
+    it('fails if metric is less than the minimum', async () => {
+      expect.assertions(3);
+
+      const testMetrics = await getTestMetrics().then((r) => r);
+
+      const testMetric: TestMetric = testMetrics.filter((testMetric) =>
+        testMetric.name.match(/heart rate/i)
+      )[0];
+
+      const testValue = '0';
+      const result = await validate(testMetric.id, testValue).then((r) => r);
+      expect(testMetric.name).toStrictEqual('Heart Rate');
+      expect(result.isValid).toStrictEqual(false);
+      expect(result.metric).toStrictEqual(testValue);
     });
   });
 
