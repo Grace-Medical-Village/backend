@@ -289,5 +289,9 @@ export type PatientAllergies = {
 
 export type TestMetric = {
   id: number;
+  name: string;
   format: string;
+  maxValue: number | null;
+  minValue: number | null;
+  pattern: string;
 };
