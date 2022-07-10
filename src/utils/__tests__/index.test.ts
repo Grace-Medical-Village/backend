@@ -12,15 +12,13 @@ import {
   regexTest,
   toIso8601,
   tomorrow,
-  validate,
   validateMaximum,
   validateMinimum,
   validateNumber,
   validatePattern,
   validateValuesProvided,
 } from '../index';
-import { EnvironmentTestObject, MetricFormat, TestMetric } from '../../types';
-import { getTestMetrics } from '../test-utils';
+import { EnvironmentTestObject, MetricFormat } from '../../types';
 
 const environmentTests: EnvironmentTestObject[] = [
   {
@@ -503,45 +501,6 @@ describe('utils', () => {
 
       expect(actual.isValid).toStrictEqual(false);
       expect(actual.error).toMatch(/does not match required format/gi);
-    });
-  });
-
-  describe('validate', () => {
-    it('successfully validates all generic metrics', async () => {
-      expect.hasAssertions();
-
-      const testMetrics = await getTestMetrics().then((r) => r);
-
-      for (const metric of testMetrics) {
-        const { id, format } = metric;
-
-        const actual = await validate(id, format).then((r) => r);
-        expect(actual.isValid).toStrictEqual(true);
-        expect(actual.metric).toStrictEqual(metric.format);
-      }
-    });
-
-    it('fails if metric is less than the minimum', async () => {
-      expect.assertions(3);
-
-      // const testMetrics = await getTestMetrics().then((r) => r);
-
-      const testMetric: TestMetric = {
-        id: 0,
-        name: '1',
-        format: '',
-        maxValue: 0,
-        minValue: 1,
-        pattern: '',
-      };
-
-      const testValue = '0';
-      const actual = await validate(testMetric.id, testValue).then((r) => r);
-      // expect(actual.isValid).toStrictEqual(false);
-      expect(actual.error).toStrictEqual(
-        `Metric value ${testValue} exceeds minimum of ${testMetric.minValue}`
-      );
-      expect(actual.metric).toStrictEqual(testValue);
     });
   });
 

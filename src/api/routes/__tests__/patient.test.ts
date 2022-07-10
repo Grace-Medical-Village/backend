@@ -22,6 +22,7 @@ import {
   savePatientNote,
 } from '../../../utils/test-utils';
 import { db } from '../../../utils/db';
+import { getMetricFormat } from '../metrics';
 
 describe('patient', () => {
   describe('getPatient', () => {
@@ -557,6 +558,45 @@ describe('patient', () => {
       expect(response.body.createdAt.length).toBeGreaterThan(0);
       expect(response.body.modifiedAt.length).toBeGreaterThan(0);
     });
+
+    it('handles a failure to post metric', async () => {
+      expect.assertions(3);
+
+      const patientId = await createPatient().then((r) => r);
+      const metricId = await getRandomMetricId().then((r) => r);
+      const metricFormat = await getMetricFormat(metricId.toString()).then(
+        (r) => r
+      );
+      const value = await getSampleMetricValue(metricId.toString()).then(
+        (r) => r
+      );
+
+      const requestBody = {
+        patientId,
+        metricId,
+        value,
+      };
+
+      const spy = jest
+        .spyOn(db, 'buildData')
+        .mockImplementationOnce(() => {
+          return {
+            ...metricFormat,
+          } as unknown[];
+        })
+        .mockImplementationOnce(() => [] as unknown[]);
+
+      const response = await request(app)
+        .post('/patients/metric')
+        .send(requestBody)
+        .set('Accept', 'application/json');
+
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(response.statusCode).toStrictEqual(400);
+      expect(response.body).toStrictEqual({});
+
+      spy.mockRestore();
+    });
   });
 
   describe('postPatientNote', () => {
@@ -620,7 +660,6 @@ describe('patient', () => {
     });
   });
 
-  // TODO -> validate with db -> get?
   describe('putPatient', () => {
     it('successfully modifies patient name', async () => {
       expect.assertions(2);
@@ -635,28 +674,6 @@ describe('patient', () => {
 
       expect(response.statusCode).toStrictEqual(200);
       expect(response.body).toStrictEqual({});
-    });
-
-    it('handles failure of put request', async () => {
-      expect.assertions(2);
-
-      const patientId = await createPatient().then((r) => r);
-      const requestBody = buildPatient();
-
-      const spy = jest
-        .spyOn(db, 'buildData')
-        .mockImplementationOnce(() => undefined as unknown as unknown[]);
-
-      const response = await request(app)
-        .put(`/patients/${patientId}`)
-        .send(requestBody)
-        .set('Accept', 'application/json');
-
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(response.statusCode).toStrictEqual(400);
-      expect(response.body).toStrictEqual({});
-
-      spy.mockRestore();
     });
   });
 
