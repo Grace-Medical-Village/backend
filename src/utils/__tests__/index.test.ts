@@ -177,7 +177,7 @@ describe('utils', () => {
       const actual = toIso8601(new Date());
 
       expect(actual).toHaveLength(10);
-      expect(actual).toMatch(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      expect(actual).toMatch(/\d{4}-\d{2}-\d{2}/);
     });
   });
 
@@ -205,10 +205,10 @@ describe('utils', () => {
       const dayIdToday = dateToDayId(new Date());
       const dayIdTomorrow = dateToDayId(tomorrow());
 
-      const result = dayIdTomorrow - dayIdToday;
+      const actual = dayIdTomorrow - dayIdToday;
       const expected = 1;
 
-      expect(result).toStrictEqual(expected);
+      expect(actual).toStrictEqual(expected);
     });
   });
 
@@ -218,19 +218,11 @@ describe('utils', () => {
       const dayIdToday = dateToDayId(new Date());
       const dayIdYearAgo = dateToDayId(oneYearAgo());
 
-      const result = dayIdToday - dayIdYearAgo;
+      const actual = dayIdToday - dayIdYearAgo;
       const expected = 10000;
 
-      expect(result).toStrictEqual(expected);
+      expect(actual).toStrictEqual(expected);
     });
-  });
-
-  describe('buildCachedMetrics', () => {
-    it.todo;
-  });
-
-  describe('getMetricFormat', () => {
-    it.todo;
   });
 
   describe('isBloodPressureMetric', () => {
@@ -523,27 +515,33 @@ describe('utils', () => {
       for (const metric of testMetrics) {
         const { id, format } = metric;
 
-        const result = await validate(id, format).then((r) => r);
-        expect(result.isValid).toStrictEqual(true);
-        expect(result.metric).toStrictEqual(metric.format);
+        const actual = await validate(id, format).then((r) => r);
+        expect(actual.isValid).toStrictEqual(true);
+        expect(actual.metric).toStrictEqual(metric.format);
       }
     });
 
-    // TODO 7/7/2022
     it('fails if metric is less than the minimum', async () => {
       expect.assertions(3);
 
-      const testMetrics = await getTestMetrics().then((r) => r);
+      // const testMetrics = await getTestMetrics().then((r) => r);
 
-      const testMetric: TestMetric = testMetrics.filter((testMetric) =>
-        testMetric.name.match(/heart rate/i)
-      )[0];
+      const testMetric: TestMetric = {
+        id: 0,
+        name: '1',
+        format: '',
+        maxValue: 0,
+        minValue: 1,
+        pattern: '',
+      };
 
       const testValue = '0';
-      const result = await validate(testMetric.id, testValue).then((r) => r);
-      expect(testMetric.name).toStrictEqual('Heart Rate');
-      expect(result.isValid).toStrictEqual(false);
-      expect(result.metric).toStrictEqual(testValue);
+      const actual = await validate(testMetric.id, testValue).then((r) => r);
+      // expect(actual.isValid).toStrictEqual(false);
+      expect(actual.error).toStrictEqual(
+        `Metric value ${testValue} exceeds minimum of ${testMetric.minValue}`
+      );
+      expect(actual.metric).toStrictEqual(testValue);
     });
   });
 
