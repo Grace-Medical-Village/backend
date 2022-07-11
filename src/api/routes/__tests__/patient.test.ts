@@ -733,9 +733,6 @@ describe('patient', () => {
         "'allergies' required in request body"
       );
     });
-
-    // try out of range id?
-    it.todo('handles a failed update to the database');
   });
 
   describe('putPatientArchive', () => {
