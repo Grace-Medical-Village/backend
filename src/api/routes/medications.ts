@@ -164,12 +164,9 @@ async function deleteMedication(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const sql = `;
-  delete
-    from;
-  medication;
-  where;
-  id = ${id};
+  const sql = `
+    delete from medication
+    where id = ${id};
   `;
 
   await db.executeStatement(sql).then((_) => {
