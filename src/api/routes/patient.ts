@@ -151,16 +151,14 @@ async function getPatientNotes(
 
 async function getPatients(req: Request, res: Response): Promise<void> {
   let sql = `
-      with p as (
-          select id,
-                 first_name,
-                 last_name,
-                 first_name || ' ' || last_name as "full_name",
-                 birthdate,
-                 gender
-          from patient
-          where archive = false
-      )
+      with p as (select id,
+                        first_name,
+                        last_name,
+                        first_name || ' ' || last_name as "full_name",
+                        birthdate,
+                        gender
+                 from patient
+                 where archive = false)
       select *
       from p
   `;
@@ -410,7 +408,7 @@ async function postPatientMetric(req: Request, res: Response): Promise<void> {
         }
       })
       .catch((e) => {
-        res.status(400);
+        res.status(401);
         res.json({});
         console.error(e);
       });
