@@ -57,9 +57,6 @@ const validate = async (
     metric: value.trim(),
   };
 
-  // TODO -> Undo fix
-  if (result.isValid) return result;
-
   const values: Array<string> = value.trim().split('/');
 
   const metricFormat: Partial<MetricFormat> | null = await getMetricFormat(
